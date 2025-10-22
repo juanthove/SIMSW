@@ -4,11 +4,11 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import requests
 from bs4 import BeautifulSoup
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from vulberta.analyzer import analizar_texto
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder="../templates")
 CORS(app)
 
 
@@ -43,22 +43,26 @@ def extraer_codigo(url):
 
     soup = BeautifulSoup(r.text, 'html.parser')
 
-    # 1️⃣ Scripts internos
+    #Scripts internos
     scripts = [s.get_text()[:MAX_CHARS_SCRIPT] for s in soup.find_all('script') if s.get_text()]
     scripts = scripts[:MAX_SCRIPTS]
 
-    # 2️⃣ Eventos inline
+    #Eventos inline
     eventos = []
     for ev in EVENTOS_INLINE:
         eventos += [tag[ev] for tag in soup.find_all(attrs={ev: True})]
     eventos = eventos[:MAX_EVENTS]
 
-    # 3️⃣ Combinar scripts y eventos y truncar
+    #Combinar scripts y eventos y truncar
     codigo = "\n".join(scripts + eventos)
     if len(codigo) > MAX_CHARS:
         codigo = codigo[:MAX_CHARS]
 
     return codigo, None
+
+@app.route('/')
+def index():
+    return render_template('index.html') 
 
 @app.route("/analizar", methods=["POST"])
 def analizar_url():
@@ -73,7 +77,7 @@ def analizar_url():
 
     resultado = analizar_texto(codigo)
 
-    # 🔹 Devolvemos JSON legible, listo para Gemini o para mostrar directamente
+    #Devolvemos JSON legible, listo para Gemini
     return jsonify({"url": url, "resultado": resultado})
 
 if __name__ == "__main__":

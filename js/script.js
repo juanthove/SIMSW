@@ -8,10 +8,10 @@ document.addEventListener("DOMContentLoaded", function(){
 
     const url = urlInput.value.trim();
     if (!url) { resultado.textContent = "Por favor ingrese una URL."; return; }
-    resultado.textContent = "Analizando... (revisá consola y Network)";
+    resultado.textContent = "Analizando...";
 
     try {
-        const res = await fetch('http://localhost:5000/analizar', {
+        const res = await fetch('/analizar', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ url })
@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", function(){
         try {
             data = JSON.parse(text);
         } catch (e) {
-            resultado.textContent = "Respuesta no JSON: ver consola";
+            resultado.textContent = "Respuesta no JSON:";
             console.error("No se pudo parsear JSON:", e);
             return;
         }
