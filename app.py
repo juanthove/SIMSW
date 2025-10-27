@@ -1,13 +1,17 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
-from scripts.vulberta import analizar_url, extraer_codigo
-from scripts.owaspZap_api import owaspzap_scanner
-from scripts.gemini import armarInforme
+from scripts.vulberta_api import analizar_url
 
 app = Flask(__name__)
 CORS(app)
 
-@app.route("/analizarAI", methods=["POST"])
+
+@app.route('/')
+def index():
+    return render_template('index.html') 
+
+
+@app.route("/analizarEstatico", methods=["POST"])
 def analizarVulBERTa():
     data = request.get_json()
     url = data.get("url")
@@ -17,33 +21,7 @@ def analizarVulBERTa():
     resultado = analizar_url(url)
     return resultado
 
-@app.route("/analizarOW", methods=["POST"])
-def analizarOWASPZAP():
-    data = request.get_json()
-    url = data.get("url")
-    resultado = owaspzap_scanner(url)
-
-    return jsonify({"url": url, "resultado": resultado})
-
-
-@app.route("/informe", methods=["POST"])
-def informe():
-    data = request.get_json()
-    lista_peticiones = data.get("listaPeticiones", [])
-    informes = {}
-
-    for peticion in lista_peticiones:
-        fragmento = peticion.get("numeroDeFragmento")
-        codigo = peticion.get("codigoVulnerable")
-
-        resultado = armarInforme(fragmento, codigo)
-        informes[fragmento] = resultado  # ya es dict
-
-    return jsonify(informes)
-
-
-
-
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+    

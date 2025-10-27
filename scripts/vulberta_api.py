@@ -4,12 +4,10 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import requests
 from bs4 import BeautifulSoup
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 from vulberta.analyzer import analizar_texto
 
-app = Flask(__name__, template_folder="../templates")
-CORS(app)
 
 
 
@@ -43,42 +41,29 @@ def extraer_codigo(url):
 
     soup = BeautifulSoup(r.text, 'html.parser')
 
-    #Scripts internos
+    # 1️⃣ Scripts internos
     scripts = [s.get_text()[:MAX_CHARS_SCRIPT] for s in soup.find_all('script') if s.get_text()]
     scripts = scripts[:MAX_SCRIPTS]
 
-    #Eventos inline
+    # 2️⃣ Eventos inline
     eventos = []
     for ev in EVENTOS_INLINE:
         eventos += [tag[ev] for tag in soup.find_all(attrs={ev: True})]
     eventos = eventos[:MAX_EVENTS]
 
-    #Combinar scripts y eventos y truncar
+    # 3️⃣ Combinar scripts y eventos y truncar
     codigo = "\n".join(scripts + eventos)
     if len(codigo) > MAX_CHARS:
         codigo = codigo[:MAX_CHARS]
 
     return codigo, None
 
-@app.route('/')
-def index():
-    return render_template('index.html') 
-
-@app.route("/analizar", methods=["POST"])
-def analizar_url():
-    data = request.get_json()
-    url = data.get("url")
-    if not url:
-        return jsonify({"error": "No se proporcionó URL"}), 400
-
+def analizar_url(url):
     codigo, error = extraer_codigo(url)
     if error:
         return jsonify({"error": f"No se pudo obtener la página: {error}"}), 500
 
     resultado = analizar_texto(codigo)
 
-    #Devolvemos JSON legible, listo para Gemini
+    # 🔹 Devolvemos JSON legible, listo para Gemini o para mostrar directamente
     return jsonify({"url": url, "resultado": resultado})
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)

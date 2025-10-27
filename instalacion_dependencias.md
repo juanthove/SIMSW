@@ -56,8 +56,19 @@ pip install requests
 ```bash
 pip install beautifulsoup4
 ```
+### **Para transformers **
+```bash
+pip install transformers
+```
+### **Para torch **
+```bash
+pip install torch
+```
 
-
+### **Para libclang (requerida por VulBERTa) **
+```bash
+pip install libclang
+```
 
 
 

@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function(){
     resultado.textContent = "Analizando...";
 
     try {
-        const res = await fetch('/analizar', {
+        const res = await fetch('/analizarEstatico', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ url })
