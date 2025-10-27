@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from scripts.vulberta_api import analizar_url, extraer_codigo
+from scripts.vulberta import analizar_url, extraer_codigo
 from scripts.owaspZap_api import owaspzap_scanner
 from scripts.gemini import armarInforme
 

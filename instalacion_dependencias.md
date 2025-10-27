@@ -1,9 +1,9 @@
 ```markdown
-# 🧰 **Instalación de Dependencias**
+# **Instalación de Dependencias**
 
 ---
 
-## 🔹 **Entorno Virtual**
+## **Entorno Virtual**
 
 **Abrir terminal**
 
@@ -24,35 +24,35 @@ deactivate
 
 ---
 
-## 🔹 **Instalación de paquetes**
+## **Instalación de paquetes**
 
 **Desde allí instalo los nuevos paquetes:**
 
-### 🧪 **Para Flask**
+### **Para Flask**
 ```bash
 pip install flask
 ```
 
-### 🛡️ **Para OWASP ZAP**
+### **Para OWASP ZAP**
 ```bash
 pip install zaproxy
 ```
 
-### 🤖 **Para Gemini**
+### **Para Gemini**
 ```bash
 pip install langchain-google-genai
 ```
-### 🧪 **Para Flask-cors **
+### **Para Flask-cors **
 ```bash
 pip install flask-cors
 ```
 
-### 🧪 **Para requests **
+### **Para requests **
 ```bash
 pip install requests
 ```
 
-### 🧪 **Para beautifulsoup4 **
+### **Para beautifulsoup4 **
 ```bash
 pip install beautifulsoup4
 ```
