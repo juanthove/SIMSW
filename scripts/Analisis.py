@@ -30,9 +30,10 @@ class Analisis():
         sitio = self.getSitio()
         url = sitio.getUrl()
         
+        id_herramienta = None #Se va a la base de datos, y se verifica el maximo y se le suma 1
 
         herramienta = vt(
-            id=99,
+            id=id_herramienta,
             nombre="VulBERTa",
             version="1.0",
             tipo="estatico",

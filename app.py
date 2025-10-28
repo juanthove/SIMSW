@@ -34,8 +34,18 @@ def ejecutarEstatico():
     if not url:
         return jsonify({"error": "No se proporcionó URL"}), 400
     
-    st = SitioWeb(1, "google.com",url , "google", None, None, None)
-    analisis = Analisis(1, None, "No terminado", "estatico", st)
+    id = 1 #Se obitiene llendo a la base de datos y sumandole 1 al maximo
+    nombre = " " #Se obtiene: Analizando el HTML <title> o el dominio
+    propietario = " " #Se obtienen: Usando WHOIS, pero no siempre viene dueño real, a veces está privado
+    archivos = None #Se obtienen: Haciendo un análisis del sitio (scraping o crawling)
+    fechaRegistro = None #Se va a la base, y si eciste la url, se trae el dato, sino se obiene con la fecha actual
+    fechaUltimoMonitoreo = None #Se obtiene llendo a la base de datos
+
+
+    st = SitioWeb(id,nombre ,url , propietario, fechaRegistro, fechaUltimoMonitoreo, archivos)
+
+    fechaAtual = None
+    analisis = Analisis(1, fechaAtual, "No terminado", "estatico", st)
 
     resultado = analisis.ejectutarEstatico()
 

@@ -120,5 +120,3 @@ class Vulberta(Herramienta):
 
         # 🔹 Devolvemos JSON legible, listo para Gemini o para mostrar directamente
         return jsonify({"url": url, "resultado": resultado})
-
-
