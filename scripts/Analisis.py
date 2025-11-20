@@ -1,5 +1,5 @@
-from scripts.SitioWeb import SitioWeb as s
 from scripts.vulberta_api import Vulberta as vt
+from scripts.Owaspzap import OwaspZap as ow
 
 class Analisis():
     def __init__(self, id, fecha, estado, tipo, sitio):
@@ -9,41 +9,49 @@ class Analisis():
         self.__tipo = tipo
         self.__sitio = sitio
     
-    def getId(self):
+    def get_id(self):
         return self.__idAnalisis
-    def getFecha(self):
+    def get_fecha(self):
         return self.__fecha 
     
-    def getEstado(self):
+    def getE_estado(self):
         return self.__estado
     
-    def getTipo(self):
+    def get_tipo(self):
         return self.__tipo
 
-    def getSitio(self):
+    def get_sitio(self):
         return self.__sitio
     
-    def ejectutarDinamico(sitio):
-        pass
-    
-    def ejectutarEstatico(self):
-        sitio = self.getSitio()
-        url = sitio.getUrl()
+    def ejectutar_dinamico(self):
+        sitio = self.get_sitio()
         
-        id_herramienta = None #Se va a la base de datos, y se verifica el maximo y se le suma 1
 
-        herramienta = vt(
-            id=id_herramienta,
+        herramienta = ow(
             nombre="VulBERTa",
             version="1.0",
-            tipo="estatico",
-            analisis=self
+
 
         )
 
-        resultado = herramienta.analizar_url(url)
+        
+        resultado = herramienta.scan_activo(sitio.get_url())
         return resultado
+        
+    
+    def ejectutar_estatico(self):
+        sitio = self.get_sitio()
+
+        herramienta = vt(
+            nombre="VulBERTa",
+            version="1.0",
+        )
+
+        resultadoVulbERTa = herramienta.analizar_sitio(sitio)
 
 
-    def ejectutarVirusTotal(sitio):
+        return resultadoVulbERTa
+
+
+    def ejectutar_virus_total(sitio):
         pass

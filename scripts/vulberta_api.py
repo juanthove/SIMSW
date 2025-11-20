@@ -2,29 +2,21 @@ import sys
 import os
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
+from scripts.Fragmento import Fragmento
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from scripts.Herramienta import Herramienta
 
-import requests
-from bs4 import BeautifulSoup
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-#from vulberta.analyzer import analizar_texto
+from flask import  jsonify
+
+
+from scripts.tools import separar_codigo
+
 
 
 class Vulberta(Herramienta):
-    def __init__(self, id, nombre, version, tipo, analisis):
-        super().__init__(id, nombre, version, tipo, analisis)
-
-        self.__eventos_inline = [
-            "onclick", "onmouseover", "onmouseout", "onchange",
-            "onfocus", "onblur", "onsubmit", "onkeydown", "onkeyup"
-        ]
-        self.__max_scripts = 20
-        self.__max_events = 50
-        self.__max_chars_script = 2000
-        self.__max_chars = 50_000
+    def __init__(self,nombre, version):
+        super().__init__(nombre, version)
 
         self.__MODEL_PATH = "vulberta/models"
         self.__CLASES = ["No vulnerable", "Vulnerable"] #Etiquetas para cada clase del modelo
@@ -38,79 +30,68 @@ class Vulberta(Herramienta):
             raise RuntimeError(f"Error al cargar el modelo/tokenizer: {e}")
 
 
-    def extraer_codigo(self,url):
-        try:
-            r = requests.get(url, timeout=10)
-            r.raise_for_status()
-        except Exception as e:
-            return None, str(e)
-
-        soup = BeautifulSoup(r.text, 'html.parser')
-
-        # 1️⃣ Scripts internos
-        scripts = [s.get_text()[:self.__max_chars_script] for s in soup.find_all('script') if s.get_text()]
-        scripts = scripts[:self.__max_scripts]
-
-        # 2️⃣ Eventos inline
-        eventos = []
-        for ev in self.__eventos_inline:
-            eventos += [tag[ev] for tag in soup.find_all(attrs={ev: True})]
-        eventos = eventos[:self.__max_events]
-
-        # 3️⃣ Combinar scripts y eventos y truncar
-        codigo = "\n".join(scripts + eventos)
-        if len(codigo) > self.__max_chars:
-            codigo = codigo[:self.__max_chars]
-
-        return codigo, None
-
+    
+    #512
     def analizar_texto(self, texto, chunk_size=512):
         resultados = []
 
-        # Tokenizamos el código fuente completo → tensor de IDs numéricos
-        tokens = self.__tokenizer(
-            texto,
-            truncation=False,
-            add_special_tokens=True,
-            return_tensors="pt"
-        )["input_ids"][0]
+        # 🔹 Verificar tipo y contenido del texto
+        if not isinstance(texto, str) or not texto.strip():
+            return [{
+                "error": "Texto vacío o tipo inválido",
+                "label": "Error",
+                "confidence": 0.0
+            }]
 
-        num_tokens = tokens.shape[0]
+        try:
+            # Tokenizamos el código fuente completo → tensor de IDs numéricos
+            tokens = self.__tokenizer(
+                texto,
+                truncation=False,
+                add_special_tokens=True,
+                return_tensors="pt"
+            )["input_ids"][0]
 
-        # Analizamos en bloques de 512 tokens
-        for i in range(0, num_tokens, chunk_size):
-            # Selecciona el fragmento actual y le agrega dimensión batch
-            chunk = tokens[i:i + chunk_size].unsqueeze(0)
+            num_tokens = tokens.shape[0]
 
-            # Inferencia sin gradientes (más rápido, menos memoria)
-            with torch.no_grad():
-                outputs = self.__model(chunk)
-                probs = torch.softmax(outputs.logits, dim=-1).tolist()[0]
-                pred_idx = probs.index(max(probs))
-                label = self.__CLASES[pred_idx]
-                confidence = round(max(probs), 3)
+            # Analizamos en bloques de 512 tokens
+            for i in range(0, num_tokens, chunk_size):
+                chunk = tokens[i:i + chunk_size].unsqueeze(0)
 
-                # Diccionario base con la información del fragmento
-                resultado = {
-                    "fragment": i // chunk_size + 1,
-                    "label": label,
-                    "confidence": confidence
-                }
+                with torch.no_grad():
+                    outputs = self.__model(chunk)
+                    probs = torch.softmax(outputs.logits, dim=-1).tolist()[0]
+                    pred_idx = probs.index(max(probs))
+                    label = self.__CLASES[pred_idx]
+                    confidence = round(max(probs), 3)
 
-                # mostrar su es vulnerable
-                if label == "Vulnerable":
+                    resultado = {
+                        "fragment": i // chunk_size + 1,
+                        "label": label,
+                        "confidence": confidence
+                    }
+
+                    
                     code_fragment = self.__tokenizer.decode(
                         chunk[0],
                         skip_special_tokens=True
                     )
                     resultado["code_fragment"] = code_fragment
-                    print("\n Fragmento vulnerable detectado:")
-                    print(code_fragment)
 
-                resultados.append(resultado)
-        
+                    resultados.append(resultado)
+
+        except Exception as e:
+            # 🔹 Captura cualquier error (tokenización, modelo, etc.)
+            resultados.append({
+                "error": str(e),
+                "label": "Error",
+                "confidence": 0.0
+            })
+
         return resultados
+
     
+
     def analizar_url(self,url):
         codigo, error = self.extraer_codigo(url)
         if error:
@@ -120,3 +101,57 @@ class Vulberta(Herramienta):
 
         # 🔹 Devolvemos JSON legible, listo para Gemini o para mostrar directamente
         return jsonify({"url": url, "resultado": resultado})
+    
+    def analizar_sitio(self, sitio):
+        archivos = sitio.get_archivos()
+
+        print("==== Lista de archivos que llegan ====")
+        for a in archivos:
+            print(f"ID: {a.get_id()} - Tipo: {a.get_tipo()} - Largo: {len(a.get_codigo() or '')}")
+
+
+        #FragmentarArchivos de a mil
+        fragmentos = []
+        
+        
+        for item in archivos:
+            id = 0
+            codigo = item.get_codigo()
+            if not codigo or not isinstance(codigo, str):
+                continue  # saltar si no hay contenido válido
+            idArchivo = item.get_id()
+            largoNoFr = len(codigo)
+            print(f"El largo del archivo con id {idArchivo} sin frag es: {largoNoFr}")
+            fragmento = separar_codigo(codigo)
+            
+            for parte in fragmento:
+                resultadoAnalisisFragmento = self.analizar_texto(parte)
+                for r in resultadoAnalisisFragmento:
+                    # Si hay error, no intentamos leer code_fragment
+                    if "error" in r:
+                        print(f"[ERROR] Modelo devolvió error: {r['error']}")
+                        continue
+
+                    label = r["label"]
+                    confidence = r["confidence"]
+
+                    # Recuperamos el fragmento del código de forma segura
+                    code_fragment = r.get("code_fragment")
+                    if not code_fragment:
+                        print(f"[WARN] No se recibió code_fragment. Resultado: {r}")
+                        continue
+                    
+                    #Cambiar este id, ya que se repita: 1.2.3, despues 1,2,3 y asi. Ver si se puede usar el id de la variable  id += 1
+                    #idFragment = r["fragment"]
+                    idFragment = id
+                    fr = Fragmento(idFragment, idArchivo, label, confidence, code_fragment)
+                    fragmentos.append(fr)
+
+                    print(f"Analisis: {idArchivo,idFragment}, con largo: {len(code_fragment)}")
+                    id += 1
+        
+
+        return fragmentos
+    
+
+    
