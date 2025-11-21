@@ -1,0 +1,4 @@
+#resultado {
+  white-space: pre;       /* Mantiene los espacios y saltos de línea como están */
+  overflow-x: auto;       /* Permite scroll horizontal si el contenido excede el ancho */
+}

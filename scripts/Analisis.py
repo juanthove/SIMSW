@@ -1,0 +1,57 @@
+from scripts.vulberta_api import Vulberta as vt
+from scripts.Owaspzap import OwaspZap as ow
+
+class Analisis():
+    def __init__(self, id, fecha, estado, tipo, sitio):
+        self.__idAnalisis = id
+        self.__fecha = fecha
+        self.__estado = estado
+        self.__tipo = tipo
+        self.__sitio = sitio
+    
+    def get_id(self):
+        return self.__idAnalisis
+    def get_fecha(self):
+        return self.__fecha 
+    
+    def getE_estado(self):
+        return self.__estado
+    
+    def get_tipo(self):
+        return self.__tipo
+
+    def get_sitio(self):
+        return self.__sitio
+    
+    def ejectutar_dinamico(self):
+        sitio = self.get_sitio()
+        
+
+        herramienta = ow(
+            nombre="VulBERTa",
+            version="1.0",
+
+
+        )
+
+        
+        resultado = herramienta.scan_activo(sitio.get_url())
+        return resultado
+        
+    
+    def ejectutar_estatico(self):
+        sitio = self.get_sitio()
+
+        herramienta = vt(
+            nombre="VulBERTa",
+            version="1.0",
+        )
+
+        resultadoVulbERTa = herramienta.analizar_sitio(sitio)
+
+
+        return resultadoVulbERTa
+
+
+    def ejectutar_virus_total(sitio):
+        pass
