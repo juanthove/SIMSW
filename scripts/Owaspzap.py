@@ -1,4 +1,6 @@
 import os
+import tempfile
+
 
 from zapv2 import ZAPv2
 
@@ -67,4 +69,6 @@ class OwaspZap(Herramienta):
     def scan_pasivo(self,url):
         print(url)
         return 0
+    
 
+    

@@ -3,6 +3,7 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
+import hashlib
 
 
 from pprint import pprint
@@ -49,29 +50,86 @@ def formatear_js_basico(codigo: str) -> str:
     return "\n".join(indentado)
 
 
-def guardar_scripts_internos(scripts_dict: dict, carpeta_destino: str):
+def url_a_nombre_carpeta(url: str) -> str:
+    # Reemplaza cualquier carácter que no sea alfanumérico, punto, guion o guion bajo por "_"
+    if not url:  # None o cadena vacía
+        return "url_vacia"
+    return re.sub(r'[^a-zA-Z0-9._-]', '_', str(url))
+
+
+def nombre_archivo_seguro(nombre: str) -> str:
+    # normalizar caracteres
+    base = re.sub(r'[^a-zA-Z0-9._-]', '_', nombre)
+
+    # limitar tamaño (Windows máx. 255 chars por nombre)
+    if len(base) > 80:
+        base = base[:80]
+
+    # agregar hash para evitar colisiones
+    h = hashlib.md5(nombre.encode("utf-8", errors="ignore")).hexdigest()
+
+    return f"{base}__{h}"
+
+def guardar_scripts_internos2(nombre, codigo, carpeta_destino: str):
     """
-    Guarda los scripts internos en archivos .js
+    Guarda los scripts internos, exernos, etc; en archivos .js
     Nombre del archivo = clave del diccionario
     Contenido = valor del diccionario
     Se aplica formateo básico antes de guardar
     """
-
     os.makedirs(carpeta_destino, exist_ok=True)
 
+    rutas = []
+
+    
+    if not nombre:
+        nombre = "sin_nombre"
+
+    nombre_limpio = nombre_archivo_seguro(str(nombre))
+    ruta_archivo = os.path.join(carpeta_destino, f"{nombre_limpio}.js")
+    rutas.append(ruta_archivo)
+
+    if codigo is None:
+        codigo_formateado = "// Código no disponible\n"
+    else:
+        codigo_formateado = formatear_js_basico(str(codigo))
+
+    with open(ruta_archivo, "w", encoding="utf-8") as f:
+        f.write(codigo_formateado)
+
+    return rutas
+
+
+def guardar_scripts_internos(scripts_dict: dict, carpeta_destino: str):
+    """
+    Guarda los scripts internos, exernos, etc; en archivos .js
+    Nombre del archivo = clave del diccionario
+    Contenido = valor del diccionario
+    Se aplica formateo básico antes de guardar
+    """
+    os.makedirs(carpeta_destino, exist_ok=True)
+
+    rutas = []
+
     for nombre, codigo in scripts_dict.items():
-        # Limpiar nombre del archivo
-        nombre_limpio = re.sub(r'[^a-zA-Z0-9_\-\.]', '_', nombre)
+        if not nombre:
+            nombre = "sin_nombre"
 
+        nombre_limpio = nombre_archivo_seguro(str(nombre))
         ruta_archivo = os.path.join(carpeta_destino, f"{nombre_limpio}.js")
+        rutas.append(ruta_archivo)
 
-        # Formatear el código antes de guardar
-        codigo_formateado = formatear_js_basico(codigo)
+        if codigo is None:
+            codigo_formateado = "// Código no disponible\n"
+        else:
+            codigo_formateado = formatear_js_basico(str(codigo))
 
         with open(ruta_archivo, "w", encoding="utf-8") as f:
             f.write(codigo_formateado)
 
-    return True
+    return rutas
+
+    
 
 def separar_codigo(codigo, tamano=2000):
     return [codigo[i:i+tamano] for i in range(0, len(codigo), tamano)]
@@ -79,8 +137,7 @@ def separar_codigo(codigo, tamano=2000):
 
 def extraer_scripts_con_playwright(url: str, headless: bool = True, timeout: int = 30000):
     """
-    + Ahora también captura eventos inline: onclick, onmouseover, etc.
-    El resultado agrega la key: 'eventos_inline'
+    Dada una url, devuelve los scripts internos, externos, de network, blob y los eventos inline
     """
 
     resultado = {
@@ -94,7 +151,7 @@ def extraer_scripts_con_playwright(url: str, headless: bool = True, timeout: int
     seen_external = set()
     eventos_inline = {}  # NUEVO
 
-    with sync_playwright() as p:
+    with sync_playwright() as p: #- sync_playwright() inicializa Playwright en modo sincrónico.
         browser = p.chromium.launch(headless=headless)
         context = browser.new_context()
         page = context.new_page()

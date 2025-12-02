@@ -15,8 +15,7 @@ class Archivo:
             "url": self.__url,
             "checksum": self.__checksum,
             "tipo": self.__tipo,
-            "largo": self.__largo,
-            "codigo": self.__codigo,
+            "largo": self.__largo
         }
     
     def get_id(self):

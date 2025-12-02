@@ -156,8 +156,15 @@ def analizar_dinamico():
 
     resultado = analisis.ejectutar_dinamico()
 
+            
+
     return jsonify({"url": url, "resultado": resultado})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
     
+
+
+#https://mixy.ba/webplala/sso.login/ Esta url es vulnerable
+
+#https://app.y.gy/captcha?&id=295481 Otro vulnerable

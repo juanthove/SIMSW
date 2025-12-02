@@ -1,5 +1,8 @@
 from scripts.vulberta_api import Vulberta as vt
 from scripts.Owaspzap import OwaspZap as ow
+from scripts.EnviarAlerta import EnviarAlerta
+import os
+import dotenv
 
 class Analisis():
     def __init__(self, id, fecha, estado, tipo, sitio):
@@ -36,6 +39,31 @@ class Analisis():
 
         
         resultado = herramienta.scan_activo(sitio.get_url())
+
+        #Mando mensaje en caso de encontrar vulnerabilidad high
+
+        
+        for item in resultado:
+            if(item["riesgo"] == "High"):
+                alerta = EnviarAlerta()
+                
+                #En caso de hacerlo desde .env
+                destinatario = os.getenv("GMAIL_DESTINATARIO")
+
+                #En el caso de hacerlo con gmail, lo saco de SitioWeb.propietario
+
+                #destinatario = self.get_sitio().get_propietario()
+
+                asunto = "Alerta de nivel alto encontrada"
+                contenido = "Nombre de la alerta: " + item["name"]
+
+
+                alerta.enviar_alerta(destinatario, asunto, contenido)
+            #Esto lo hago porque salen pocos altos; borrar despues.    
+            elif(item["riesgo"] == "Medium"):
+                print("Encontre un medium")
+
+
         return resultado
         
     
