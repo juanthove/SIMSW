@@ -6,6 +6,7 @@ from urllib.parse import urljoin
 import hashlib
 
 
+
 from pprint import pprint
 import requests
 
@@ -98,6 +99,24 @@ def guardar_scripts_internos2(nombre, codigo, carpeta_destino: str):
         f.write(codigo_formateado)
 
     return rutas
+
+def guardar_scripts_internos_sin_formato(nombre, codigo, carpeta_destino):
+    os.makedirs(carpeta_destino, exist_ok=True)
+
+    if not nombre:
+        nombre = "sin_nombre"
+
+    nombre_limpio = nombre_archivo_seguro(str(nombre))
+    ruta_archivo = os.path.join(carpeta_destino, f"{nombre_limpio}.js")
+
+    if codigo is None:
+        codigo = "// Código no disponible\n"
+
+    with open(ruta_archivo, "w", encoding="utf-8") as f:
+        f.write(codigo)
+
+    return ruta_archivo
+
 
 
 def guardar_scripts_internos(scripts_dict: dict, carpeta_destino: str):
@@ -319,6 +338,9 @@ def extraer_scripts_con_playwright(url: str, headless: bool = True, timeout: int
 
     return resultado
 
+
+
+
 '''res = extraer_scripts_con_selenium("https://www.iana.org/help/example-domains", True)
 
 
@@ -364,3 +386,14 @@ Eventos inline detectados: 0
 para la url = "https://www.youtube.com/watch?v=WBZlcr4SE78"
 
 """
+
+
+
+
+# json = """
+# content='```json\n[\n  {\n    "id": 2,\n    "idArchivo": 1,\n    "tipo_vulnerabilidad": "Prototype Pollution",\n    "descripcion": "La función de mezcla profunda \'ce.extend\' itera sobre propiedades de objetos de entrada. Aunque hay una comprobación explícita para `__proto__`, un atacante podría manipular las propiedades del objeto de entrada para inyectar o modificar propiedades en `Object.prototype` o `Array.prototype` (Prototype Pollution), lo que podría afectar el comportamiento de la aplicación en otras partes y llevar a otras vulnerabilidades.",\n    "nivel": "Low",\n    "ubicacion": "función: ce.extend, fragmento: `for ( t in e ) r = e [ t ], \\"_ _proto __\\"!= = t && a!= = r && ( l && r && ( ce. is Plain Object ( r ) || ( i = Array. is Array ( r ) ) )? ( n = a [ t ], o = i &&! Array. is Array ( n )? [ ] : i || ce. is Plain Object ( n )? n : { }, i =! 1, a [ t ] = ce. extend ( l, o, r ) ) : void 0!= = r && ( a [ t ] = r ) ) ;`"\n  },\n  {\n    "id": 5,\n    "idArchivo": 1,\n    "tipo_vulnerabilidad": "Falso Positivo",\n    "descripcion": "La función \'ce.escapeSelector\' es una medida de seguridad diseñada para escapar selectores CSS, no una vulnerabilidad en sí misma. Su propósito es prevenir la inyección de CSS malicioso cuando se utiliza entrada de usuario en selectores.",\n    "nivel": "None",\n    "ubicacion": "función: ce.escapeSelector, fragmento: `ce. escape Selector = function ( e ) { return ( e + \\"\\" ). replace ( f, p ) } ;`"\n  },\n  {\n    "id": 22,\n    "idArchivo": 1,\n    "tipo_vulnerabilidad": "Falso Positivo",\n    "descripcion": "Este fragmento de código parece ser parte de un motor de análisis de selectores o una utilidad de procesamiento de cadenas. No hay evidencia directa de una vulnerabilidad de seguridad, ya que solo muestra la lógica de análisis y tokenización de cadenas, no la renderización insegura de HTML o la ejecución de código.",\n    "nivel": "None",\n    "ubicacion": "fragmento: `if (! n ) break } return t? a. length : a? I. error ( e ) : c ( e, s ). slice ( 0 ) } function Q ( e ) { for ( var t = 0, n = e. length, r = \\"\\" ; t < n ; t ++ ) r += e [ t ]. value ; return r }`"\n  },\n  {\n    "id": 43,\n    "idArchivo": 1,\n    "tipo_vulnerabilidad": "XSS (Cross-Site Scripting)",\n    "descripcion": "La lógica de procesamiento de atributos `data-` incluye una llamada a `JSON.parse(i)` donde `i` es el valor recuperado directamente de un atributo `data-` del DOM (`e.getAttribute(r)`). Si un atacante puede inyectar HTML y controlar el contenido de estos atributos, y los datos resultantes de `JSON.parse` se utilizan posteriormente de forma insegura (ej., insertados en `innerHTML` sin sanitización), podría conducir a una vulnerabilidad de Cross-Site Scripting (XSS).",\n    "nivel": "Medium",\n    "ubicacion": "contexto: procesamiento de data-attributes, fragmento: `try { n = \\"true\\" == = ( i = n ) || \\"false\\"!= = i && ( \\"null\\" == = i? null : i == = + i + \\"\\"? + i : X. test ( i )? JSON. parse ( i ) : i ) } catch ( e ) { }`"\n  },\n  {\n    "id": 72,\n    "idArchivo": 1,\n    "tipo_vulnerabilidad": "Inyección CSS",\n    "descripcion": "La función `ce.style` permite la asignación directa de valores (`n`) a propiedades CSS de un elemento (`e.style`). Si un atacante puede controlar el valor de `n` (por ejemplo, a través de entrada de usuario no sanitizada), podría inyectar CSS malicioso. Esto puede llevar a la desfiguración de la interfaz, el robo de datos (mediante exfiltración CSS) o, en ciertos navegadores o configuraciones, la ejecución de JavaScript (ej., `url(\'javascript:...\')`).",\n    "nivel": "Medium",\n    "ubicacion": "función: ce.style, fragmento: `style : function ( e, t, n, r ) { if ( e && 3!= = e. node Type && 8!= = e. node Type && e. style ) { var i, o, a, s = F ( t ), u = ze. test ( t ), l = e. style ;`"\n  },\n  {\n    "id": 75,\n    "idArchivo": 1,\n    "tipo_vulnerabilidad": "Inyección CSS",\n    "descripcion": "Este fragmento de código refuerza la vulnerabilidad de inyección CSS. Contiene la asignación directa `e.style[u] = t` y la llamada a `ce.style(e, t, n)`. Si la entrada `t` o `n` es controlada por un atacante y no está debidamente sanitizada, se pueden inyectar estilos CSS arbitrarios, lo que conlleva los mismos riesgos de inyección CSS mencionados en el fragmento ID 72.",\n    "nivel": "Medium",\n    "ubicacion": "función: ce.fn.extend.css, fragmento: `s && ( r = Y. exec ( t ) ) && \\"p x\\"!= = ( r [ 3 ] || \\"p x\\" ) && ( e. style [ u ] = t, t = ce. css ( e, u ) ), rt ( 0, t, s ) } } } ), ... return void 0!= = n? ce. style ( e, t, n ) : ce. css ( e, t )`"\n  },\n  {\n    "id": 101,\n    "idArchivo": 1,\n    "tipo_vulnerabilidad": "Redirección Abierta",\n    "descripcion": "La asignación de `v.url` (`v.url = ((e || v.url || E t.href) + \\"\\").replace($t, E t.protocol + \\"//\\")`) utiliza la variable `e` como una posible fuente de la URL. Si esta variable `e` puede ser controlada por el usuario (por ejemplo, a través de un parámetro de URL) y no se valida adecuadamente contra una lista blanca de dominios permitidos, un atacante podría manipular la URL para redirigir a los usuarios a sitios maliciosos (phishing o malware).",\n    "nivel": "Medium",\n    "ubicacion": "contexto: configuración de petición AJAX, fragmento: `v. url = ( ( e || v. url || E t. href ) + \\"\\" ). replace ( $ t, E t. protocol + \\"/ /\\" ), v. type = t. method || t. type || v. method || v. type, v. data Types = ( v. dataType || \\"*\\" ). toLower Case ( ). match ( D ) || [ \\"\\" ], null == v. cross Domain )`"\n  }\n]\n```' additional_kwargs={} response_metadata={'prompt_feedback': {'block_reason': 0, 'safety_ratings': []}, 'finish_reason': 'STOP', 'model_name': 'gemini-2.5-flash', 'safety_ratings': [], 'grounding_metadata': {}, 'model_provider': 'google_genai'} id='lc_run--c61b9593-8481-4afb-8cde-17e929f5d073-0' usage_metadata={'input_tokens': 4009, 'output_tokens': 11175, 'total_tokens': 15184, 'input_token_details': {'cache_read': 0}, 'output_token_details': {'reasoning': 9453}}
+# """
+
+# res = formatear_js_basico(json)
+
+# print(res)

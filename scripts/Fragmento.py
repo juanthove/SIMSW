@@ -15,6 +15,10 @@ class Fragmento():
             "code_fragment": self.__codeFragment
             
         }
+    
+    def get_id(self):
+        return self.__id
+
     def get_id_archivo(self):
         return self.__idArchivo
     

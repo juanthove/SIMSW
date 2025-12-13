@@ -59,9 +59,6 @@ class Analisis():
 
 
                 alerta.enviar_alerta(destinatario, asunto, contenido)
-            #Esto lo hago porque salen pocos altos; borrar despues.    
-            elif(item["riesgo"] == "Medium"):
-                print("Encontre un medium")
 
 
         return resultado
@@ -76,8 +73,13 @@ class Analisis():
         )
 
         resultadoVulbERTa = herramienta.analizar_sitio(sitio)
+        
+        #Llamar a LLM, para que verifique los fragmentos vulnerables analizados
+        #Pedir que arme un json: tipo, nivelRiesgo. 
+        #En caso de tener un nivel de riesgo high, llamar a EnviarAlerta
+        #Enviar esos datos como cuerpo del gmail. 
 
-
+        
         return resultadoVulbERTa
 
 
