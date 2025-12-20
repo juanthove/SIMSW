@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle</title>
+
+    <link href="../static/css/main.css" rel="stylesheet" type="text/css">
+    <link href="../static/css/analysis-detail.css" rel="stylesheet" type="text/css">
+    <link href="../static/css/responsive.css" rel="stylesheet" type="text/css">
+    <script src="../static/js/init.js" defer></script>
+    <script src="../static/js/analysis-detail.js" defer></script>
+</head>
+<body>
+    <div id="navBarDiv"></div>
+
+    <main class="contenedor">
+
+        <header class="encabezado">
+            <h1 id="titulo"></h1>
+            <span id="nivel" class="badge"></span>
+        </header>
+
+        <section class="info-general">
+            <div><strong>Sitio:</strong> <span id="sitio"></span></div>
+            <div><strong>URL:</strong> <a id="url" target="_blank"></a></div>
+            <div><strong>Fecha:</strong> <span id="fecha"></span></div>
+            <div><strong>Fuente:</strong> <span id="fuente"></span></div>
+        </section>
+
+        <section class="bloque">
+            <h2>Descripción</h2>
+            <p id="descripcion"></p>
+        </section>
+
+        <section class="bloque">
+            <h2>Impacto</h2>
+            <p id="impacto"></p>
+        </section>
+
+        <section class="bloque">
+            <h2>Recomendación</h2>
+            <p id="recomendacion"></p>
+        </section>
+
+        <section class="bloque">
+            <h2>Evidencia</h2>
+            <p id="evidencia"></p>
+        </section>
+
+        <!-- Código (opcional) -->
+        <section class="bloque" id="bloqueCodigo" hidden>
+            <h2>Código Analizado</h2>
+            <pre><code id="codigo"></code></pre>
+        </section>
+
+    </main>
+
+</body>
+</html>

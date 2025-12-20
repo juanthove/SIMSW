@@ -5,15 +5,15 @@ if (navBar) {
 
   navBar.innerHTML = `
     <nav id="navbar">
-        <h1>SIMSW</h1>
+        <a href="index.html" id="paginaPrincipal"><h2>SIMSW</h2></a>
 
         <div id="botonEncabezado">
             <div id="analysis">
                 <div id="analysis-container">
                     <a href="#" id="analysisBoton">Análisis</a>
                     <div id="analysis-menu">
-                        <a href="analysis.html">Realizar Análisis</a>
-                        <a href="analysis.html">Ver Análisis</a>
+                        <a href="analysis-create.html">Realizar Análisis</a>
+                        <a href="analysis.html">Ver Listado Análisis</a>
                     </div>
                 </div>
                 <a href="register.html">Registrar página web</a>

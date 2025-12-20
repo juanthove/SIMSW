@@ -1,0 +1,117 @@
+/*Buscador*/
+.analysisToolbar {
+  margin-bottom: 1em;
+  display: flex;
+  justify-content: flex-start;
+}
+
+#buscadorAnalisis {
+  padding: 8px 12px;
+  width: 300px;
+  font-size: 14px;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+}
+
+#buscadorAnalisis:focus {
+  outline: none;
+  border-color: #999;
+}
+
+th.sortable {
+  position: relative;
+  cursor: pointer;
+  padding-right: 18px;
+  user-select: none;
+}
+
+/*Flecha arriba*/
+th.sortable::before {
+  content: "";
+  position: absolute;
+  right: 6px;
+  top: 40%;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-bottom: 6px solid #666666;
+  opacity: 0.3;
+}
+
+/*Flecha abajo*/
+th.sortable::after {
+  content: "";
+  position: absolute;
+  right: 6px;
+  top: 55%;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 6px solid #666666;
+  opacity: 0.3;
+}
+
+/*Activo ascendente*/
+th.sortable.asc::before {
+  opacity: 1;
+}
+
+/*Activo descendente*/
+th.sortable.desc::after {
+  opacity: 1;
+}
+
+/*Tabla general*/
+.tablaBase {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #ffffff;
+  color: #000000;
+}
+
+/*Encabezado*/
+.tablaBase thead {
+  background-color: #f2f2f2; /* gris claro */
+  border-bottom: 2px solid #d0d0d0;
+}
+
+.tablaBase th {
+  padding: 10px 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
+  border-right: 1px solid #e0e0e0;
+}
+
+/*Última columna sin borde*/
+.tablaBase th:last-child,
+.tablaBase td:last-child {
+  border-right: none;
+}
+
+/*Filas*/
+.tablaBase tbody tr {
+  border-bottom: 1px solid #e6e6e6;
+}
+
+.tablaBase tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+/*Celdas*/
+.tablaBase td {
+  padding: 10px 12px;
+  font-size: 14px;
+  vertical-align: middle;
+}
+
+td[data-vuln="Alta"] {
+  color: #c0392b;
+}
+
+td[data-vuln="Media"] {
+  color: #d68910;
+}
+
+td[data-vuln="Baja"] {
+  color: #27ae60;
+}

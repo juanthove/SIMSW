@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analisis</title>
+
+    <link href="../static/css/main.css" rel="stylesheet" type="text/css">
+    <link href="../static/css/analysis.css" rel="stylesheet" type="text/css">
+    <link href="../static/css/responsive.css" rel="stylesheet" type="text/css">
+    <script src="../static/js/init.js" defer></script>
+    <script src="../static/js/analysis.js" defer></script>
+</head>
+<body>
+    <div id="navBarDiv"></div>
+    
+    <h1>Analisis realizados</h1>
+
+    <section class="contenedorAnalysis">
+
+    <div class="analysisToolbar">
+        <input
+        type="text"
+        id="buscadorAnalisis"
+        placeholder="Buscar por URL..."
+        />
+    </div>
+
+    <table id="tablaAnalisis" class="tablaBase">
+        <thead>
+            <tr>
+            <th class="sortable" data-column="sitio">Sitio Web</th>
+            <th class="sortable" data-column="vulnerabilidad">Nivel Vulnerabilidad</th>
+            <th class="sortable" data-column="fecha">Fecha</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Datos -->
+        </tbody>
+    </table>
+
+    </section>
+
+    
+</body>
+</html>

@@ -25,7 +25,11 @@ body{
     font-size: clamp(0.8rem, 1.2vw, 1rem);
 }
 
-h1{
+#paginaPrincipal{
+    text-decoration: none;
+}
+
+#paginaPrincipal h2{
     font-size: 120%;
     background: linear-gradient(to right, rgb(221, 34, 221), rgb(233, 93, 191), rgb(42, 204, 182), skyblue);
     background-clip: text;
@@ -49,12 +53,10 @@ h1{
 #analysis a{
     text-decoration: none;
     color: white;
-    transition: transform 0.6s ease;
 }
 
 #analysis a:hover{
-    transform: scale(1.1);
-    color: rgb(143, 1, 226);
+    color: rgb(228, 228, 228);
 }
 
 #analysis-container {
@@ -97,12 +99,10 @@ h1{
 #config a{
     text-decoration: none;
     color: white;
-    transition: transform 0.6s ease;
 }
 
 #config a:hover{
-    transform: scale(1.1);
-    color: rgb(143, 1, 226);
+    color: rgb(228, 228, 228);
 }
 
 #botonMenu{
@@ -113,4 +113,3 @@ h1{
     color: white;
     cursor: pointer;
 }
-
