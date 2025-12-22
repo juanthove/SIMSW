@@ -16,7 +16,7 @@ if (navBar) {
                         <a href="analysis.html">Ver Listado Análisis</a>
                     </div>
                 </div>
-                <a href="register.html">Registrar página web</a>
+                <a href="site-create.html">Registrar página web</a>
             </div>
 
             <div id="config">

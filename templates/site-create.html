@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Sitio Web</title>
+
+
+    <link href="../static/css/main.css" rel="stylesheet" type="text/css">
+    <link href="../static/css/site-create.css" rel="stylesheet" type="text/css">
+    <link href="../static/css/responsive.css" rel="stylesheet" type="text/css">
+    <script src="../static/js/init.js" defer></script>
+    <script src="../static/js/site-create.js" defer></script>
+</head>
+<body>
+    <div id="navBarDiv"></div>
+
+    <main class="contenedorForm">
+        <h1>Registrar sitio web</h1>
+
+        <form id="formSitio" class="formBase">
+
+        <div class="campoForm">
+            <label for="nombre">Nombre del sitio</label>
+            <input type="text" id="nombre" name="nombre" placeholder="Ej: MiDominio" required>
+        </div>
+
+        <div class="campoForm">
+            <label for="url">URL</label>
+            <input type="url" id="url" name="url" placeholder="https://midominio.com" required>
+        </div>
+
+        <div class="campoForm">
+            <label for="propietario">Propietario</label>
+            <input type="text" id="propietario" name="propietario" placeholder="Empresa / Persona" required>
+        </div>
+
+        <div class="accionesForm">
+            <button type="submit" class="btnPrincipal">Registrar sitio</button>
+        </div>
+
+        </form>
+    </main>
+
+    
+</body>
+</html>

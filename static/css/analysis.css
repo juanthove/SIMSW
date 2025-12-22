@@ -70,7 +70,7 @@ th.sortable.desc::after {
 
 /*Encabezado*/
 .tablaBase thead {
-  background-color: #f2f2f2; /* gris claro */
+  background-color: #dddddd;
   border-bottom: 2px solid #d0d0d0;
 }
 
