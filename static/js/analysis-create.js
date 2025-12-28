@@ -16,7 +16,7 @@ const listaSitios = [
         url: "https://tiendaonline.net"
     }];
 
-const listaFiltrada = listaSitios;
+const listaFiltrada = [...listaSitios];
 
 //Obtengo la tabla
 const tablaSitios = document.querySelector("#tablaSitios tbody");

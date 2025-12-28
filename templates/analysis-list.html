@@ -9,7 +9,7 @@
     <link href="../static/css/analysis.css" rel="stylesheet" type="text/css">
     <link href="../static/css/responsive.css" rel="stylesheet" type="text/css">
     <script src="../static/js/init.js" defer></script>
-    <script src="../static/js/analysis.js" defer></script>
+    <script src="../static/js/analysis-list.js" defer></script>
 </head>
 <body>
     <div id="navBarDiv"></div>
@@ -22,15 +22,22 @@
         <input
         type="text"
         id="buscadorAnalisis"
-        placeholder="Buscar por URL..."
+        placeholder="Buscar por vulnerabilidad"
         />
+
+         <select id="filtroNivel">
+            <option value="">Todos</option>
+            <option value="Alta">Alta</option>
+            <option value="Media">Media</option>
+            <option value="Baja">Baja</option>
+        </select>
     </div>
 
     <table id="tablaAnalisis" class="tablaBase">
         <thead>
             <tr>
-            <th class="sortable" data-column="sitio">Sitio Web</th>
-            <th class="sortable" data-column="vulnerabilidad">Nivel Vulnerabilidad</th>
+            <th class="sortable" data-column="titulo">Vulnerabilidad</th>
+            <th class="sortable" data-column="vulnerabilidad">Nivel</th>
             <th class="sortable" data-column="fecha">Fecha</th>
             </tr>
         </thead>

@@ -16,7 +16,15 @@
     <div id="navBarDiv"></div>
 
     <main class="contenedorForm">
-        <h1>Registrar sitio web</h1>
+        <h1 id="tituloForm">Registrar sitio web</h1>
+
+
+        <div class="campoForm">
+            <label for="selectorSitio">Seleccionar sitio</label>
+            <select id="selectorSitio">
+                <option value="">Nuevo sitio</option>
+            </select>
+        </div>
 
         <form id="formSitio" class="formBase">
 
@@ -36,7 +44,7 @@
         </div>
 
         <div class="accionesForm">
-            <button type="submit" class="btnPrincipal">Registrar sitio</button>
+            <button type="submit" class="btnPrincipal" id="btnPrincipal">Registrar sitio</button>
         </div>
 
         </form>

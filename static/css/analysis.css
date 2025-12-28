@@ -3,6 +3,8 @@
   margin-bottom: 1em;
   display: flex;
   justify-content: flex-start;
+  align-items: center;
+  gap: 12px;
 }
 
 #buscadorAnalisis {
@@ -16,6 +18,28 @@
 #buscadorAnalisis:focus {
   outline: none;
   border-color: #999;
+}
+
+/*Filtro por nivel*/
+#filtroNivel {
+  padding: 8px 12px;
+  min-width: 140px;
+  font-size: 14px;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  background-color: #ffffff;
+  color: #000000;
+  cursor: pointer;
+}
+
+/*Quitar borde al seleccionar*/
+#filtroNivel:focus {
+  outline: none;
+  border-color: #999999;
+}
+
+#filtroNivel:hover {
+  border-color: #b0b0b0;
 }
 
 th.sortable {

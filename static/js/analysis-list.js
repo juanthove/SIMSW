@@ -1,38 +1,70 @@
 //Lista de analisis provicional
 const listaAnalisis = [
-    {
+  {
+    siteId: "1",
+    sitio: "https://example.com",
+    analisis: [
+      {
         id: "1",
-        sitio: "https://example.com",
+        titulo: "Exposición de credenciales en código cliente",
         vulnerabilidad: "Alta",
         fecha: "2025-12-10"
-    },
-    {
-        id: "2",
-        sitio: "https://midominio.com",
-        vulnerabilidad: "Media",
-        fecha: "2025-12-12"
-    },
-    {
+      },
+      {
         id: "3",
-        sitio: "https://example.com",
+        titulo: "Versiones de librerías desactualizadas",
         vulnerabilidad: "Baja",
         fecha: "2025-12-15"
-    },
-    {
-        id: "4",
-        sitio: "https://tiendaonline.net",
-        vulnerabilidad: "Baja",
-        fecha: "2025-12-16"
-    },
-    {
+      }
+    ]
+  },
+  {
+    siteId: "2",
+    sitio: "https://midominio.com",
+    analisis: [
+      {
+        id: "2",
+        titulo: "Falta de encabezados de seguridad HTTP",
+        vulnerabilidad: "Media",
+        fecha: "2025-12-12"
+      },
+      {
         id: "5",
-        sitio: "https://midominio.com",
+        titulo: "Endpoint expuesto sin autenticación",
         vulnerabilidad: "Alta",
         fecha: "2025-12-18"
-    }];
+      }
+    ]
+  },
+  {
+    siteId: "3",
+    sitio: "https://tiendaonline.net",
+    analisis: [
+      {
+        id: "4",
+        titulo: "Configuración de cookies mejorable",
+        vulnerabilidad: "Baja",
+        fecha: "2025-12-16"
+      }
+    ]
+  }
+];
+
+//Obtengo el id de la URL
+const params = new URLSearchParams(window.location.search);
+const siteId = params.get("siteId");
+
+//Obtengo solo los analisis del sitio seleccionado (CAMBIAR POR FETCH CUANDO TENGAMOS LA API)
+const sitioSeleccionado = listaAnalisis.find(
+  item => item.siteId === siteId
+);
+
+let listaFiltrada = sitioSeleccionado ? sitioSeleccionado.analisis : [];
 
 
-let listaFiltrada = listaAnalisis;
+
+
+
 
 //Orden para mostrar las vulnerabilidades por nivel
 const ordenVulnerabilidad = {
@@ -51,7 +83,7 @@ function mostrarListado(lista) {
         const tr = document.createElement("tr");
 
         tr.innerHTML = `
-        <td>${item.sitio}</td>
+        <td>${item.titulo}</td>
         <td data-vuln="${item.vulnerabilidad}">${item.vulnerabilidad}</td>
         <td>${item.fecha}</td>
         `;
@@ -93,6 +125,11 @@ encabezados.forEach(th => {
             B = ordenVulnerabilidad[B];
         }
 
+        if (columna === "titulo") {
+          A = A.toLowerCase();
+          B = B.toLowerCase();
+        }
+
         if (A < B) return asc ? -1 : 1; //El primer elemento va antes que el segundo
         if (A > B) return asc ? 1 : -1; //El segundo elemento va antes que el primero
         return 0;
@@ -102,18 +139,29 @@ encabezados.forEach(th => {
   });
 });
 
-//Buscador
+//Buscador y filtro por nivel
 const buscador = document.getElementById("buscadorAnalisis");
+const filtroNivel = document.getElementById("filtroNivel");
 
-buscador.addEventListener("input", () => {
+function aplicarFiltros() {
   const texto = buscador.value.toLowerCase();
+  const nivel = filtroNivel.value;
 
-  listaFiltrada = listaAnalisis.filter(item =>
-    item.sitio.toLowerCase().includes(texto)
-  );
+  listaFiltrada = sitioSeleccionado.analisis.filter(item => {
+    const coincideTexto =
+      item.titulo.toLowerCase().includes(texto);
+
+    const coincideNivel =
+      !nivel || item.vulnerabilidad === nivel;
+
+    return coincideTexto && coincideNivel;
+  });
 
   mostrarListado(listaFiltrada);
-});
+}
+
+buscador.addEventListener("input", aplicarFiltros);
+filtroNivel.addEventListener("change", aplicarFiltros);
 
 //Muestro la tabla al cargar la pagina
 mostrarListado(listaFiltrada);
