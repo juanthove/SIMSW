@@ -2,20 +2,23 @@
 const listaSitios = [
     {
         id: "1",
-        sitio: "Example",
+        nombre: "Example",
         url: "https://example.com",
+        cantAnalisis: "2",
         ultimoAnalisis: "2025-12-15"
     },
     {
         id: "2",
-        sitio: "MiDominio",
+        nombre: "MiDominio",
         url: "https://midominio.com",
+        cantAnalisis: "2",
         ultimoAnalisis: "2025-12-18"
     },
     {
         id: "3",
-        sitio: "TiendaOnline",
+        nombre: "TiendaOnline",
         url: "https://tiendaonline.net",
+        cantAnalisis: "1",
         ultimoAnalisis: "2025-12-16"
     }];
 
@@ -31,8 +34,9 @@ function mostrarSitios(lista) {
     const tr = document.createElement("tr");
 
     tr.innerHTML = `
-      <td>${item.sitio}</td>
+      <td>${item.nombre}</td>
       <td>${item.url}</td>
+      <td>${item.cantAnalisis}</td>
       <td>${item.ultimoAnalisis}</td>
     `;
 

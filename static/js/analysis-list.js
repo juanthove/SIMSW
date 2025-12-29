@@ -2,7 +2,9 @@
 const listaAnalisis = [
   {
     siteId: "1",
-    sitio: "https://example.com",
+    nombre: "Example",
+    url: "https://example.com",
+    propietario: "Pedro",
     analisis: [
       {
         id: "1",
@@ -20,7 +22,9 @@ const listaAnalisis = [
   },
   {
     siteId: "2",
-    sitio: "https://midominio.com",
+    nombre: "MiDominio",
+    url: "https://midominio.com",
+    propietario: "Juan",
     analisis: [
       {
         id: "2",
@@ -38,7 +42,9 @@ const listaAnalisis = [
   },
   {
     siteId: "3",
-    sitio: "https://tiendaonline.net",
+    nombre: "TiendaOnline",
+    url: "https://tiendaonline.net",
+    propietario: "Shop SA",
     analisis: [
       {
         id: "4",
@@ -62,8 +68,11 @@ const sitioSeleccionado = listaAnalisis.find(
 let listaFiltrada = sitioSeleccionado ? sitioSeleccionado.analisis : [];
 
 
-
-
+//Colocar info del sitio
+document.getElementById("nombreSitio").textContent = sitioSeleccionado.nombre;
+document.getElementById("propietarioSitio").textContent = sitioSeleccionado.propietario;
+document.getElementById("urlSitio").textContent = sitioSeleccionado.url;
+document.getElementById("cantidadAnalisis").textContent = listaFiltrada.length;
 
 
 //Orden para mostrar las vulnerabilidades por nivel

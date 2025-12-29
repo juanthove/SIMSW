@@ -18,33 +18,43 @@
 
     <section class="contenedorAnalysis">
 
-    <div class="analysisToolbar">
-        <input
-        type="text"
-        id="buscadorAnalisis"
-        placeholder="Buscar por vulnerabilidad"
-        />
+        <div class="infoSitio">
+            <h2 id="nombreSitio"></h2>
 
-         <select id="filtroNivel">
-            <option value="">Todos</option>
-            <option value="Alta">Alta</option>
-            <option value="Media">Media</option>
-            <option value="Baja">Baja</option>
-        </select>
-    </div>
+            <div class="infoSitioGrid">
+                <div><strong>Propietario:</strong> <span id="propietarioSitio"></span></div>
+                <div><strong>URL:</strong> <span id="urlSitio"></span></div>
+                <div><strong>Análisis realizados:</strong> <span id="cantidadAnalisis"></span></div>
+            </div>
+        </div>
 
-    <table id="tablaAnalisis" class="tablaBase">
-        <thead>
-            <tr>
-            <th class="sortable" data-column="titulo">Vulnerabilidad</th>
-            <th class="sortable" data-column="vulnerabilidad">Nivel</th>
-            <th class="sortable" data-column="fecha">Fecha</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Datos -->
-        </tbody>
-    </table>
+        <div class="analysisToolbar">
+            <input
+            type="text"
+            id="buscadorAnalisis"
+            placeholder="Buscar por vulnerabilidad"
+            />
+
+            <select id="filtroNivel">
+                <option value="">Todos</option>
+                <option value="Alta">Alta</option>
+                <option value="Media">Media</option>
+                <option value="Baja">Baja</option>
+            </select>
+        </div>
+
+        <table id="tablaAnalisis" class="tablaBase">
+            <thead>
+                <tr>
+                <th class="sortable" data-column="titulo">Vulnerabilidad</th>
+                <th class="sortable" data-column="vulnerabilidad">Nivel</th>
+                <th class="sortable" data-column="fecha">Fecha</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Datos -->
+            </tbody>
+        </table>
 
     </section>
 
