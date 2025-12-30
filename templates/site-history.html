@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analisis Historico</title>
+
+    <link href="../static/css/main.css" rel="stylesheet" type="text/css">
+    <link href="../static/css/site-history.css" rel="stylesheet" type="text/css">
+    <link href="../static/css/responsive.css" rel="stylesheet" type="text/css">
+    <script src="../static/js/init.js" defer></script>
+    <script src="../static/js/chart.umd.js"></script> <!--Script para hacer las graficas-->
+    <script src="../static/js/site-history.js" defer></script>
+</head>
+<body>
+    <div id="navBarDiv"></div>
+
+    <main class="history-container">
+
+        <section class="history-header">
+            <button id="btnVolver" class="back-button">←</button>
+            <h1>Histórico de Seguridad</h1>
+            <p class="history-subtitle">
+                Evolución de vulnerabilidades detectadas a lo largo del tiempo
+            </p>
+        </section>
+
+        <section class="history-summary">
+            <h2>Análisis General</h2>
+            <p id="llmSummary"><!--Texto de llm--></p>
+        </section>
+
+        <section class="history-chart">
+            <h2>Evolución de Vulnerabilidades por Severidad</h2>
+            <canvas id="severityTimelineChart"></canvas>
+        </section>
+
+        <section class="history-chart">
+            <h2>Riesgo Acumulado por Análisis</h2>
+            <canvas id="riskStackedChart"></canvas>
+        </section>
+
+        <section class="history-chart small">
+            <h2>Distribución Histórica de Severidades</h2>
+            <canvas id="severityDistributionChart"></canvas>
+        </section>
+
+    </main>
+
+</body>
+</html>

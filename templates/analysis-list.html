@@ -13,8 +13,11 @@
 </head>
 <body>
     <div id="navBarDiv"></div>
-    
-    <h1>Analisis realizados</h1>
+
+    <div class="pageHeader">
+        <button id="btnVolver" class="back-button">←</button>
+        <h1>Análisis realizados</h1>
+    </div>
 
     <section class="contenedorAnalysis">
 
@@ -29,18 +32,21 @@
         </div>
 
         <div class="analysisToolbar">
-            <input
-            type="text"
-            id="buscadorAnalisis"
-            placeholder="Buscar por vulnerabilidad"
-            />
+            <div class="filtrosIzq">
+                <input
+                type="text"
+                id="buscadorAnalisis"
+                placeholder="Buscar por vulnerabilidad"
+                />
 
-            <select id="filtroNivel">
-                <option value="">Todos</option>
-                <option value="Alta">Alta</option>
-                <option value="Media">Media</option>
-                <option value="Baja">Baja</option>
-            </select>
+                <select id="filtroNivel">
+                    <option value="">Todos</option>
+                    <option value="Alta">Alta</option>
+                    <option value="Media">Media</option>
+                    <option value="Baja">Baja</option>
+                </select>
+            </div>
+            <a href="#" id="btnHistorico">Ver histórico</a>
         </div>
 
         <table id="tablaAnalisis" class="tablaBase">
@@ -52,7 +58,7 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- Datos -->
+                <!--Datos-->
             </tbody>
         </table>
 

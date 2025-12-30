@@ -115,3 +115,16 @@ body{
     color: white;
     cursor: pointer;
 }
+
+/*Flecha para ir para atras*/
+.back-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #555555;
+}
+
+.back-button:hover {
+  color: #000000;
+}

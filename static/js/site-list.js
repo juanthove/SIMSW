@@ -4,7 +4,7 @@ const listaSitios = [
         id: "1",
         nombre: "Example",
         url: "https://example.com",
-        cantAnalisis: "2",
+        cantAnalisis: "4",
         ultimoAnalisis: "2025-12-15"
     },
     {
@@ -49,5 +49,47 @@ function mostrarSitios(lista) {
     tablaSitios.appendChild(tr);
   });
 }
+
+//Filtro ascendente y descendente
+const encabezados = document.querySelectorAll("#tablaSitios th.sortable");
+
+encabezados.forEach(th => {
+  th.addEventListener("click", () => {
+    const columna = th.dataset.column;
+    const asc = !th.classList.contains("asc"); //Si no hay una clase asc entonces es que se ordena ascendente
+
+    //Resetear las flechas
+    encabezados.forEach(h => h.classList.remove("asc", "desc"));
+
+    //Setear la flecha actual
+    th.classList.add(asc ? "asc" : "desc");
+
+    listaFiltrada.sort((a, b) => {
+        let A = a[columna];
+        let B = b[columna];
+
+        if (columna === "fecha") {
+            A = new Date(A);
+            B = new Date(B);
+        }
+
+        if (columna === "vulnerabilidad") {
+            A = ordenVulnerabilidad[A];
+            B = ordenVulnerabilidad[B];
+        }
+
+        if (columna === "titulo") {
+          A = A.toLowerCase();
+          B = B.toLowerCase();
+        }
+
+        if (A < B) return asc ? -1 : 1; //El primer elemento va antes que el segundo
+        if (A > B) return asc ? 1 : -1; //El segundo elemento va antes que el primero
+        return 0;
+    });
+
+    mostrarSitios(listaFiltrada);
+  });
+});
 
 mostrarSitios(listaSitios);

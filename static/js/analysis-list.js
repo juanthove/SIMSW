@@ -17,6 +17,18 @@ const listaAnalisis = [
         titulo: "Versiones de librerías desactualizadas",
         vulnerabilidad: "Baja",
         fecha: "2025-12-15"
+      },
+      {
+        id: "6",
+        titulo: "Endpoint crítico expuesto sin autenticación",
+        vulnerabilidad: "Alta",
+        fecha: "2025-12-20"
+      },
+      {
+        id: "7",
+        titulo: "Falta de encabezados de seguridad HTTP",
+        vulnerabilidad: "Media",
+        fecha: "2025-12-22"
       }
     ]
   },
@@ -171,6 +183,18 @@ function aplicarFiltros() {
 
 buscador.addEventListener("input", aplicarFiltros);
 filtroNivel.addEventListener("change", aplicarFiltros);
+
+//Analisis Historico
+document.getElementById("btnHistorico").addEventListener("click", (e) => {
+    e.preventDefault();
+    window.location.href = `site-history.html?id=${siteId}`;
+});
+
+//Volver a la lista de sitios
+document.getElementById("btnVolver").addEventListener("click", (e) => {
+    e.preventDefault();
+    window.location.href = `site-list.html`;
+});
 
 //Muestro la tabla al cargar la pagina
 mostrarListado(listaFiltrada);

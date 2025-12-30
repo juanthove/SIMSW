@@ -2,6 +2,7 @@
 const listaAnalisisDetalle = [
   {
     id: "1",
+    siteId: "1",
     sitio: "Example",
     url: "https://example.com",
     vulnerabilidad: "Alta",
@@ -21,6 +22,7 @@ const listaAnalisisDetalle = [
   },
   {
     id: "2",
+    siteId: "2",
     sitio: "MiDominio",
     url: "https://midominio.com",
     vulnerabilidad: "Media",
@@ -36,6 +38,7 @@ const listaAnalisisDetalle = [
   },
   {
     id: "3",
+    siteId: "1",
     sitio: "Example",
     url: "https://example.com",
     vulnerabilidad: "Baja",
@@ -51,6 +54,7 @@ const listaAnalisisDetalle = [
   },
   {
     id: "4",
+    siteId: "3",
     sitio: "TiendaOnline",
     url: "https://tiendaonline.net",
     vulnerabilidad: "Baja",
@@ -66,6 +70,7 @@ const listaAnalisisDetalle = [
   },
   {
     id: "5",
+    siteId: "2",
     sitio: "MiDominio",
     url: "https://midominio.com",
     vulnerabilidad: "Alta",
@@ -78,12 +83,55 @@ const listaAnalisisDetalle = [
     severidadNumerica: 3,
     fuenteAnalisis: "Análisis dinámico",
     fechaAnalisis: "2025-12-18T10:22:00"
+  },
+  {
+    id: "6",
+    siteId: "1",
+    sitio: "Example",
+    url: "https://example.com",
+    vulnerabilidad: "Alta",
+    fecha: "2025-12-20",
+    titulo: "Endpoint crítico expuesto sin autenticación",
+    descripcion: "Se identificó un endpoint sensible accesible sin ningún mecanismo de autenticación, permitiendo ejecutar operaciones administrativas desde el navegador.",
+    impacto: "Un atacante podría acceder, modificar o eliminar información crítica del sistema, comprometiendo completamente la integridad del sitio.",
+    recomendacion: "Implementar autenticación y autorización robusta en el endpoint, restringiendo el acceso por roles y validando sesiones.",
+    evidencia: "Petición GET a /api/admin/config devuelve información sensible sin token de acceso.",
+    severidadNumerica: 3,
+    fuenteAnalisis: "Análisis dinámico",
+    fechaAnalisis: "2025-12-20T16:45:00",
+    codigo: `
+      @app.route('/api/admin/config')
+      def admin_config():
+          return jsonify(config)
+    `
+  },
+  {
+    id: "7",
+    siteId: "1",
+    sitio: "Example",
+    url: "https://example.com",
+    vulnerabilidad: "Media",
+    fecha: "2025-12-22",
+    titulo: "Falta de encabezados de seguridad HTTP",
+    descripcion: "La aplicación no envía encabezados de seguridad recomendados, como Content-Security-Policy y X-Frame-Options, exponiendo el sitio a ataques del lado del cliente.",
+    impacto: "Podría facilitar ataques como clickjacking o la ejecución de scripts maliciosos en el navegador del usuario.",
+    recomendacion: "Configurar encabezados de seguridad HTTP adecuados en el servidor web o framework backend.",
+    evidencia: "Respuesta HTTP sin los encabezados CSP, X-Frame-Options y X-Content-Type-Options.",
+    severidadNumerica: 2,
+    fuenteAnalisis: "Análisis automático",
+    fechaAnalisis: "2025-12-22T11:10:00",
+    codigo: `
+      response = make_response(render_template("index.html"))
+      return response
+    `
   }
 ];
 
 
 const params = new URLSearchParams(window.location.search);
 const id = params.get("id");
+//Agarro el el analisis especifico
+const analisis = listaAnalisisDetalle.find(a => a.id === id);
 
 /*fetch(`https://tu-api.com/analisis/${id}`) Realizo el fetch (completar cuando se haga la base de datos)
   .then(res => res.json())
@@ -112,4 +160,10 @@ function mostrarDetalle(data) {
     }
 }
 
-mostrarDetalle(listaAnalisisDetalle.find(a => a.id === id));
+//Volver a la lista de analisis
+document.getElementById("btnVolver").addEventListener("click", (e) => {
+    e.preventDefault();
+    window.location.href = `analysis-list.html?siteId=${analisis.siteId}`;
+});
+
+mostrarDetalle(analisis);

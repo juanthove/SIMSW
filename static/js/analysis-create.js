@@ -49,6 +49,7 @@ function mostrarListado(lista) {
     enlazarBotonesAnalisis();
 }
 
+//Filtro ascendente y descendente
 const encabezados = document.querySelectorAll("#tablaSitios th.sortable");
 
 encabezados.forEach(th => {
@@ -66,7 +67,7 @@ encabezados.forEach(th => {
     //Setear la flecha actual
     th.classList.add(asc ? "asc" : "desc");
 
-    listaSitios.sort((a, b) => {
+    listaFiltrada.sort((a, b) => {
       let A = a[columna]?.toLowerCase() ?? "";
       let B = b[columna]?.toLowerCase() ?? "";
 

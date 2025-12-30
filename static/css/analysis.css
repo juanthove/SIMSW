@@ -2,9 +2,14 @@
 .analysisToolbar {
   margin-bottom: 1em;
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between;
   align-items: center;
+}
+
+.filtrosIzq {
+  display: flex;
   gap: 12px;
+  align-items: center;
 }
 
 #buscadorAnalisis {
@@ -40,6 +45,29 @@
 
 #filtroNivel:hover {
   border-color: #b0b0b0;
+}
+
+/*Analisis Historico*/
+#btnHistorico {
+  padding: 8px 12px;
+  margin-right: 5px;
+  font-size: 14px;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  background-color: #ffffff;
+  color: #000000;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+#btnHistorico:hover {
+  border-color: #b0b0b0;
+  background-color: #f9f9f9;
+}
+
+#btnHistorico:focus {
+  outline: none;
+  border-color: #999999;
 }
 
 th.sortable {
@@ -140,7 +168,33 @@ td[data-vuln="Baja"] {
   color: #27ae60;
 }
 
+
 /*analysis-list*/
 .infoSitioGrid{
   margin-bottom: 1em;
+}
+
+.pageHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.infoSitio {
+  margin-bottom: 20px;
+}
+
+.infoSitioGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px 20px;
+  margin-top: 8px;
+}
+
+.analysisToolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
 }
