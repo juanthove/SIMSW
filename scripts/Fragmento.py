@@ -1,7 +1,6 @@
 class Fragmento():
-    def __init__(self, id, idArchivo, label, confidence, codeFragment):
+    def __init__(self, id, label, confidence, codeFragment):
         self.__id = id
-        self.__idArchivo = idArchivo
         self.__label = label
         self.__confidence = confidence
         self.__codeFragment = codeFragment
@@ -9,7 +8,6 @@ class Fragmento():
     def to_dict(self):
         return {
             "id": self.__id,
-            "idArchivo": self.__idArchivo,
             "label": self.__label,
             "confidence": self.__confidence,
             "code_fragment": self.__codeFragment
@@ -19,8 +17,6 @@ class Fragmento():
     def get_id(self):
         return self.__id
 
-    def get_id_archivo(self):
-        return self.__idArchivo
     
     def get_label(self):
         return self.__label
