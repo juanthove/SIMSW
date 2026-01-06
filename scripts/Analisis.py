@@ -73,13 +73,7 @@ class Analisis():
         )
 
         resultadoVulbERTa = herramienta.analizar_sitio(sitio)
-        
-        #Llamar a LLM, para que verifique los fragmentos vulnerables analizados
-        #Pedir que arme un json: tipo, nivelRiesgo. 
-        #En caso de tener un nivel de riesgo high, llamar a EnviarAlerta
-        #Enviar esos datos como cuerpo del gmail. 
-
-        
+    
         return resultadoVulbERTa
 
 

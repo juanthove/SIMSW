@@ -105,51 +105,31 @@ class Vulberta(Herramienta):
     def analizar_sitio(self, sitio):
         archivos = sitio.get_archivos()
 
-        print("==== Lista de archivos que llegan ====")
-        for a in archivos:
-            print(f"ID: {a.get_id()} - Tipo: {a.get_tipo()} - Largo: {len(a.get_codigo() or '')}")
-
-
-        #FragmentarArchivos de a mil
+        id = 0
         fragmentos = []
-        
-        
-        for item in archivos:
-            id = 0
-            codigo = item.get_codigo()
-            if not codigo or not isinstance(codigo, str):
-                continue  # saltar si no hay contenido válido
-            idArchivo = item.get_id()
-            largoNoFr = len(codigo)
-            print(f"El largo del archivo con id {idArchivo} sin frag es: {largoNoFr}")
-            fragmento = separar_codigo(codigo)
-            
-            for parte in fragmento:
-                resultadoAnalisisFragmento = self.analizar_texto(parte)
-                for r in resultadoAnalisisFragmento:
-                    # Si hay error, no intentamos leer code_fragment
-                    if "error" in r:
-                        print(f"[ERROR] Modelo devolvió error: {r['error']}")
-                        continue
+        for parte in archivos:
+            resultadoAnalisisFragmento = self.analizar_texto(parte)
+            for r in resultadoAnalisisFragmento:
+                # Si hay error, no intentamos leer code_fragment
+                if "error" in r:
+                    print(f"[ERROR] Modelo devolvió error: {r['error']}")
+                    continue
+                label = r["label"]
+                confidence = r["confidence"]
 
-                    label = r["label"]
-                    confidence = r["confidence"]
+                # Recuperamos el fragmento del código de forma segura
+                code_fragment = r.get("code_fragment")
+                if not code_fragment:
+                    print(f"[WARN] No se recibió code_fragment. Resultado: {r}")
+                    continue
+                #Cambiar este id, ya que se repita: 1.2.3, despues 1,2,3 y asi. Ver si se puede usar el id de la variable  id += 1
+                #idFragment = r["fragment"]
+                idFragment = id
+                fr = Fragmento(idFragment, label, confidence, code_fragment)
+                fragmentos.append(fr)
 
-                    # Recuperamos el fragmento del código de forma segura
-                    code_fragment = r.get("code_fragment")
-                    if not code_fragment:
-                        print(f"[WARN] No se recibió code_fragment. Resultado: {r}")
-                        continue
-                    
-                    #Cambiar este id, ya que se repita: 1.2.3, despues 1,2,3 y asi. Ver si se puede usar el id de la variable  id += 1
-                    #idFragment = r["fragment"]
-                    idFragment = id
-                    fr = Fragmento(idFragment, idArchivo, label, confidence, code_fragment)
-                    fragmentos.append(fr)
-
-                    print(f"Analisis: {idArchivo,idFragment}, con largo: {len(code_fragment)}")
-                    id += 1
-        
+                print(f"Analisis: {idFragment}, con largo: {len(code_fragment)}")
+                id += 1
 
         return fragmentos
     
