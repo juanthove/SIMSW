@@ -167,8 +167,8 @@ function crearTimelineSeveridad() {
 function crearRiesgoAcumulado() {
   const fechas = [...new Set(sitio.analisis.map(a => a.fecha))].sort();
 
-  let acumulado = 0;
   const riesgo = fechas.map(fecha => {
+    let acumulado = 0;
     sitio.analisis
       .filter(a => a.fecha === fecha)
       .forEach(a => acumulado += pesos[a.vulnerabilidad]);
