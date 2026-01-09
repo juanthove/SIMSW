@@ -71,4 +71,23 @@ pip install libclang
 ```
 
 
+### **Para sqlalchemy (requerida por mariadb) **
+```bash
+pip install sqlalchemy
+```
 
+### **Para base de datos **
+```bash
+pip install mariadb
+```
+
+
+### **Para auth **
+```bash
+pip install PyJWT
+```
+
+### **Para auth **
+```bash
+pip install bcrypt
+```

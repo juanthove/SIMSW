@@ -79,5 +79,6 @@ class Informe():
         except Exception as e:
             print("Error en armarInforme():", str(e))
             traceback.print_exc()
+            raise e
 
         
