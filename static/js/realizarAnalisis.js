@@ -1,9 +1,18 @@
 const urlInput = document.getElementById("url");
 const boton = document.getElementById("botonScan");
-const botonDinanico = document.getElementById("botonScanDinamico");
+const botonPrueba = document.getElementById("botonPrueba");
 const resultado = document.getElementById("resultado");
 
+const token = localStorage.getItem("token");
+
 document.addEventListener("DOMContentLoaded", function(){
+
+    //Redirigir a login si no existe un token
+    if (!token) {
+        window.location.href = "/login";
+    }
+
+
 
     boton.addEventListener("click", async () => {
 
@@ -61,7 +70,7 @@ document.addEventListener("DOMContentLoaded", function(){
 
     });
 
-    botonDinanico.addEventListener("click", async () => {
+    /*botonDinanico.addEventListener("click", async () => {
 
     const url = urlInput.value.trim();
     if (!url) { resultado.textContent = "Por favor ingrese una URL."; return; }
@@ -115,7 +124,22 @@ document.addEventListener("DOMContentLoaded", function(){
     }
 
 
-    });
+    });*/
+
+
+    botonPrueba.addEventListener("click", async () => {
+        const url = urlInput.value.trim();
+        fetch("http://localhost:5000/analizarEstatico", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            },
+            body: JSON.stringify({ url })
+        })
+        .then(res => res.json())
+        .then(data => console.log(data))
+    })
 
 
 
