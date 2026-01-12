@@ -149,3 +149,10 @@ def ejecutar_analisis_estatico(url):
         raise Exception(f"La IA no devolvió JSON válido: {str(e)}")
 
     return resultado_json
+
+
+def ejecutar_analisis_dinamico(url):
+    pass
+
+def ejecutar_sonar_qube(ruta):
+    pass

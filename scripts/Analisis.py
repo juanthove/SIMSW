@@ -1,3 +1,5 @@
+import json
+import time
 from scripts.vulberta_api import Vulberta as vt
 from scripts.Owaspzap import OwaspZap as ow
 from scripts.EnviarAlerta import EnviarAlerta
@@ -33,17 +35,22 @@ class Analisis():
         herramienta = ow(
             nombre="VulBERTa",
             version="1.0",
-
-
         )
 
-        
-        resultado = herramienta.scan_activo(sitio.get_url())
+        herramienta.start_zap()
+        herramienta.spider(sitio)
+        time.sleep(10)
+
+        herramienta.active_scan(sitio)
+        time.sleep(20)
+
+        alerts = herramienta.get_alerts()
+        print(json.dumps(alerts, indent=2))
 
         #Mando mensaje en caso de encontrar vulnerabilidad high
 
         
-        for item in resultado:
+        for item in alerts:
             if(item["riesgo"] == "High"):
                 alerta = EnviarAlerta()
                 
@@ -61,7 +68,7 @@ class Analisis():
                 alerta.enviar_alerta(destinatario, asunto, contenido)
 
 
-        return resultado
+        return alerts
         
     
     def ejectutar_estatico(self):

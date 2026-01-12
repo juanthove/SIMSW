@@ -13,12 +13,12 @@ from flask import  jsonify
 from scripts.tools import separar_codigo
 
 
-
 class Vulberta(Herramienta):
     def __init__(self,nombre, version):
         super().__init__(nombre, version)
 
         self.__MODEL_PATH = "vulberta/models"
+        print(f"la ruta de VulBERTa es:  {self.__MODEL_PATH}\n\n\n")
         self.__CLASES = ["No vulnerable", "Vulnerable"] #Etiquetas para cada clase del modelo
 
         try:

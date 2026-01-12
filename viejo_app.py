@@ -177,51 +177,9 @@ def analizar_dinamico():
     url = data.get("url")
     if not url:
         return jsonify({"error": "No se proporcionó URL"}), 400
-    
-    id = 0
-    archivos = []
-    scripts = extraer_scripts_con_playwright(url)
-    
-
-    # === EXTERNOS ===
-    if "externos" in scripts and scripts["externos"]:
-        for name, codigo in scripts["externos"].items():
-            archivos.append(Archivo(id, name, url, None, "externo", len(codigo or ""), codigo))
-            id += 1
-
-    # === INTERNOS ===
-    if "internos" in scripts and scripts["internos"]:
-        for name, codigo in scripts["internos"].items():
-            archivos.append(Archivo(id, name, url, None, "interno", len(codigo or ""), codigo))
-            id += 1
-
-    # === NETWORK ===
-    if "network" in scripts and scripts["network"]:
-        for name, codigo in scripts["network"].items():
-            archivos.append(Archivo(id, name, url, None, "network", len(codigo or ""), codigo))
-            id += 1
-
-    # === WORKERS ===
-    if "workers" in scripts and scripts["workers"]:
-        for name, codigo in scripts["workers"].items():
-            archivos.append(Archivo(id, name, url, None, "worker", len(codigo or ""), codigo))
-            id += 1
-
-    # === BLOBS ===
-    if "blobs" in scripts and scripts["blobs"]:
-        for name, codigo in scripts["blobs"].items():
-            archivos.append(Archivo(id, name, url, None, "blob", len(codigo or ""), codigo))
-            id += 1  
-
-    # === EVENTOS INLINE ===
-    if "eventos_inline" in scripts and scripts["eventos_inline"]:
-        for name, info in scripts["eventos_inline"].items():
-            codigo = info.get("codigo", "")
-            archivos.append(Archivo(id, name, url, None, "evento_inline", len(codigo), codigo))
-            id += 1
         
     
-    st = SitioWeb(1, "No se", url, "propietario", None, None, archivos)
+    st = SitioWeb(1, "No se", url, "propietario", None, None, None)
 
 
     fecha_actual = datetime.now()

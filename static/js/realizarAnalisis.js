@@ -8,6 +8,7 @@ const token = localStorage.getItem("token");
 document.addEventListener("DOMContentLoaded", function(){
 
     //Redirigir a login si no existe un token
+    
     if (!token) {
         window.location.href = "/login";
     }
