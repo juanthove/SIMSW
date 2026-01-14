@@ -37,11 +37,13 @@ class Analisis():
             version="1.0",
         )
 
+        
+
         herramienta.start_zap()
-        herramienta.spider(sitio)
+        herramienta.spider(sitio.get_url())
         time.sleep(10)
 
-        herramienta.active_scan(sitio)
+        herramienta.active_scan(sitio.get_url())
         time.sleep(20)
 
         alerts = herramienta.get_alerts()
