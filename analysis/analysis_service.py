@@ -152,7 +152,16 @@ def ejecutar_analisis_estatico(url):
 
 
 def ejecutar_analisis_dinamico(url):
-    pass
+    "Analisis del sitio en forma dinamica, mediante el uso de Owasp Zap"
 
-def ejecutar_sonar_qube(ruta):
+    print("Entre en el de servicios")
+    st = SitioWeb(1, "No se", url, "propietario", None, None, None)
+    fecha_actual = datetime.now()
+    analisis = Analisis(1, fecha_actual, "No terminado", "Dinamico", st)
+
+    resultado = analisis.ejectutar_dinamico()
+
+    return resultado
+
+def ejecutar_analisis_sonar_qube(ruta):
     pass
