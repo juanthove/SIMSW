@@ -1,22 +1,32 @@
-//Datos ficticios de paginas webs
-const listaSitios = [
-    {
-        id: "1",
-        sitio: "Example",
-        url: "https://example.com"
-    },
-    {
-        id: "2",
-        sitio: "MiDominio",
-        url: "https://midominio.com"
-    },
-    {
-        id: "3",
-        sitio: "TiendaOnline",
-        url: "https://tiendaonline.net"
-    }];
+//Obtengo datos
+let listaSitios = [];
+let listaFiltrada = [];
 
-const listaFiltrada = [...listaSitios];
+async function cargarSitios() {
+    try {
+        const response = await fetch("/api/sitios/", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error("Error al obtener los sitios");
+        }
+
+        listaSitios = await response.json();
+        listaFiltrada = [...listaSitios];   // ✅ ACÁ
+        console.log(listaSitios);
+        mostrarListado(listaFiltrada);
+
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+//Cargar los sitios al entrar
+cargarSitios()
 
 //Obtengo la tabla
 const tablaSitios = document.querySelector("#tablaSitios tbody");
@@ -28,7 +38,7 @@ function mostrarListado(lista) {
         const tr = document.createElement("tr");
 
         tr.innerHTML = `
-        <td>${item.sitio}</td>
+        <td>${item.nombre}</td>
         <td>${item.url}</td>
         <td>
             <button class="btn-estatico" data-url="${item.url}">
@@ -79,9 +89,6 @@ encabezados.forEach(th => {
     mostrarListado(listaFiltrada);
   });
 });
-
-//Muestro la tabla al iniciar
-mostrarListado(listaFiltrada);
 
 //Funcion para ejecutar el analisis estatico o dinamico
 async function ejecutarAnalisis({ url, tipo, boton }) {

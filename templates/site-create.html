@@ -44,12 +44,25 @@
         </div>
 
         <div class="accionesForm">
+            <button type="button" id="btnDelete" class="btn-delete" style="display:none;">Eliminar sitio</button>
             <button type="submit" class="btnPrincipal" id="btnPrincipal">Registrar sitio</button>
         </div>
 
         </form>
     </main>
 
-    
+    <div id="toast" class="toast"></div>
+
+    <div id="confirmModal" class="modal-overlay hidden">
+        <div class="modal">
+            <h3>Confirmar eliminación</h3>
+            <p>¿Estás seguro de eliminar este sitio?</p>
+
+            <div class="modal-actions">
+            <button id="btnCancelar">Cancelar</button>
+            <button id="btnConfirmar" class="btn-danger">Eliminar</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
