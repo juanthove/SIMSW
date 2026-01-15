@@ -71,7 +71,21 @@
 .accionesForm {
   margin-top: 1.5em;
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+}
+
+/*Boton delete*/
+.btn-delete {
+  background-color: #c62828;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.btn-delete:hover {
+  background-color: #b71c1c;
 }
 
 /*Botón principal*/
@@ -84,8 +98,78 @@
   cursor: pointer;
   background-color: #e5e5e5;
   color: #000000;
+  margin-left: auto;
 }
 
 .btnPrincipal:hover {
   background-color: #dcdcdc;
+}
+
+/*Notificaciones*/
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 6px;
+  font-size: 14px;
+  text-align: center;
+  min-width: 260px;
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* visible */
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* tipos */
+.toast.success { background-color: #2e7d32; }
+.toast.error   { background-color: #c62828; }
+.toast.info    { background-color: #1565c0; }
+
+
+/*Confirmación*/
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9998;
+}
+
+.modal-overlay.hidden {
+  display: none;
+}
+
+.modal {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 320px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btn-danger {
+  background-color: #c62828;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 4px;
+  cursor: pointer;
 }

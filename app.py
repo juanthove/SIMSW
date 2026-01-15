@@ -10,10 +10,18 @@ load_dotenv()
 from analysis.analysis_routes import analysis_bp
 from auth.auth_routes import auth_bp
 
+#Importar endpoints
+from database.routes.sitioWeb_routes import sitioWeb_bp 
+
+
 # registrar blueprints
 app.register_blueprint(analysis_bp)
 app.register_blueprint(auth_bp)
 
+#Blueprint de cada route con endpoints a la base de datos
+app.register_blueprint(sitioWeb_bp)
+
+#Rutas a cada pagina
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -21,6 +29,14 @@ def index():
 @app.route("/login")
 def login():
     return render_template("login.html")
+
+@app.route("/sites-create")
+def sites_create():
+    return render_template("site-create.html")
+
+@app.route("/analysis-create")
+def analysis_create():
+    return render_template("analysis-create.html")
 
 if __name__ == "__main__":
     app.run(debug=True)
