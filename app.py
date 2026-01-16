@@ -12,6 +12,7 @@ from auth.auth_routes import auth_bp
 
 #Importar endpoints
 from database.routes.sitioWeb_routes import sitioWeb_bp 
+from database.routes.analisis_routes import analisis_bp_db
 
 
 # registrar blueprints
@@ -20,6 +21,7 @@ app.register_blueprint(auth_bp)
 
 #Blueprint de cada route con endpoints a la base de datos
 app.register_blueprint(sitioWeb_bp)
+app.register_blueprint(analisis_bp_db)
 
 #Rutas a cada pagina
 @app.route("/")

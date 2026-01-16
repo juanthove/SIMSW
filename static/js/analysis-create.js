@@ -2,14 +2,12 @@
 let listaSitios = [];
 let listaFiltrada = [];
 
+
+import { apiFetch } from "./api.js";
+
 async function cargarSitios() {
     try {
-        const response = await fetch("/api/sitios/", {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json"
-            }
-        });
+        const response = await apiFetch("/api/sitios/");
 
         if (!response.ok) {
             throw new Error("Error al obtener los sitios");
@@ -41,12 +39,12 @@ function mostrarListado(lista) {
         <td>${item.nombre}</td>
         <td>${item.url}</td>
         <td>
-            <button class="btn-estatico" data-url="${item.url}">
+            <button class="btn-estatico" data-url="${item.url}" data-id="${item.id}">
             Ejecutar
             </button>
         </td>
         <td>
-            <button class="btn-dinamico" data-url="${item.url}">
+            <button class="btn-dinamico" data-url="${item.url}" data-id="${item.id}">
             Ejecutar
             </button>
         </td>
@@ -91,37 +89,48 @@ encabezados.forEach(th => {
 });
 
 //Funcion para ejecutar el analisis estatico o dinamico
-async function ejecutarAnalisis({ url, tipo, boton }) {
+async function ejecutarAnalisis({ url, sitioWebId, tipo, boton }) {
   boton.disabled = true;
   const textoOriginal = boton.textContent;
   boton.textContent = "⏳ Analizando...";
 
   const endpoint =
-    tipo === "dinamico" ? "/analizarDinamico" : "/analizarEstatico";
+    tipo === "dinamico"
+      ? "/analizarDinamico"
+      : "/analizarEstatico";
+
+  const token = localStorage.getItem("token");
 
   try {
-    const res = await fetch(endpoint, {
+    const res = await apiFetch(endpoint, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url })
+      body: JSON.stringify({
+        url,
+        sitio_web_id: sitioWebId
+      })
     });
 
     const data = await res.json();
 
-    if (data.error) {
+    if (!res.ok) {
+      mostrarToast(data.error || "No autorizado", "error");
       boton.textContent = "❌ Error";
       boton.disabled = false;
       return;
     }
 
     boton.textContent = "✔ Completado";
+    mostrarToast("Análisis ejecutado correctamente", "success");
 
   } catch (err) {
     console.error(err);
     boton.textContent = "❌ Error";
     boton.disabled = false;
+    mostrarToast("Error al ejecutar el análisis", "error");
   }
 }
+
+
 
 
 
@@ -131,6 +140,7 @@ function enlazarBotonesAnalisis() {
     btn.addEventListener("click", () => {
       ejecutarAnalisis({
         url: btn.dataset.url,
+        sitioWebId: btn.dataset.id,
         tipo: "estatico",
         boton: btn
       });
@@ -141,9 +151,26 @@ function enlazarBotonesAnalisis() {
     btn.addEventListener("click", () => {
       ejecutarAnalisis({
         url: btn.dataset.url,
+        sitioWebId: btn.dataset.id,
         tipo: "dinamico",
         boton: btn
       });
     });
   });
+}
+
+function mostrarToast(mensaje, tipo = "info") {
+  const toast = document.getElementById("toast");
+
+  // limpiar clases previas
+  toast.className = "toast";
+
+  // setear mensaje y tipo
+  toast.textContent = mensaje;
+  toast.classList.add(tipo, "show");
+
+  // ocultar luego
+  setTimeout(() => {
+    toast.classList.remove("show");
+  }, 3000);
 }

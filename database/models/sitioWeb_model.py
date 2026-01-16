@@ -6,9 +6,9 @@ class SitioWeb(Base):
     __tablename__ = "sitio_web"
 
     id = Column(Integer, primary_key=True, index=True)
-    nombre = Column(String(100), nullable=False)
-    url = Column(String(255), nullable=False, unique=True)
-    propietario = Column(String(100), nullable=False)
+    nombre = Column(String(50), nullable=False)
+    url = Column(String(2048), nullable=False, unique=True)
+    propietario = Column(String(50), nullable=False)
 
     fecha_registro = Column(
         DateTime(timezone=True),

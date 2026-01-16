@@ -22,6 +22,9 @@ if (navBar) {
             <div id="config">
                 <a href="config.html">Configuración</a>
             </div>
+            <div id="sesion">
+                <a href="#" id="logoutBtn">Cerrar Sesión</a>
+            </div>
         </div>
 
         <button id="botonMenu">☰</button>
@@ -44,4 +47,15 @@ analysisContainer.addEventListener("mouseenter", () => {
 
 analysisContainer.addEventListener("mouseleave", () => {
     analysisMenu.classList.remove("show");
+});
+
+//Al cliquear cerrar sesion se vuelve a login y se elimina el token
+document.getElementById("logoutBtn").addEventListener("click", (e) => {
+  e.preventDefault();
+
+  // Eliminar token
+  localStorage.removeItem("token");
+
+  // Redirigir
+  window.location.href = "/login";
 });
