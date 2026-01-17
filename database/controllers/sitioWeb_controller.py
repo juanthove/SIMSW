@@ -1,6 +1,9 @@
 from database.connection import SessionLocal
 from database.models.sitioWeb_model import SitioWeb
+from database.models.analisis_model import Analisis
+from database.models.informe_model import Informe
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import func
 
 # Obtener todos los sitios
 def obtener_sitios():
@@ -91,5 +94,85 @@ def eliminar_sitio(sitio_id):
         db.commit()
 
         return True
+    finally:
+        db.close()
+
+
+#Obtener sitios con cantidad de analisis y fecha del ultimo
+def obtener_sitios_con_resumen():
+    db = SessionLocal()
+    try:
+        resultados = db.query(
+            SitioWeb.id,
+            SitioWeb.nombre,
+            SitioWeb.url,
+            func.count(Analisis.id).label("cantAnalisis"),
+            func.max(Analisis.fecha).label("ultimoAnalisis")
+        ).outerjoin(
+            Analisis, Analisis.sitio_web_id == SitioWeb.id
+        ).group_by(
+            SitioWeb.id
+        ).all()
+
+        return [
+            {
+                "id": r.id,
+                "nombre": r.nombre,
+                "url": r.url,
+                "cantAnalisis": r.cantAnalisis,
+                "ultimoAnalisis": (
+                    r.ultimoAnalisis.isoformat()
+                    if r.ultimoAnalisis else None
+                )
+            }
+            for r in resultados
+        ]
+    finally:
+        db.close()
+
+
+#Obtener informacion del sitio y de sus analisis
+def obtener_detalle_sitio(sitio_id):
+    db = SessionLocal()
+    try:
+        sitio = db.query(SitioWeb).filter(SitioWeb.id == sitio_id).first()
+
+        if not sitio:
+            return None
+
+        analisis = (
+            db.query(Analisis)
+            .filter(Analisis.sitio_web_id == sitio_id)
+            .order_by(Analisis.fecha.desc())
+            .all()
+        )
+
+        resultado = []
+
+        for a in analisis:
+            cantidad_informes = (
+                db.query(func.count(Informe.id))
+                .filter(Informe.analisis_id == a.id)
+                .scalar()
+            )
+
+            resultado.append({
+                "id": a.id,
+                "nombre": a.nombre,
+                "estado": a.estado,
+                "tipo": a.tipo,
+                "resultado_global": a.resultado_global,
+                "fecha": a.fecha.isoformat(),
+                "cantidad_informes": cantidad_informes
+            })
+
+        return {
+            "siteId": sitio.id,
+            "nombre": sitio.nombre,
+            "url": sitio.url,
+            "propietario": sitio.propietario,
+            "analisis": resultado
+        }
+
     finally:
         db.close()

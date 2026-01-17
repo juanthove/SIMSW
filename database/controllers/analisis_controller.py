@@ -1,6 +1,8 @@
 from database.connection import SessionLocal
 from database.models.analisis_model import Analisis
+from database.models.informe_model import Informe
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import func
 
 # Obtener todos los análisis
 def obtener_analisis():
@@ -102,6 +104,58 @@ def eliminar_analisis(analisis_id):
         db.delete(analisis)
         db.commit()
         return True
+
+    finally:
+        db.close()
+
+
+#Obtener cantidad de analisis y fecha del ultimo
+def obtener_resumen_analisis_por_sitio(sitio_web_id):
+    db = SessionLocal()
+    try:
+        resultado = db.query(
+            func.count(Analisis.id).label("cantidad"),
+            func.max(Analisis.fecha).label("ultima_fecha")
+        ).filter(
+            Analisis.sitio_web_id == sitio_web_id
+        ).one()
+
+        return {
+            "cantidad_analisis": resultado.cantidad,
+            "fecha_ultimo_analisis": (
+                resultado.ultima_fecha.isoformat()
+                if resultado.ultima_fecha else None
+            )
+        }
+    finally:
+        db.close()
+
+
+#Obtener lo datos del analisis y todos sus informes
+def obtener_detalle_analisis_con_informes(analisis_id):
+    db = SessionLocal()
+    try:
+        analisis = db.query(Analisis).filter(
+            Analisis.id == analisis_id
+        ).first()
+
+        if not analisis:
+            return None
+
+        informes = db.query(Informe).filter(
+            Informe.analisis_id == analisis_id
+        ).all()
+
+        return {
+            "analisis": {
+                "id": analisis.id,
+                "tipo": analisis.tipo,
+                "estado": analisis.estado,
+                "resultado_global": analisis.resultado_global,
+                "fecha": analisis.fecha
+            },
+            "informes": [i.to_dict() for i in informes]
+        }
 
     finally:
         db.close()

@@ -14,31 +14,50 @@ def analizar_estatico(url, sitio_web_id):
     db = SessionLocal()
 
     try:
-        # 1️⃣ Ejecutar análisis (Playwright + IA)
+        # 1️⃣ Crear análisis EN PROGRESO
+        analisis = Analisis(
+            nombre=f"Análisis Estático - {url}",
+            fecha=datetime.now(),
+            tipo="estatico",
+            estado="En Progreso",
+            resultado_global=0,
+            sitio_web_id=sitio_web_id
+        )
+
+        db.add(analisis)
+        db.flush()  # Para obtener analisis.id sin commit
+
+        # 2️⃣ Ejecutar análisis (Playwright + IA)
         resultado = ejecutar_analisis_estatico(url)
 
         vulnerabilidades = []
-        estado_general = None
+        vulnerabilidades_raw = []
+        estado_final = None
         resultado_global = 0
         hubo_datos = True
 
-        # 2️⃣ Normalización del resultado
-        if resultado == 0:
-            # ❌ No se encontraron scripts
-            estado_general = "SIN_DATOS"
+        # 3️⃣ Normalización del resultado
+        if isinstance(resultado, list) and len(resultado) == 0:
+            estado_final = "Sin Datos"
+            hubo_datos = False
+        
+        elif isinstance(resultado, dict) and not resultado.get("vulnerabilidades"):
+            estado_final = "Sin Datos"
             hubo_datos = False
 
         elif isinstance(resultado, list):
             vulnerabilidades_raw = resultado
+            estado_final = "Finalizado"
 
         elif isinstance(resultado, dict):
             vulnerabilidades_raw = resultado.get("vulnerabilidades", [])
+            estado_final = "Finalizado"
 
         else:
-            estado_general = "ERROR"
+            estado_final = "Error"
             hubo_datos = False
 
-        # 3️⃣ Procesamiento SOLO si hubo datos analizables
+        # 4️⃣ Procesamiento SOLO si hubo datos analizables
         if hubo_datos:
             CAMPOS_OBLIGATORIOS = {
                 "titulo",
@@ -54,24 +73,14 @@ def analizar_estatico(url, sitio_web_id):
                 if isinstance(v, dict) and CAMPOS_OBLIGATORIOS.issubset(v.keys()):
                     vulnerabilidades.append(v)
 
-            # 🔹 Estado SOLO basado en vulnerabilidades
-            estado_general = calcular_estado_general(vulnerabilidades)
+            # 🔹 Resultado global calculado SOLO con vulnerabilidades válidas
             resultado_global = calcular_resultado_global(vulnerabilidades)
 
-        # 4️⃣ Crear análisis
-        analisis = Analisis(
-            nombre=f"Análisis Estático - {url}",
-            fecha=datetime.now(),
-            tipo="estatico",
-            estado=estado_general,
-            resultado_global=resultado_global,
-            sitio_web_id=sitio_web_id
-        )
+        # 5️⃣ Actualizar análisis con estado final
+        analisis.estado = estado_final
+        analisis.resultado_global = resultado_global
 
-        db.add(analisis)
-        db.flush()
-
-        # 5️⃣ Crear informes SOLO si hay vulnerabilidades
+        # 6️⃣ Crear informes SOLO si hay vulnerabilidades
         if hubo_datos:
             for v in vulnerabilidades:
                 informe = Informe(
@@ -80,39 +89,33 @@ def analizar_estatico(url, sitio_web_id):
                     impacto=v["impacto"],
                     recomendacion=v["recomendacion"],
                     evidencia=v["evidencia"],
-                    severidad=v["severidad"],
+                    severidad=v["severidad"],  # 1, 2 o 3 (Baja, Media, Alta en frontend)
                     codigo=v["codigo"],
                     analisis_id=analisis.id
                 )
                 db.add(informe)
 
+        # 7️⃣ Guardar todo
         db.commit()
 
         return {
             "analisis_id": analisis.id,
-            "estado": estado_general,
-            "resultado_global": resultado_global,
-            "vulnerabilidades": vulnerabilidades
+            "estado": analisis.estado,
+            "resultado_global": analisis.resultado_global,
+            "cantidad_informes": len(vulnerabilidades)
         }
 
     except Exception as e:
         db.rollback()
 
-        # 🟥 Guardar análisis fallido
-        analisis = Analisis(
-            nombre=f"Análisis Estático - {url}",
-            fecha=datetime.now(),
-            tipo="estatico",
-            estado="ERROR",
-            resultado_global=0,
-            sitio_web_id=sitio_web_id
-        )
-        db.add(analisis)
+        # 🟥 Si ocurre un error, marcar análisis como ERROR
+        analisis.estado = "Error"
+        analisis.resultado_global = 0
         db.commit()
 
         return {
             "analisis_id": analisis.id,
-            "estado": "ERROR",
+            "estado": "Error",
             "mensaje": "Ocurrió un error durante el análisis"
         }
 
@@ -124,44 +127,29 @@ def analizar_estatico(url, sitio_web_id):
 
 
 
-def calcular_estado_general(vulnerabilidades):
-    if not vulnerabilidades:
-        return "SIN_VULNERABILIDADES"
 
-    severidades = [v["severidad"] for v in vulnerabilidades]
-
-    if any(s >= 4 for s in severidades):
-        return "CRITICO"
-    elif any(s == 3 for s in severidades):
-        return "ALTO"
-    elif any(s == 2 for s in severidades):
-        return "MEDIO"
-    else:
-        return "BAJO"
-
-
-
+PESOS = {
+    1: 1,   # Baja
+    2: 3,   # Media
+    3: 6    # Alta
+}
 
 def calcular_resultado_global(vulnerabilidades):
     if not vulnerabilidades:
         return 0
 
     total = 0
-    cantidad = 0
+    maximo = 0
 
     for v in vulnerabilidades:
-        if not isinstance(v, dict):
-            continue
-
         sev = v.get("severidad")
-        if isinstance(sev, int):
-            total += sev
-            cantidad += 1
+        if sev in PESOS:
+            total += PESOS[sev]
+            maximo += PESOS[3]
 
-    if cantidad == 0:
+    if maximo == 0:
         return 0
 
-    maximo = cantidad * 3
     return round((total / maximo) * 100)
 
 

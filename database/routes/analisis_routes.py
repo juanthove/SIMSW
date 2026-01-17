@@ -6,7 +6,9 @@ from database.controllers.analisis_controller import (
     obtener_analisis_por_sitio,
     crear_analisis,
     actualizar_analisis,
-    eliminar_analisis
+    eliminar_analisis,
+    obtener_resumen_analisis_por_sitio,
+    obtener_detalle_analisis_con_informes
 )
 
 analisis_bp_db = Blueprint("analisis", __name__, url_prefix="/api/analisis")
@@ -82,3 +84,23 @@ def delete_analisis(analisis_id):
         return jsonify({"error": "Análisis no encontrado"}), 404
 
     return jsonify({"mensaje": "Análisis eliminado correctamente"}), 200
+
+
+#Obtener cantidad analisis y fecha del ultimo
+@analisis_bp_db.route("/sitio/<int:sitio_web_id>/resumen", methods=["GET"])
+@jwt_required()
+def resumen_analisis_por_sitio(sitio_web_id):
+    resumen = obtener_resumen_analisis_por_sitio(sitio_web_id)
+    return jsonify(resumen), 200
+
+
+#Obtener datos de analisis y todos sus informes
+@analisis_bp_db.route("/<int:analisis_id>/detalle", methods=["GET"])
+@jwt_required()
+def get_detalle_analisis_con_informes_route(analisis_id):
+    resultado = obtener_detalle_analisis_con_informes(analisis_id)
+
+    if not resultado:
+        return jsonify({"error": "Análisis no encontrado"}), 404
+
+    return jsonify(resultado), 200
