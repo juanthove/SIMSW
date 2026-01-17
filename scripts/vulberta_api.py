@@ -8,7 +8,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from scripts.Herramienta import Herramienta
 
 from flask import  jsonify
-
+from pprint import pprint
 
 from scripts.tools import separar_codigo
 
@@ -102,31 +102,36 @@ class Vulberta(Herramienta):
         # 🔹 Devolvemos JSON legible, listo para Gemini o para mostrar directamente
         return jsonify({"url": url, "resultado": resultado})
     
-    def analizar_sitio(self, sitio):
-        archivos = sitio.get_archivos()
+    def analizar_sitio(self, archivos):
 
         id = 0
         fragmentos = []
         for parte in archivos:
             resultadoAnalisisFragmento = self.analizar_texto(parte)
             for r in resultadoAnalisisFragmento:
+                print("[DEBUG] Resultado VulBERTa:", r)
                 # Si hay error, no intentamos leer code_fragment
                 if "error" in r:
                     print(f"[ERROR] Modelo devolvió error: {r['error']}")
                     continue
-                label = r["label"]
-                confidence = r["confidence"]
 
-                # Recuperamos el fragmento del código de forma segura
-                code_fragment = r.get("code_fragment")
+                label = r.get("label", "desconocido")
+                confidence = r.get("confidence", 0.0)
+                code_fragment = r.get("code_fragment", "")
                 if not code_fragment:
                     print(f"[WARN] No se recibió code_fragment. Resultado: {r}")
                     continue
-                #Cambiar este id, ya que se repita: 1.2.3, despues 1,2,3 y asi. Ver si se puede usar el id de la variable  id += 1
-                #idFragment = r["fragment"]
+
                 idFragment = id
-                fr = Fragmento(idFragment, label, confidence, code_fragment)
-                fragmentos.append(fr)
+
+                # 🔹 Crear objeto Fragmento en vez de dict
+                fragmento_obj = Fragmento(
+                    id=idFragment,
+                    label=label,
+                    confidence=confidence,
+                    codeFragment=code_fragment
+                )
+                fragmentos.append(fragmento_obj)
 
                 print(f"Analisis: {idFragment}, con largo: {len(code_fragment)}")
                 id += 1

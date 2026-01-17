@@ -412,17 +412,35 @@ def analizar_urls_con_playwright(
             page = context.new_page()
 
             try:
-                page.goto(url, wait_until="domcontentloaded", timeout=timeout)
+                page.goto(url, wait_until="networkidle")
+                page.wait_for_timeout(2000)   
+
                 datos, soup = extraer_scripts_con_playwright2(page, url)
-                resultados[url] = datos
+                print(f"[DEBUG] Scripts internos: {list(datos['internos'].keys())}")
+                print(f"[DEBUG] Scripts externos: {list(datos['externos'].keys())}")
+                print(f"[DEBUG] Eventos inline: {list(datos['eventos_inline'].keys())}")
+                print(f"[DEBUG] Workers: {list(datos['workers'].keys())}")
+                print(f"[DEBUG] Blobs: {list(datos['blobs'].keys())}")
+
+
+                # 🔹 Éxito real → dict con datos
+                if datos and isinstance(datos, dict):
+                    resultados[url] = datos
+                else:
+                    print(f"[!] Datos vacíos para {url}")
+                    resultados[url] = None
+
             except Exception as e:
                 print(f"[!] Error en {url}: {e}")
+                resultados[url] = None  # 🔥 CLAVE
+
             finally:
                 page.close()
 
         browser.close()
 
     return resultados
+
 
 
 

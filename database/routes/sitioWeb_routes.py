@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, request
+from auth.auth_middleware import jwt_required
 
 from database.controllers.sitioWeb_controller import (
     obtener_sitios,
@@ -12,12 +13,14 @@ sitioWeb_bp = Blueprint("sitioWeb", __name__, url_prefix="/api/sitios")
 
 
 @sitioWeb_bp.route("/", methods=["GET"])
+@jwt_required()
 def get_sitios():
     sitios = obtener_sitios()
     return jsonify(sitios), 200
 
 
 @sitioWeb_bp.route("/<int:sitio_id>", methods=["GET"])
+@jwt_required()
 def get_sitio(sitio_id):
     sitio = obtener_sitio_por_id(sitio_id)
     if sitio is None:
@@ -27,6 +30,7 @@ def get_sitio(sitio_id):
 
 
 @sitioWeb_bp.route("/", methods=["POST"])
+@jwt_required()
 def post_sitio():
     data = request.get_json()
 
@@ -47,6 +51,7 @@ def post_sitio():
 
 
 @sitioWeb_bp.route("/<int:sitio_id>", methods=["PUT"])
+@jwt_required()
 def put_sitio(sitio_id):
     data = request.get_json()
 
@@ -71,6 +76,7 @@ def put_sitio(sitio_id):
 
 
 @sitioWeb_bp.route("/<int:sitio_id>", methods=["DELETE"])
+@jwt_required()
 def delete_sitio(sitio_id):
     eliminado = eliminar_sitio(sitio_id)
 

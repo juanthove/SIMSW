@@ -2,14 +2,11 @@
 let listaSitios = [];
 let listaFiltrada = [];
 
+import { apiFetch } from "./api.js";
+
 async function cargarSitios() {
     try {
-        const response = await fetch("/api/sitios/", {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json"
-            }
-        });
+        const response = await apiFetch("/api/sitios/");
 
         if (!response.ok) {
             throw new Error("Error al obtener los sitios");
@@ -100,9 +97,8 @@ form.addEventListener("submit", async (e) => {
       // Crear sitio (POST)
       console.log("Creando sitio:", sitio);
 
-      const res = await fetch("/api/sitios", {
+      const res = await apiFetch("/api/sitios", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(sitio)
       });
 
@@ -122,9 +118,8 @@ form.addEventListener("submit", async (e) => {
       console.log("Actualizando sitio:", sitioSeleccionadoId, sitio);
 
       
-      const res = await fetch(`/api/sitios/${sitioSeleccionadoId}`, {
+      const res = await apiFetch(`/api/sitios/${sitioSeleccionadoId}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(sitio)
       });
 
@@ -161,7 +156,7 @@ btnDelete.addEventListener("click", async () => {
   if (!confirmar) return;
 
   try {
-    const res = await fetch(`/api/sitios/${sitioSeleccionadoId}`, {
+    const res = await apiFetch(`/api/sitios/${sitioSeleccionadoId}`, {
       method: "DELETE"
     });
 
