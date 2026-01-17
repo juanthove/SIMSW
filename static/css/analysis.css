@@ -184,3 +184,10 @@ td[data-vuln="1"] {
   gap: 12px;
   margin-bottom: 16px;
 }
+
+
+/*Deshabilitar sitios sin analisis*/
+.site-disabled {
+    color: #999;
+    cursor: not-allowed;
+}

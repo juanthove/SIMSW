@@ -176,3 +176,35 @@ def obtener_detalle_sitio(sitio_id):
 
     finally:
         db.close()
+
+
+
+#Obtener todos los informes de un sitio
+def obtener_informes_por_sitio(site_id):
+    db = SessionLocal()
+    try:
+        resultados = (
+            db.query(
+                Informe.id,
+                Informe.titulo,
+                Informe.severidad,
+                Analisis.fecha.label("fecha_analisis")
+            )
+            .join(Analisis, Informe.analisis_id == Analisis.id)
+            .filter(Analisis.sitio_web_id == site_id)
+            .all()
+        )
+
+        return [
+            {
+                "id": r.id,
+                "titulo": r.titulo,
+                "severidad": r.severidad,
+                "fecha": r.fecha_analisis.isoformat() if r.fecha_analisis else None
+            }
+            for r in resultados
+        ]
+
+    finally:
+        db.close()
+

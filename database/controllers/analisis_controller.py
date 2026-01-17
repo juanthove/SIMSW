@@ -135,16 +135,20 @@ def obtener_resumen_analisis_por_sitio(sitio_web_id):
 def obtener_detalle_analisis_con_informes(analisis_id):
     db = SessionLocal()
     try:
-        analisis = db.query(Analisis).filter(
-            Analisis.id == analisis_id
-        ).first()
+        analisis = (
+            db.query(Analisis)
+            .filter(Analisis.id == analisis_id)
+            .first()
+        )
 
         if not analisis:
             return None
 
-        informes = db.query(Informe).filter(
-            Informe.analisis_id == analisis_id
-        ).all()
+        informes = (
+            db.query(Informe)
+            .filter(Informe.analisis_id == analisis_id)
+            .all()
+        )
 
         return {
             "analisis": {
@@ -152,9 +156,16 @@ def obtener_detalle_analisis_con_informes(analisis_id):
                 "tipo": analisis.tipo,
                 "estado": analisis.estado,
                 "resultado_global": analisis.resultado_global,
-                "fecha": analisis.fecha
+                "fecha": analisis.fecha.isoformat() if analisis.fecha else None
             },
-            "informes": [i.to_dict() for i in informes]
+            "informes": [
+                {
+                    "titulo": i.titulo,
+                    "descripcion_humana": i.descripcion_humana,
+                    "severidad": i.severidad
+                }
+                for i in informes
+            ]
         }
 
     finally:

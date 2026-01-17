@@ -93,17 +93,17 @@ body{
     display: flex;
 }
 
-#config{
+#config, #sesion{
     display: flex;
     gap: 1em;
 }
 
-#config a{
+#config a, #sesion a{
     text-decoration: none;
     color: white;
 }
 
-#config a:hover{
+#config a:hover, #sesion a:hover{
     color: rgb(228, 228, 228);
 }
 

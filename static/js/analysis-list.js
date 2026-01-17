@@ -150,7 +150,7 @@ filtroEstado.addEventListener("change", aplicarFiltros);
 //Analisis Historico
 document.getElementById("btnHistorico").addEventListener("click", (e) => {
     e.preventDefault();
-    window.location.href = `site-history.html?id=${siteId}`;
+    window.location.href = `/site-history?id=${siteId}`;
 });
 
 //Volver a la lista de sitios

@@ -153,6 +153,7 @@ def ejecutar_analisis_estatico(url):
             {
                 "titulo":  nombre técnico corto de la vulnerabilidad,
                 "descripcion": explicación técnica del problema,
+                "descripcion_humana": explicacion breve en lenguaje simple y entendible,
                 "impacto":  consecuencias reales si se explota,
                 "recomendacion": cómo corregir o mitigar la vulnerabilidad,
                 "evidencia": descripción observable del problema (request, endpoint, comportamiento),

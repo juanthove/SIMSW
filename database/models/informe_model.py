@@ -9,6 +9,7 @@ class Informe(Base):
     titulo = Column(String(200), nullable=False)
 
     descripcion = Column(Text, nullable=True)
+    descripcion_humana = Column(Text, nullable=True)
     impacto = Column(Text, nullable=True)
     recomendacion = Column(Text, nullable=True)
     evidencia = Column(Text, nullable=True)
@@ -23,6 +24,7 @@ class Informe(Base):
             "id": self.id,
             "titulo": self.titulo,
             "descripcion": self.descripcion,
+            "descripcion_humana": self.descripcion_humana,
             "impacto": self.impacto,
             "recomendacion": self.recomendacion,
             "evidencia": self.evidencia,

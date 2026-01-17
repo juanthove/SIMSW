@@ -45,11 +45,19 @@ function mostrarSitios(lista) {
       <td>${item.ultimoAnalisis ?? "Sin análisis"}</td>
     `;
 
-    tr.style.cursor = "pointer";
 
-    tr.addEventListener("click", () => {
-      window.location.href = `/analysis-list?siteId=${item.id}`;
-    });
+    if (item.cantAnalisis > 0) {
+        tr.style.cursor = "pointer";
+
+        tr.addEventListener("click", () => {
+          window.location.href = `/analysis-list?siteId=${item.id}`;
+        });
+    } else {
+        // 👉 Visualmente deshabilitado
+        tr.classList.add("site-disabled");
+        tr.title = "Este sitio no tiene analisis";
+    }
+    
 
     tablaSitios.appendChild(tr);
   });

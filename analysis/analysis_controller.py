@@ -62,6 +62,7 @@ def analizar_estatico(url, sitio_web_id):
             CAMPOS_OBLIGATORIOS = {
                 "titulo",
                 "descripcion",
+                "descripcion_humana",
                 "impacto",
                 "recomendacion",
                 "evidencia",
@@ -86,6 +87,7 @@ def analizar_estatico(url, sitio_web_id):
                 informe = Informe(
                     titulo=v["titulo"],
                     descripcion=v["descripcion"],
+                    descripcion_humana=v["descripcion_humana"],
                     impacto=v["impacto"],
                     recomendacion=v["recomendacion"],
                     evidencia=v["evidencia"],

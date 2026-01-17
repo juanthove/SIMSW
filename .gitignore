@@ -11,6 +11,5 @@ urlsAnalizadas
 
 .venv
 ZAP_2.17.0
-static
 
 probarAnalisis.py

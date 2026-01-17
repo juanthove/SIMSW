@@ -58,5 +58,9 @@ def report_list():
 def report_detail():
     return render_template("report-detail.html")
 
+@app.route("/site-history")
+def site_history():
+    return render_template("site-history.html")
+
 if __name__ == "__main__":
     app.run(debug=True)

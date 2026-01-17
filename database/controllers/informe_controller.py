@@ -44,7 +44,7 @@ def obtener_informe_por_id(informe_id):
             "codigo": informe.codigo,
 
             # ===== CONTEXTO DEL ANÁLISIS =====
-            "analisis_id": analisis.id,
+            "analisisId": analisis.id,
             "tipoAnalisis": analisis.tipo,
             "estadoAnalisis": analisis.estado,
             "resultadoGlobal": analisis.resultado_global,
