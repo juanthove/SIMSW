@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informes</title>
+
+    <link href="../static/css/main.css" rel="stylesheet" type="text/css">
+    <link href="../static/css/analysis.css" rel="stylesheet" type="text/css">
+    <link href="../static/css/responsive.css" rel="stylesheet" type="text/css">
+    <script src="../static/js/init.js" defer></script>
+    <script type="module" src="../static/js/report-list.js"></script>
+</head>
+<body>
+    <div id="navBarDiv"></div>
+
+    <div class="pageHeader">
+        <button id="btnVolver" class="back-button">←</button>
+        <h1>Informes</h1>
+    </div>
+
+    <section class="contenedorAnalysis">
+
+        <div class="infoSitio">
+            <h2 id="nombreSitio"></h2>
+
+            <div class="infoGrid">
+                <div><strong>Análisis:</strong> <span id="analisis"></span></div>
+                <div><strong>Estado:</strong> <span id="estadoAnalisis"></span></div>
+                <div><strong>Resultado global:</strong> <span id="resultadoGlobal"></span></div>
+                <div><strong>Fecha:</strong> <span id="fechaAnalisis"></span></div>
+            </div>
+        </div>
+
+        <div class="toolbar">
+            <div class="filtrosIzq">
+                <input
+                type="text"
+                class="buscador"
+                id="buscadorInforme"
+                placeholder="Buscar por titulo"
+                />
+
+                <select class="filtro" id="filtroNivel">
+                    <option value="">Todos</option>
+                    <option value="Alta">Alta</option>
+                    <option value="Media">Media</option>
+                    <option value="Baja">Baja</option>
+                </select>
+            </div>
+        </div>
+
+        <table id="tablaInforme" class="tablaBase">
+            <thead>
+                <tr>
+                <th class="sortable" data-column="titulo">Titulo</th>
+                <th class="sortable" data-column="descripcion">Descripción</th>
+                <th class="sortable" data-column="severidad">Severidad</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!--Datos-->
+            </tbody>
+        </table>
+
+    </section>
+    
+</body>
+</html>

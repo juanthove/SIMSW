@@ -13,7 +13,7 @@ if (navBar) {
                     <a href="#" id="analysisBoton">Análisis</a>
                     <div id="analysis-menu">
                         <a href="/analysis-create">Realizar Análisis</a>
-                        <a href="site-list.html">Ver Listado Análisis</a>
+                        <a href="/site-list">Ver Listado Análisis</a>
                     </div>
                 </div>
                 <a href="/sites-create">Registrar página web</a>

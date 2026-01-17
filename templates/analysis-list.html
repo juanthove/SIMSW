@@ -9,7 +9,7 @@
     <link href="../static/css/analysis.css" rel="stylesheet" type="text/css">
     <link href="../static/css/responsive.css" rel="stylesheet" type="text/css">
     <script src="../static/js/init.js" defer></script>
-    <script src="../static/js/analysis-list.js" defer></script>
+    <script type="module" src="../static/js/analysis-list.js"></script>
 </head>
 <body>
     <div id="navBarDiv"></div>
@@ -24,27 +24,29 @@
         <div class="infoSitio">
             <h2 id="nombreSitio"></h2>
 
-            <div class="infoSitioGrid">
+            <div class="infoGrid">
                 <div><strong>Propietario:</strong> <span id="propietarioSitio"></span></div>
                 <div><strong>URL:</strong> <span id="urlSitio"></span></div>
                 <div><strong>Análisis realizados:</strong> <span id="cantidadAnalisis"></span></div>
             </div>
         </div>
 
-        <div class="analysisToolbar">
+        <div class="toolbar">
             <div class="filtrosIzq">
-                <input
-                type="text"
-                id="buscadorAnalisis"
-                placeholder="Buscar por vulnerabilidad"
-                />
 
-                <select id="filtroNivel">
+                <select class="filtro" id="filtroTipo">
                     <option value="">Todos</option>
-                    <option value="Alta">Alta</option>
-                    <option value="Media">Media</option>
-                    <option value="Baja">Baja</option>
+                    <option value="Estatico">Estático</option>
+                    <option value="Dinamico">Dinámico</option>
                 </select>
+
+                <select class="filtro" id="filtroEstado">
+                    <option value="">Todos</option>
+                    <option value="Finalizado">Finalizado</option>
+                    <option value="Sin Datos">Sin datos</option>
+                    <option value="Error">Error</option>
+                </select>
+
             </div>
             <a href="#" id="btnHistorico">Ver histórico</a>
         </div>
@@ -52,8 +54,10 @@
         <table id="tablaAnalisis" class="tablaBase">
             <thead>
                 <tr>
-                <th class="sortable" data-column="titulo">Vulnerabilidad</th>
-                <th class="sortable" data-column="vulnerabilidad">Nivel</th>
+                <th class="sortable" data-column="tipo">Tipo</th>
+                <th class="sortable" data-column="estado">Estado</th>
+                <th class="sortable" data-column="resultado">Resultado Global</th>
+                <th class="sortable" data-column="vulnerabilidades">Vulnerabilidades Detectadas</th>
                 <th class="sortable" data-column="fecha">Fecha</th>
                 </tr>
             </thead>

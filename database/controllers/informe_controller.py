@@ -1,6 +1,8 @@
 from sqlalchemy.exc import IntegrityError
 from database.connection import SessionLocal
 from database.models.informe_model import Informe
+from database.models.analisis_model import Analisis
+from database.models.sitioWeb_model import SitioWeb
 
 
 # Obtener todos los informes
@@ -17,24 +19,71 @@ def obtener_informes():
 def obtener_informe_por_id(informe_id):
     db = SessionLocal()
     try:
-        informe = db.query(Informe).filter(Informe.id == informe_id).first()
-        if informe is None:
+        result = (
+            db.query(Informe, Analisis, SitioWeb)
+            .join(Analisis, Informe.analisis_id == Analisis.id)
+            .join(SitioWeb, Analisis.sitio_web_id == SitioWeb.id)
+            .filter(Informe.id == informe_id)
+            .first()
+        )
+
+        if result is None:
             return None
-        return informe.to_dict()
+
+        informe, analisis, sitio = result
+
+        return {
+            # ===== INFORME =====
+            "id": informe.id,
+            "titulo": informe.titulo,
+            "descripcion": informe.descripcion,
+            "impacto": informe.impacto,
+            "recomendacion": informe.recomendacion,
+            "evidencia": informe.evidencia,
+            "severidad": informe.severidad,
+            "codigo": informe.codigo,
+
+            # ===== CONTEXTO DEL ANÁLISIS =====
+            "analisis_id": analisis.id,
+            "tipoAnalisis": analisis.tipo,
+            "estadoAnalisis": analisis.estado,
+            "resultadoGlobal": analisis.resultado_global,
+            "fechaAnalisis": analisis.fecha.isoformat() if analisis.fecha else None,
+
+            # ===== CONTEXTO DEL SITIO =====
+            "siteId": sitio.id,
+            "url": sitio.url,
+        }
+
     finally:
         db.close()
+
 
 
 # Obtener informes por análisis
 def obtener_informes_por_analisis(analisis_id):
     db = SessionLocal()
     try:
-        informes = db.query(Informe).filter(
-            Informe.analisis_id == analisis_id
-        ).all()
+        # Verifico que el análisis exista
+        analisis = db.query(Analisis).filter(
+            Analisis.id == analisis_id
+        ).first()
+
+        if not analisis:
+            return None
+
+        informes = (
+            db.query(Informe)
+            .filter(Informe.analisis_id == analisis_id)
+            .order_by(Informe.severidad.desc())
+            .all()
+        )
+
         return [i.to_dict() for i in informes]
+
     finally:
         db.close()
+
 
 
 # Crear informe

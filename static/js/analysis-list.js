@@ -1,98 +1,44 @@
-//Lista de analisis provicional
-const listaAnalisis = [
-  {
-    siteId: "1",
-    nombre: "Example",
-    url: "https://example.com",
-    propietario: "Pedro",
-    analisis: [
-      {
-        id: "1",
-        titulo: "Exposición de credenciales en código cliente",
-        vulnerabilidad: "Alta",
-        fecha: "2025-12-10"
-      },
-      {
-        id: "3",
-        titulo: "Versiones de librerías desactualizadas",
-        vulnerabilidad: "Baja",
-        fecha: "2025-12-15"
-      },
-      {
-        id: "6",
-        titulo: "Endpoint crítico expuesto sin autenticación",
-        vulnerabilidad: "Alta",
-        fecha: "2025-12-20"
-      },
-      {
-        id: "7",
-        titulo: "Falta de encabezados de seguridad HTTP",
-        vulnerabilidad: "Media",
-        fecha: "2025-12-22"
-      }
-    ]
-  },
-  {
-    siteId: "2",
-    nombre: "MiDominio",
-    url: "https://midominio.com",
-    propietario: "Juan",
-    analisis: [
-      {
-        id: "2",
-        titulo: "Falta de encabezados de seguridad HTTP",
-        vulnerabilidad: "Media",
-        fecha: "2025-12-12"
-      },
-      {
-        id: "5",
-        titulo: "Endpoint expuesto sin autenticación",
-        vulnerabilidad: "Alta",
-        fecha: "2025-12-18"
-      }
-    ]
-  },
-  {
-    siteId: "3",
-    nombre: "TiendaOnline",
-    url: "https://tiendaonline.net",
-    propietario: "Shop SA",
-    analisis: [
-      {
-        id: "4",
-        titulo: "Configuración de cookies mejorable",
-        vulnerabilidad: "Baja",
-        fecha: "2025-12-16"
-      }
-    ]
-  }
-];
+//Obtengo datos
+import { apiFetch } from "./api.js";
 
 //Obtengo el id de la URL
 const params = new URLSearchParams(window.location.search);
 const siteId = params.get("siteId");
 
-//Obtengo solo los analisis del sitio seleccionado (CAMBIAR POR FETCH CUANDO TENGAMOS LA API)
-const sitioSeleccionado = listaAnalisis.find(
-  item => item.siteId === siteId
-);
-
-let listaFiltrada = sitioSeleccionado ? sitioSeleccionado.analisis : [];
+let sitio = null;
+let listaAnalisis = [];
+let listaFiltrada = [];
 
 
-//Colocar info del sitio
-document.getElementById("nombreSitio").textContent = sitioSeleccionado.nombre;
-document.getElementById("propietarioSitio").textContent = sitioSeleccionado.propietario;
-document.getElementById("urlSitio").textContent = sitioSeleccionado.url;
-document.getElementById("cantidadAnalisis").textContent = listaFiltrada.length;
+async function cargarAnalisis() {
+    try {
+        const response = await apiFetch(`/api/sitios/${siteId}/detalle`);
 
+        if (!response.ok) {
+            throw new Error("Error al obtener analisis del sitio");
+        }
 
-//Orden para mostrar las vulnerabilidades por nivel
-const ordenVulnerabilidad = {
-  "Baja": 1,
-  "Media": 2,
-  "Alta": 3,
-};
+        sitio = await response.json();
+
+        document.getElementById("nombreSitio").textContent = sitio.nombre;
+        document.getElementById("propietarioSitio").textContent = sitio.propietario;
+        document.getElementById("urlSitio").textContent = sitio.url;
+
+        listaAnalisis = sitio.analisis || [];
+        listaFiltrada = [...listaAnalisis];
+
+        document.getElementById("cantidadAnalisis").textContent = listaAnalisis.length;
+        console.log(listaAnalisis);
+        mostrarListado(listaFiltrada);
+
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+//Cargar los sitios al entrar
+cargarAnalisis()
+
 
 //Obtengo la tabla
 const tablaAnalisis = document.querySelector("#tablaAnalisis tbody");
@@ -104,15 +50,17 @@ function mostrarListado(lista) {
         const tr = document.createElement("tr");
 
         tr.innerHTML = `
-        <td>${item.titulo}</td>
-        <td data-vuln="${item.vulnerabilidad}">${item.vulnerabilidad}</td>
+        <td>${item.tipo}</td>
+        <td>${item.estado}</td>
+        <td>${item.resultado_global}</td>
+        <td>${item.cantidad_informes}</td>
         <td>${item.fecha}</td>
         `;
 
         tr.style.cursor = "pointer";
 
         tr.addEventListener("click", () => {
-            window.location.href = `analysis-detail.html?id=${item.id}`;
+            window.location.href = `/report-list?siteId=${siteId}&analysisId=${item.id}`;
         });
 
         tablaAnalisis.appendChild(tr);
@@ -124,65 +72,80 @@ const encabezados = document.querySelectorAll("#tablaAnalisis th.sortable");
 encabezados.forEach(th => {
   th.addEventListener("click", () => {
     const columna = th.dataset.column;
-    const asc = !th.classList.contains("asc"); //Si no hay una clase asc entonces es que se ordena ascendente
+    const asc = !th.classList.contains("asc");
 
-    //Resetear las flechas
+    // Resetear flechas
     encabezados.forEach(h => h.classList.remove("asc", "desc"));
-
-    //Setear la flecha actual
     th.classList.add(asc ? "asc" : "desc");
 
     listaFiltrada.sort((a, b) => {
-        let A = a[columna];
-        let B = b[columna];
+      let A, B;
 
-        if (columna === "fecha") {
-            A = new Date(A);
-            B = new Date(B);
-        }
+      switch (columna) {
+        case "fecha":
+          A = new Date(a.fecha);
+          B = new Date(b.fecha);
+          break;
 
-        if (columna === "vulnerabilidad") {
-            A = ordenVulnerabilidad[A];
-            B = ordenVulnerabilidad[B];
-        }
+        case "resultado":
+          A = Number(a.resultado_global);
+          B = Number(b.resultado_global);
+          break;
 
-        if (columna === "titulo") {
-          A = A.toLowerCase();
-          B = B.toLowerCase();
-        }
+        case "vulnerabilidades":
+          A = Number(a.cant_vulnerabilidades);
+          B = Number(b.cant_vulnerabilidades);
+          break;
 
-        if (A < B) return asc ? -1 : 1; //El primer elemento va antes que el segundo
-        if (A > B) return asc ? 1 : -1; //El segundo elemento va antes que el primero
-        return 0;
+        case "tipo":
+          A = a.tipo?.toLowerCase();
+          B = b.tipo?.toLowerCase();
+          break;
+
+        case "estado":
+          A = a.estado?.toLowerCase();
+          B = b.estado?.toLowerCase();
+          break;
+
+        default:
+          return 0;
+      }
+
+      if (A < B) return asc ? -1 : 1;
+      if (A > B) return asc ? 1 : -1;
+      return 0;
     });
 
     mostrarListado(listaFiltrada);
   });
 });
 
-//Buscador y filtro por nivel
-const buscador = document.getElementById("buscadorAnalisis");
-const filtroNivel = document.getElementById("filtroNivel");
+
+//Filtros
+const filtroTipo = document.getElementById("filtroTipo");
+const filtroEstado = document.getElementById("filtroEstado");
 
 function aplicarFiltros() {
-  const texto = buscador.value.toLowerCase();
-  const nivel = filtroNivel.value;
+  const tipo = filtroTipo.value.toLowerCase().trim();
+  const estado = filtroEstado.value.toLowerCase().trim();
 
-  listaFiltrada = sitioSeleccionado.analisis.filter(item => {
-    const coincideTexto =
-      item.titulo.toLowerCase().includes(texto);
+  listaFiltrada = listaAnalisis.filter(item => {
+    const coincideTipo =
+      !tipo || item.tipo?.toLowerCase().trim() === tipo;
 
-    const coincideNivel =
-      !nivel || item.vulnerabilidad === nivel;
+    const coincideEstado =
+      !estado || item.estado?.toLowerCase().trim() === estado;
 
-    return coincideTexto && coincideNivel;
+    return coincideTipo && coincideEstado;
   });
 
   mostrarListado(listaFiltrada);
 }
+// Eventos
+filtroTipo.addEventListener("change", aplicarFiltros);
+filtroEstado.addEventListener("change", aplicarFiltros);
 
-buscador.addEventListener("input", aplicarFiltros);
-filtroNivel.addEventListener("change", aplicarFiltros);
+
 
 //Analisis Historico
 document.getElementById("btnHistorico").addEventListener("click", (e) => {
@@ -193,8 +156,5 @@ document.getElementById("btnHistorico").addEventListener("click", (e) => {
 //Volver a la lista de sitios
 document.getElementById("btnVolver").addEventListener("click", (e) => {
     e.preventDefault();
-    window.location.href = `site-list.html`;
+    window.location.href = `/site-list`;
 });
-
-//Muestro la tabla al cargar la pagina
-mostrarListado(listaFiltrada);

@@ -37,6 +37,10 @@ def get_informe(informe_id):
 @jwt_required()
 def get_informes_por_analisis_route(analisis_id):
     informes = obtener_informes_por_analisis(analisis_id)
+
+    if informes is None:
+        return jsonify({"error": "Análisis no encontrado"}), 404
+
     return jsonify(informes), 200
 
 

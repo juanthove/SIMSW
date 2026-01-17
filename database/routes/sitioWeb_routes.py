@@ -6,7 +6,9 @@ from database.controllers.sitioWeb_controller import (
     obtener_sitio_por_id,
     crear_sitio,
     actualizar_sitio,
-    eliminar_sitio
+    eliminar_sitio,
+    obtener_sitios_con_resumen,
+    obtener_detalle_sitio
 )
 
 sitioWeb_bp = Blueprint("sitioWeb", __name__, url_prefix="/api/sitios")
@@ -84,3 +86,23 @@ def delete_sitio(sitio_id):
         return jsonify({"error": "Sitio no encontrado"}), 404
 
     return jsonify({"message": "Sitio eliminado correctamente"}), 200
+
+
+#Obtener el resumen con cantidad de analisis y fecha del ultimo
+@sitioWeb_bp.route("/resumen", methods=["GET"])
+@jwt_required()
+def obtener_sitios_resumen():
+    sitios = obtener_sitios_con_resumen()
+    return jsonify(sitios), 200
+
+
+#Obtener informacion del sitio y de sus analisis
+@sitioWeb_bp.route("/<int:sitio_id>/detalle", methods=["GET"])
+@jwt_required()
+def get_detalle_sitio(sitio_id):
+    detalle = obtener_detalle_sitio(sitio_id)
+
+    if not detalle:
+        return jsonify({"error": "Sitio no encontrado"}), 404
+
+    return jsonify(detalle), 200
