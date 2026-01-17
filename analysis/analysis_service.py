@@ -9,6 +9,9 @@ import re
 from scripts.Informe import Informe
 from scripts.AST import *
 from scripts.vulberta_api import Vulberta as Vulberta
+from scripts.Owaspzap import OwaspZap as OW
+import time
+from scripts.EnviarAlerta import EnviarAlerta
 
 
 def extraer_json(texto):
@@ -204,14 +207,27 @@ def ejecutar_analisis_estatico(url):
 def ejecutar_analisis_dinamico(url):
     "Analisis del sitio en forma dinamica, mediante el uso de Owasp Zap"
 
-    print("Entre en el de servicios")
-    st = SitioWeb(1, "No se", url, "propietario", None, None, None)
-    fecha_actual = datetime.now()
-    analisis = Analisis(1, fecha_actual, "No terminado", "Dinamico", st)
+    herramienta = OW(
+        nombre="Owasp zap",
+        version="2.17.0"
+    )
 
-    resultado = analisis.ejectutar_dinamico()
+    herramienta.start_zap()
+    alerts = herramienta.scan_activo(url)
 
-    return resultado
+
+    for item in alerts:
+        if item.get("risk") == "High":
+            alerta = EnviarAlerta()
+
+            destinatario = os.getenv("GMAIL_DESTINATARIO")
+            asunto = "Alerta de nivel alto encontrada"
+            contenido = f"Nombre de la alerta: {item.get('name')}"
+
+            alerta.enviar_alerta(destinatario, asunto, contenido)
+
+    return alerts
+
 
 def ejecutar_analisis_sonar_qube(ruta):
     pass
