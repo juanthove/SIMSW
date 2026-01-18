@@ -113,7 +113,7 @@ class OwaspZap(Herramienta):
                 }
             })
 
-        print(alertas)
+
         return resultado
 
 

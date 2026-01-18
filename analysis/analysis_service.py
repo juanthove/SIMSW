@@ -207,24 +207,119 @@ def ejecutar_analisis_estatico(url):
 def ejecutar_analisis_dinamico(url):
     "Analisis del sitio en forma dinamica, mediante el uso de Owasp Zap"
 
-    herramienta = OW(
-        nombre="Owasp zap",
-        version="2.17.0"
-    )
+    try:
 
-    herramienta.start_zap()
-    alerts = herramienta.scan_activo(url)
+        herramienta = OW(
+            nombre="Owasp zap",
+            version="2.17.0"
+        )
+
+        herramienta.start_zap()
+        alerts = herramienta.scan_activo(url)
 
 
-    for item in alerts:
-        if item.get("risk") == "High":
-            alerta = EnviarAlerta()
+        for item in alerts:
+            if item.get("risk") == "High":
+                alerta = EnviarAlerta()
 
-            destinatario = os.getenv("GMAIL_DESTINATARIO")
-            asunto = "Alerta de nivel alto encontrada"
-            contenido = f"Nombre de la alerta: {item.get('name')}"
+                destinatario = os.getenv("GMAIL_DESTINATARIO")
+                asunto = "Alerta de nivel alto encontrada"
+                contenido = f"Nombre de la alerta: {item.get('name')}"
 
-            alerta.enviar_alerta(destinatario, asunto, contenido)
+                alerta.enviar_alerta(destinatario, asunto, contenido)
+        
+        #Llamada al prompt
+
+        informe  = Informe()
+        
+        prompt = """
+        Eres un analista de seguridad especializado en OWASP y pruebas DAST.
+
+        Se te proporcionará una lista de alertas detectadas por OWASP ZAP.
+        Cada alerta incluye nombre, severidad, CWE, descripción técnica y evidencia.
+
+        Devuelve EXCLUSIVAMENTE un JSON válido.
+        NO incluyas texto adicional.
+        NO incluyas markdown ni ```.
+
+        El resultado debe ser un ARRAY de objetos con la siguiente estructura exacta:
+
+        [
+        {
+            "titulo": "nombre técnico corto de la vulnerabilidad",
+            "descripcion": "explicación técnica clara del problema",
+            "impacto": "consecuencias reales si se explota",
+            "recomendacion": "cómo corregir o mitigar la vulnerabilidad",
+            "evidencia": "descripción observable del problema (request, endpoint, comportamiento)",
+            "severidad": 1 | 2 | 3,
+            "codigo": {
+                "endpoint": "...",
+                "metodo": "...",
+                "parametro": "...",
+                "payload": "...",
+                "evidencia": "..."
+            }
+        }
+        ]
+
+        Reglas:
+        - Usa el CWE como referencia principal.
+        - NO inventes código fuente.
+        - Usa la evidencia proporcionada.
+        - Severidad:
+            Low → 1
+            Medium → 2
+            High → 3
+
+        Alertas detectadas:
+        """
+
+
+        for alert in alerts:
+            prompt += f"""
+            ---
+            Nombre: {alert['tipo']}
+            Riesgo: {alert['riesgo']}
+            CWE: {alert['cwe']}
+            Descripcion: {alert['descripcion']}
+            Impacto: {alert['impacto']}
+            Recomendacion: {alert['solucion']}
+            Evidencia: {json.dumps(alert['evidencia'], ensure_ascii=False)}
+        """
+            
+        resultadoFinal = informe.preguntar(prompt)
+
+        print("Respuesta de la IA recibida:\n")
+
+        if hasattr(resultadoFinal, "content"):
+            texto_ia = resultadoFinal.content
+        else:
+            texto_ia = resultadoFinal
+
+        print(f"\n\n{texto_ia}\n\n\n")
+
+        try:
+            json_limpio = extraer_json(texto_ia)
+            resultado_json = json.loads(json_limpio)
+        except Exception as e:
+            return {
+                "mensaje": "La IA no devolvió un JSON válido",
+                "vulnerabilidades": [],
+                "error_tecnico": str(e)
+            }
+
+        return resultado_json
+
+    except Exception as e:
+        print(f"[!] Error inesperado en análisis dinamico: {e}")
+        return {
+            "mensaje": "Error inesperado durante el análisis dinamico",
+            "vulnerabilidades": [],
+            "error_tecnico": str(e)
+        }
+
+
+
 
     return alerts
 
