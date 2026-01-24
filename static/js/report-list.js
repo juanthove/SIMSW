@@ -50,7 +50,6 @@ const tablaInforme = document.querySelector("#tablaInforme tbody");
 
 function mostrarListado(lista) {
     tablaInforme.innerHTML = ""; //Elimino los datos antiguos
-
     lista.forEach(item => {
         const tr = document.createElement("tr");
 
@@ -69,7 +68,7 @@ function mostrarListado(lista) {
         tablaInforme.appendChild(tr);
     });
 }
-// test cambio
+
 
 const encabezados = document.querySelectorAll("#tablaInforme th.sortable");
 

@@ -9,7 +9,7 @@ if (!id) {
     throw new Error("Falta ID de informe");
 }
 
-let informe = "";
+let informe = null;
 
 async function cargarDetalle() {
     try {
@@ -23,13 +23,14 @@ async function cargarDetalle() {
 
         mostrarDetalle(informe);
 
+        if (informe.tipoAnalisis === "Dinamico") {
+            await cargarDetalleOZ(informe.id);
+        }
+
     } catch (error) {
         console.error(error);
     }
 }
-
-//Cargar los sitios al entrar
-cargarDetalle()
 
 const severidadTexto = {
   1: "Baja",
@@ -56,10 +57,66 @@ function mostrarDetalle(data) {
         document.getElementById("codigo").textContent = data.codigo;
         document.getElementById("bloqueCodigo").hidden = false;
     }
+
 }
+
+
+async function cargarDetalleOZ(informeId) {
+    try {
+        const response = await apiFetch(`/api/detalle-oz/informe/${informeId}`);
+
+        if (!response.ok) {
+            return; // No hay detalle OZ → no mostramos nada
+        }
+
+        const oz = await response.json();
+
+        mostrarDetalleOZ(oz);
+
+    } catch (error) {
+        console.error("Error al cargar detalle OZ", error);
+    }
+}
+
+
+function mostrarDetalleOZ(oz) {
+    const bloque = document.getElementById("bloqueDetalleOZ");
+
+    let hayContenido = false;
+
+    hayContenido |= setOZField("oz-endpoint", oz.endpoint);
+    hayContenido |= setOZField("oz-metodo", oz.metodo);
+    hayContenido |= setOZField("oz-parametro", oz.parametro);
+    hayContenido |= setOZField("oz-payload", oz.payload);
+
+    // Mostrar el bloque solo si hay al menos un dato técnico
+    bloque.hidden = !hayContenido;
+}
+
+
+function setOZField(id, value) {
+    const el = document.getElementById(id);
+    const container = el.closest(".oz-item");
+
+    if (!value || value.trim() === "") {
+        container.classList.add("hidden");
+        return false;
+    }
+
+    el.textContent = value;
+    container.classList.remove("hidden");
+    return true;
+}
+
+
+
+
+
+//Cargar los sitios al entrar
+cargarDetalle()
 
 //Volver a la lista de analisis
 document.getElementById("btnVolver").addEventListener("click", (e) => {
     e.preventDefault();
-    window.location.href = `/report-list?siteId=${informe.siteId}&analysisId=${informe.analysisId}`;
+    window.location.href = `/report-list?siteId=${informe.siteId}&analysisId=${informe.analisisId}`;
 });

@@ -44,9 +44,18 @@ body {
 
 .bloque h2 {
   font-size: 16px;
-  margin-bottom: 6px;
+  margin-bottom: 18px;
   border-left: 4px solid #bbb;
   padding-left: 8px;
+}
+
+#codigo {
+  white-space: pre-wrap;     /* mantiene saltos + indentación */
+  word-break: break-word;    /* evita desbordes horizontales */
+  overflow-x: auto;
+  display: block;
+  font-family: Consolas, Monaco, monospace;
+  line-height: 1.4;
 }
 
 pre {
@@ -59,4 +68,55 @@ pre {
 
 #url:visited {
     color: #0000EE;
+}
+
+#bloqueDetalleOZ {
+  margin-top: 28px;
+}
+
+#bloqueDetalleOZ::before {
+  content: "";
+  display: block;
+  height: 1px;
+  background: #e0e0e0;
+  margin-bottom: 16px;
+}
+
+.oz-item {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+  align-items: flex-start;
+  padding: 6px 0;
+  border-bottom: 1px dashed #e5e5e5;
+}
+
+.oz-item:last-child {
+  border-bottom: none;
+}
+
+.oz-item strong {
+  min-width: 100px;
+  color: #555;
+}
+
+.oz-item span {
+  font-family: Consolas, Monaco, monospace;
+  font-size: 13px;
+  background: #f8f9fa;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.oz-item pre {
+  margin-top: 8px;
+  margin-left: 100px; /* alinea con los valores */
+  background: #f4f4f4;
+  padding: 12px;
+  border-radius: 4px;
+}
+
+/* Ocultamos completamente el item si no hay contenido */
+.oz-item.hidden {
+  display: none;
 }

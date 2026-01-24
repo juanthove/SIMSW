@@ -37,18 +37,30 @@ def analizar_estatico_endpoint():
 @analysis_bp.route("/analizarDinamico", methods=["POST"])
 @jwt_required()
 def analizar_dinamico_endpoint():
-    print("Entre en el de rutass")
     data = request.get_json()
+
     url = data.get("url")
-    if not url:
-        return jsonify({"error": "No se proporcionó URL"}), 400
+    sitio_web_id = data.get("sitio_web_id")
+
+    if not url or sitio_web_id is None:
+        return jsonify({"error": "Faltan datos"}), 400
+
+    sitio_web_id = int(sitio_web_id)
 
     try:
-        print("A")
-        resultado = analizar_dinamico(url)
+        resultado = analizar_dinamico(url, sitio_web_id)
         return jsonify(resultado), 200
+
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        # HTTP error, pero el estado ya quedó guardado
+        return jsonify({
+            "estado": "ERROR",
+            "mensaje": "Falló el análisis dinámico",
+            "detalle": str(e)
+        }), 500
+
+    
+
     
 @analysis_bp.route("/analizarSonarQube", methods=["POST"])
 @jwt_required()

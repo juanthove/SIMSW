@@ -22,22 +22,34 @@ class OwaspZap(Herramienta):
         print(f"El path es: {self.ZAP_PATH}")
 
     def start_zap(self):
-            print("[+] Iniciando OWASP ZAP (local)...")
+        print("[+] Verificando estado de OWASP ZAP...")
 
-            subprocess.Popen(
-                [
-                    "java",
-                    "-jar",
-                    self.ZAP_PATH,
-                    "-daemon",
-                    "-port", self.ZAP_PORT,
-                    "-config", "api.disablekey=true"
-                ],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL
-            )
+        # ✅ Si ya está levantado, no hacer nada
+        try:
+            zap = ZAPv2(proxies=self._proxies())
+            zap.core.version
+            print("[+] ZAP ya estaba levantado")
+            return
+        except Exception:
+            pass  # No está levantado, se inicia abajo
 
-            self.wait_for_zap()
+        print("[+] Iniciando OWASP ZAP (local)...")
+
+        subprocess.Popen(
+            [
+                "java",
+                "-jar",
+                self.ZAP_PATH,
+                "-daemon",
+                "-port", self.ZAP_PORT,
+                "-config", "api.disablekey=true"
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
+
+        self.wait_for_zap()
+
         
     def wait_for_zap(self):
         print("[*] Esperando a ZAP...")
@@ -67,21 +79,37 @@ class OwaspZap(Herramienta):
         print(f"[+] Spider a {url}")
         spider_id = zap.spider.scan(url)
 
+        SPIDER_TIMEOUT = 120  #Segundos para que finalice automaticamente
+        start_time = time.time()
+
         while int(zap.spider.status(spider_id)) < 100:
+            if time.time() - start_time > SPIDER_TIMEOUT:
+                print("[!] Timeout en Spider")
+                break
+
             print("Spider:", zap.spider.status(spider_id), "%")
             time.sleep(2)
 
-        print("[✓] Spider finalizado")
+        print("[✓] Spider finalizado (o timeout)")
+
 
         # ⚔️ Active Scan
         print("[+] Active Scan")
         scan_id = zap.ascan.scan(url)
 
+        ASCAN_TIMEOUT = 600  #Segundos para que finalice automaticamente
+        start_time = time.time()
+
         while int(zap.ascan.status(scan_id)) < 100:
+            if time.time() - start_time > ASCAN_TIMEOUT:
+                print("[!] Timeout en Active Scan")
+                break
+
             print("Active Scan:", zap.ascan.status(scan_id), "%")
             time.sleep(5)
 
-        print("[✓] Active Scan finalizado")
+        print("[✓] Active Scan finalizado (o timeout)")
+
 
         # ⏳ Passive Scan
         while int(zap.pscan.records_to_scan) > 0:
@@ -94,6 +122,9 @@ class OwaspZap(Herramienta):
 
         resultado = []
         for alerta in alertas:
+            if alerta.get("riskcode") == "0":
+                continue
+
             resultado.append({
                 "tipo": alerta.get("name"),
                 "riesgo": alerta.get("risk"),

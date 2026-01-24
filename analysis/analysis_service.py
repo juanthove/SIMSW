@@ -205,61 +205,83 @@ def ejecutar_analisis_estatico(url):
 
 
 
+
+
 def ejecutar_analisis_dinamico(url):
-    "Analisis del sitio en forma dinamica, mediante el uso de Owasp Zap"
+    """
+    Análisis dinámico usando OWASP ZAP + IA
+    - ZAP se ejecuta
+    - Se obtienen alertas
+    - Se deduplican
+    - Se llama a la IA UNA SOLA VEZ
+    - Devuelve SOLO el JSON final (igual que el análisis estático)
+    """
 
     try:
-
+        # ===============================
+        # 1️⃣ Inicializar ZAP
+        # ===============================
         herramienta = OW(
-            nombre="Owasp zap",
+            nombre="OWASP ZAP",
             version="2.17.0"
         )
-
         herramienta.start_zap()
-        alerts = herramienta.scan_activo(url)
 
+        # ===============================
+        # 2️⃣ Ejecutar escaneo activo
+        # ===============================
+        alertas = herramienta.scan_activo(url)
 
-        for item in alerts:
-            if item.get("risk") == "High":
-                alerta = EnviarAlerta()
+        if not alertas or not isinstance(alertas, list):
+            return {
+                "mensaje": "ZAP no devolvió alertas",
+                "resultado_json": []
+            }
 
-                destinatario = os.getenv("GMAIL_DESTINATARIO")
-                asunto = "Alerta de nivel alto encontrada"
-                contenido = f"Nombre de la alerta: {item.get('name')}"
+        # ===============================
+        # 3️⃣ Deduplicar alertas
+        # ===============================
+        alertas = deduplicar_alertas(alertas)
 
-                alerta.enviar_alerta(destinatario, asunto, contenido)
-        
-        #Llamada al prompt
+        if not alertas:
+            return {
+                "mensaje": "No se detectaron vulnerabilidades dinámicas",
+                "resultado_json": []
+            }
 
-        informe  = Informe()
-        
+        print(f"[DEBUG] Alertas finales enviadas a IA: {len(alertas)}")
+
+        # ===============================
+        # 4️⃣ Construir PROMPT (UNA VEZ)
+        # ===============================
         prompt = """
-        Eres un analista de seguridad especializado en OWASP y pruebas DAST.
+        Eres un analista de seguridad especializado en pruebas DAST y OWASP.
 
-        Se te proporcionará una lista de alertas detectadas por OWASP ZAP.
-        Cada alerta incluye nombre, severidad, CWE, descripción técnica y evidencia.
+        Se te proporcionará un conjunto de alertas detectadas por OWASP ZAP
+        correspondientes a un único análisis dinámico de un sitio web.
 
-        Devuelve EXCLUSIVAMENTE un JSON válido.
+        Tu tarea es analizar TODAS las alertas en conjunto y devolver
+        EXCLUSIVAMENTE un JSON válido.
+
         NO incluyas texto adicional.
-        NO incluyas markdown ni ```.
+        NO markdown.
+        NO ```.
 
-        El resultado debe ser un ARRAY de objetos con la siguiente estructura exacta:
+        Devuelve un ARRAY con esta estructura EXACTA:
 
         [
         {
-            "titulo": "nombre técnico corto de la vulnerabilidad",
-            "descripcion": "explicación técnica clara del problema",
-            "impacto": "consecuencias reales si se explota",
-            "recomendacion": "cómo corregir o mitigar la vulnerabilidad",
-            "evidencia": "descripción observable del problema (request, endpoint, comportamiento)",
-            "severidad": 1 | 2 | 3,
-            "codigo": {
-                "endpoint": "...",
-                "metodo": "...",
-                "parametro": "...",
-                "payload": "...",
-                "evidencia": "..."
-            }
+            "titulo":  nombre técnico corto de la vulnerabilidad,
+            "descripcion": explicación técnica del problema,
+            "descripcion_humana": explicacion breve en lenguaje simple y entendible,
+            "impacto":  consecuencias reales si se explota,
+            "recomendacion": cómo corregir o mitigar la vulnerabilidad utilizando la solucion sugeria por owasp zap como referencia principal adaptada al contexto general del sitio,
+            "evidencia": Descripción concreta y observable que demuestra la vulnerabilidad y debe explicar QUÉ se observó y POR QUÉ confirma el problema,
+            "severidad": nivel de severidad del 1 al 3 (1=baja, 2=media, 3=alta),
+            "endpoint": "...",
+            "metodo": "...",
+            "parametro": "Nombre del parámetro afectado. Puede ser un parámetro de query/body, un header HTTP o una cookie",
+            "payload": "Valor o carga utilizada por OWASP ZAP para evidenciar el problema (por ejemplo: payload de inyección, valor malicioso o inesperado). Si no hay payload claro, dejar vacío. NO inventar payloads"
         }
         ]
 
@@ -271,58 +293,103 @@ def ejecutar_analisis_dinamico(url):
             Low → 1
             Medium → 2
             High → 3
+        - Si una alerta es meramente informativa, duplicada o falso positivo,
+        NO la incluyas en el resultado final.
+        - Cada objeto del array representa UNA vulnerabilidad real.
 
-        Alertas detectadas:
+        Alertas detectadas por OWASP ZAP:
         """
 
-
-        for alert in alerts:
+        for alerta in alertas:
             prompt += f"""
             ---
-            Nombre: {alert['tipo']}
-            Riesgo: {alert['riesgo']}
-            CWE: {alert['cwe']}
-            Descripcion: {alert['descripcion']}
-            Impacto: {alert['impacto']}
-            Recomendacion: {alert['solucion']}
-            Evidencia: {json.dumps(alert['evidencia'], ensure_ascii=False)}
-        """
-            
-        resultadoFinal = informe.preguntar(prompt)
+            Nombre de la alerta: {alerta.get("tipo")}
+            Nivel de riesgo: {alerta.get("riesgo")}
+            CWE asociado: {alerta.get("cwe")}
+            Descripción técnica: {alerta.get("descripcion")}
+            Impacto potencial: {alerta.get("impacto")}
+            Recomendación de ZAP: {alerta.get("solucion")}
+            Evidencia técnica: {json.dumps(alerta.get("evidencia"), ensure_ascii=False)}
+            """
 
-        print("Respuesta de la IA recibida:\n")
+        # ===============================
+        # 5️⃣ Llamada a IA (UNA SOLA VEZ)
+        # ===============================
+        informe = Informe()
+        respuesta_ia = informe.preguntar(prompt)
 
-        if hasattr(resultadoFinal, "content"):
-            texto_ia = resultadoFinal.content
-        else:
-            texto_ia = resultadoFinal
+        texto_ia = (
+            respuesta_ia.content
+            if hasattr(respuesta_ia, "content")
+            else respuesta_ia
+        )
 
-        print(f"\n\n{texto_ia}\n\n\n")
-
+        # ===============================
+        # 6️⃣ Parsear JSON de IA
+        # ===============================
         try:
             json_limpio = extraer_json(texto_ia)
             resultado_json = json.loads(json_limpio)
         except Exception as e:
             return {
                 "mensaje": "La IA no devolvió un JSON válido",
-                "vulnerabilidades": [],
+                "resultado_json": [],
                 "error_tecnico": str(e)
             }
 
-        return resultado_json
+        if not isinstance(resultado_json, list):
+            return {
+                "mensaje": "La IA no devolvió un array válido",
+                "resultado_json": []
+            }
+
+        print(f"[DEBUG] Vulnerabilidades finales IA: {(resultado_json)}")
+
+        # ===============================
+        # 7️⃣ Resultado final (IGUAL AL ESTÁTICO)
+        # ===============================
+        return {
+            "resultado_json": resultado_json
+        }
 
     except Exception as e:
-        print(f"[!] Error inesperado en análisis dinamico: {e}")
+        print(f"[!] Error inesperado en análisis dinámico: {e}")
         return {
-            "mensaje": "Error inesperado durante el análisis dinamico",
-            "vulnerabilidades": [],
+            "mensaje": "Error inesperado durante el análisis dinámico",
+            "resultado_json": [],
             "error_tecnico": str(e)
         }
 
 
 
 
-    return alerts
+
+
+#Eliminar alertas iguales
+def deduplicar_alertas(alertas):
+    vistas = {}
+    resultado = []
+
+    for a in alertas:
+        key = (
+            a.get("alert"),                 # Nombre técnico
+            a.get("risk"),                  # Severidad
+            a.get("cweid") or a.get("cwe"), # CWE
+            a.get("param", "").lower()      # Header / parámetro
+        )
+
+        if key not in vistas:
+            # Clonar alerta base
+            a["evidencias"] = [a.get("url")]
+            vistas[key] = a
+            resultado.append(a)
+        else:
+            # Acumular endpoints como evidencia
+            vistas[key]["evidencias"].append(a.get("url"))
+
+    return resultado
+
+
 
 
 def ejecutar_analisis_sonar_qube(ruta):

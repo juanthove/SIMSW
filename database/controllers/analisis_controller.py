@@ -152,7 +152,7 @@ def obtener_detalle_analisis_con_informes(analisis_id):
 
         return {
             "analisis": {
-                "id": analisis.id,
+                "id_analisis": analisis.id,
                 "tipo": analisis.tipo,
                 "estado": analisis.estado,
                 "resultado_global": analisis.resultado_global,
@@ -160,6 +160,7 @@ def obtener_detalle_analisis_con_informes(analisis_id):
             },
             "informes": [
                 {
+                    "id": i.id,
                     "titulo": i.titulo,
                     "descripcion_humana": i.descripcion_humana,
                     "severidad": i.severidad
