@@ -130,7 +130,7 @@ document.addEventListener("DOMContentLoaded", function(){
 
     botonPrueba.addEventListener("click", async () => {
         const url = urlInput.value.trim();
-        fetch("http://localhost:5000/analizarEstatico", {
+        fetch("http://localhost:5000/analizarDinamico", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

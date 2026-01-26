@@ -5,22 +5,25 @@ if (navBar) {
 
   navBar.innerHTML = `
     <nav id="navbar">
-        <a href="index.html" id="paginaPrincipal"><h2>SIMSW</h2></a>
+        <a href="/" id="paginaPrincipal"><h2>SIMSW</h2></a>
 
         <div id="botonEncabezado">
             <div id="analysis">
                 <div id="analysis-container">
                     <a href="#" id="analysisBoton">Análisis</a>
                     <div id="analysis-menu">
-                        <a href="analysis-create.html">Realizar Análisis</a>
-                        <a href="site-list.html">Ver Listado Análisis</a>
+                        <a href="/analysis-create">Realizar Análisis</a>
+                        <a href="/site-list">Ver Listado Análisis</a>
                     </div>
                 </div>
-                <a href="site-create.html">Registrar página web</a>
+                <a href="/sites-create">Registrar página web</a>
             </div>
 
             <div id="config">
                 <a href="config.html">Configuración</a>
+            </div>
+            <div id="sesion">
+                <a href="#" id="logoutBtn">Cerrar Sesión</a>
             </div>
         </div>
 
@@ -44,4 +47,15 @@ analysisContainer.addEventListener("mouseenter", () => {
 
 analysisContainer.addEventListener("mouseleave", () => {
     analysisMenu.classList.remove("show");
+});
+
+//Al cliquear cerrar sesion se vuelve a login y se elimina el token
+document.getElementById("logoutBtn").addEventListener("click", (e) => {
+  e.preventDefault();
+
+  // Eliminar token
+  localStorage.removeItem("token");
+
+  // Redirigir
+  window.location.href = "/login";
 });

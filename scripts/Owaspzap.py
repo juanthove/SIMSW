@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 import time 
 from scripts.Herramienta import Herramienta
 #from Herramienta import *
+from zapv2 import ZAPv2
 
 
 load_dotenv()
@@ -15,79 +16,105 @@ class OwaspZap(Herramienta):
         super().__init__( nombre, version)
 
         self.ZAP_PORT = "8090"
+        self.ZAP_HOST = "127.0.0.1"
         self.ZAP_PATH = os.path.join(os.getcwd(), "ZAP_2.17.0", "zap-2.17.0.jar")
-        self.ZAP_URL = f"http://127.0.0.1:{self.ZAP_PORT}"
+        self.ZAP_URL = f"http://{self.ZAP_HOST}:{self.ZAP_PORT}"
         print(f"El path es: {self.ZAP_PATH}")
 
-        
     def start_zap(self):
-        print("[+] Iniciando OWASP ZAP en background...")
+            print("[+] Iniciando OWASP ZAP (local)...")
 
-        subprocess.Popen(
-            [
-                "java",
-                "-jar",
-                self.ZAP_PATH,
-                "-daemon",
-                "-port", self.ZAP_PORT,
-                "-config", "api.disablekey=true"
-            ],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL
-        )
+            subprocess.Popen(
+                [
+                    "java",
+                    "-jar",
+                    self.ZAP_PATH,
+                    "-daemon",
+                    "-port", self.ZAP_PORT,
+                    "-config", "api.disablekey=true"
+                ],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            )
 
-        self.wait_for_zap()
-
+            self.wait_for_zap()
+        
     def wait_for_zap(self):
-        print("[*] Esperando a que ZAP levante...")
+        print("[*] Esperando a ZAP...")
         for _ in range(30):
             try:
-                requests.get(self.ZAP_URL)
+                zap = ZAPv2(proxies=self._proxies())
+                zap.core.version
                 print("[+] ZAP listo")
                 return
-            except:
+            except Exception:
                 time.sleep(1)
-        raise RuntimeError("ZAP no respondió")
 
-    def spider(self, url):
+        raise RuntimeError("ZAP no levantó")
+
+    def _proxies(self):
+        return {
+            "http": f"http://{self.ZAP_HOST}:{self.ZAP_PORT}",
+            "https": f"http://{self.ZAP_HOST}:{self.ZAP_PORT}"
+        }
+
+    def scan_activo(self, url):
+        zap = ZAPv2(proxies=self._proxies())
+
+        print("Conectado a ZAP, versión:", zap.core.version)
+
+        # 🔎 Spider
         print(f"[+] Spider a {url}")
-        requests.get(
-            f"{self.ZAP_URL}/JSON/spider/action/scan/",
-            params={"url": url}
-        )
+        spider_id = zap.spider.scan(url)
 
-    def active_scan(self, url):
-        print(f"[+] Active Scan a {url}")
-        requests.get(
-            f"{self.ZAP_URL}/JSON/ascan/action/scan/",
-            params={"url": url}
-        )
+        while int(zap.spider.status(spider_id)) < 100:
+            print("Spider:", zap.spider.status(spider_id), "%")
+            time.sleep(2)
 
-    # def get_alerts(self):
-    #     r = requests.get(f"{self.ZAP_URL}/JSON/core/view/alerts/")
-    #     return r.json()
+        print("[✓] Spider finalizado")
 
-    def get_alerts(self):
-        r = requests.get(f"{self.ZAP_URL}/JSON/core/view/alerts/")
-        data = r.json()
+        # ⚔️ Active Scan
+        print("[+] Active Scan")
+        scan_id = zap.ascan.scan(url)
 
-        alerts = data.get("alerts", [])
+        while int(zap.ascan.status(scan_id)) < 100:
+            print("Active Scan:", zap.ascan.status(scan_id), "%")
+            time.sleep(5)
+
+        print("[✓] Active Scan finalizado")
+
+        # ⏳ Passive Scan
+        while int(zap.pscan.records_to_scan) > 0:
+            print("Passive Scan pendiente:", zap.pscan.records_to_scan)
+            time.sleep(2)
+
+        # 🚨 Alertas
+        print("[+] Obteniendo alertas")
+        alertas = zap.core.alerts(baseurl=url)
+
         resultado = []
-
-        for alerta in alerts:
+        for alerta in alertas:
             resultado.append({
                 "tipo": alerta.get("name"),
                 "riesgo": alerta.get("risk"),
-                "confianza": alerta.get("confidence"),
+                "confianza": alerta.get("confidence"), #Nivel de confianaz del hallazgo
                 "descripcion": alerta.get("description"),
                 "solucion": alerta.get("solution"),
                 "referencias": alerta.get("reference"),
+                "impacto": alerta.get("riskdesc"),
                 "url": alerta.get("url"),
-                "cwe": alerta.get("cweid")
+                "cwe": alerta.get("cweid"), #Id estandar de la vulnerabilidad
+                "evidencia" : {
+                    "endpoint": alerta.get("url"),
+                    "parametro": alerta.get("param"),
+                    "payload": alerta.get("attack"),
+                    "evidencia": alerta.get("evidence"),
+                    "metodo": alerta.get("method")
+                }
             })
 
-        return resultado
 
+        return resultado
 
 
     # def scan_activo(self,url):

@@ -1,0 +1,74 @@
+/* Base igual al resto del sitio */
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #f7f7f7;
+  margin: 0;
+  min-height: 100vh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Contenedor tipo card */
+.login-card {
+  background-color: #ffffff;
+  padding: 32px 28px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 360px;
+
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Título */
+.login-card h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  text-align: center;
+  font-weight: 600;
+}
+
+/* Inputs */
+.login-card input {
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+
+  font-size: 14px;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+.login-card input:focus {
+  outline: none;
+  border-color: #999999;
+}
+
+/* Botón */
+.login-card button {
+  width: 100%;
+  padding: 10px 12px;
+
+  font-size: 14px;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+
+  background-color: #ffffff;
+  color: #000000;
+  cursor: pointer;
+}
+
+.login-card button:hover {
+  background-color: #f9f9f9;
+  border-color: #b0b0b0;
+}
+
+/* Mensaje de error opcional */
+.login-error {
+  margin-top: 10px;
+  color: #c62828;
+  font-size: 13px;
+  text-align: center;
+}

@@ -93,17 +93,17 @@ body{
     display: flex;
 }
 
-#config{
+#config, #sesion{
     display: flex;
     gap: 1em;
 }
 
-#config a{
+#config a, #sesion a{
     text-decoration: none;
     color: white;
 }
 
-#config a:hover{
+#config a:hover, #sesion a:hover{
     color: rgb(228, 228, 228);
 }
 
@@ -128,3 +128,34 @@ body{
 .back-button:hover {
   color: #000000;
 }
+
+
+/*Notificaciones*/
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 6px;
+  font-size: 14px;
+  text-align: center;
+  min-width: 260px;
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* visible */
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* tipos */
+.toast.success { background-color: #2e7d32; }
+.toast.error   { background-color: #c62828; }
+.toast.info    { background-color: #1565c0; }

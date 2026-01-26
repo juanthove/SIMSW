@@ -1,28 +1,33 @@
-//Datos ficticios de paginas webs
-const listaSitios = [
-    {
-        id: "1",
-        nombre: "Example",
-        url: "https://example.com",
-        cantAnalisis: "4",
-        ultimoAnalisis: "2025-12-15"
-    },
-    {
-        id: "2",
-        nombre: "MiDominio",
-        url: "https://midominio.com",
-        cantAnalisis: "2",
-        ultimoAnalisis: "2025-12-18"
-    },
-    {
-        id: "3",
-        nombre: "TiendaOnline",
-        url: "https://tiendaonline.net",
-        cantAnalisis: "1",
-        ultimoAnalisis: "2025-12-16"
-    }];
+//Obtengo datos
+let listaSitios = [];
+let listaFiltrada = [];
 
-const listaFiltrada = [...listaSitios];
+
+import { apiFetch } from "./api.js";
+
+async function cargarSitios() {
+    try {
+        const response = await apiFetch("/api/sitios/resumen");
+
+        if (!response.ok) {
+            throw new Error("Error al obtener los sitios");
+        }
+
+        listaSitios = await response.json();
+        listaFiltrada = [...listaSitios];   // ✅ ACÁ
+        console.log(listaSitios);
+        mostrarSitios(listaFiltrada);
+
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+//Cargar los sitios al entrar
+cargarSitios()
+
+
+
 
 //Obtengo la tabla
 const tablaSitios = document.querySelector("#tablaSitios tbody");
@@ -37,14 +42,22 @@ function mostrarSitios(lista) {
       <td>${item.nombre}</td>
       <td>${item.url}</td>
       <td>${item.cantAnalisis}</td>
-      <td>${item.ultimoAnalisis}</td>
+      <td>${item.ultimoAnalisis ?? "Sin análisis"}</td>
     `;
 
-    tr.style.cursor = "pointer";
 
-    tr.addEventListener("click", () => {
-      window.location.href = `analysis-list.html?siteId=${item.id}`;
-    });
+    if (item.cantAnalisis > 0) {
+        tr.style.cursor = "pointer";
+
+        tr.addEventListener("click", () => {
+          window.location.href = `/analysis-list?siteId=${item.id}`;
+        });
+    } else {
+        // 👉 Visualmente deshabilitado
+        tr.classList.add("site-disabled");
+        tr.title = "Este sitio no tiene analisis";
+    }
+    
 
     tablaSitios.appendChild(tr);
   });
@@ -91,5 +104,3 @@ encabezados.forEach(th => {
     mostrarSitios(listaFiltrada);
   });
 });
-
-mostrarSitios(listaSitios);
