@@ -1,5 +1,6 @@
 from flask import Flask, render_template
 from flask_cors import CORS
+import os
 
 app = Flask(__name__)
 CORS(app)
@@ -63,6 +64,16 @@ def report_detail():
 @app.route("/site-history")
 def site_history():
     return render_template("site-history.html")
+
+
+#Configurar ruta base
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+UPLOADS_DIR = os.path.join(BASE_DIR, "uploads")
+
+os.makedirs(UPLOADS_DIR, exist_ok=True)
+
+app.config["UPLOADS_DIR"] = UPLOADS_DIR
+
 
 if __name__ == "__main__":
     app.run(debug=True)

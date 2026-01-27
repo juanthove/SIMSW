@@ -1,5 +1,6 @@
 //Obtengo datos
 import { apiFetch } from "./api.js";
+import { formatearFechaDia } from "./fecha.js";
 
 
 //Obtener la id del sitio
@@ -19,11 +20,16 @@ async function cargarDetalle() {
         }
 
         const historico = await response.json();
+        //Formatear fecha sacando la hora
+        const informesNormalizados = historico.map(i => ({
+          ...i,
+          fechaLocal: formatearFechaDia(i.fecha)
+        }));
 
         //Insertar las graficas
-        crearTimelineSeveridad(historico);
-        crearRiesgoAcumulado(historico);
-        crearDistribucionSeveridad(historico);
+        crearTimelineSeveridad(informesNormalizados);
+        crearRiesgoAcumulado(informesNormalizados);
+        crearDistribucionSeveridad(informesNormalizados);
 
     } catch (error) {
         console.error(error);
@@ -51,11 +57,18 @@ const severidades = ["Baja", "Media", "Alta"];
 const pesos = {Baja: 1, Media: 2, Alta: 3};
 
 
-function crearTimelineSeveridad(informes) {
-  // Fechas únicas
-  const fechas = [...new Set(
-    informes.map(i => i.fecha?.split("T")[0])
+//Obtener las fechas
+function obtenerFechasUnicas(informes) {
+  return [...new Set(
+    informes.map(i => i.fechaLocal).filter(Boolean)
   )].sort();
+}
+
+
+
+function crearTimelineSeveridad(informes) {
+  //Fechas únicas
+  const fechas = obtenerFechasUnicas(informes);
 
   const dataPorSeveridad = {
     Alta: [],
@@ -66,7 +79,7 @@ function crearTimelineSeveridad(informes) {
   fechas.forEach(fecha => {
     severidades.forEach(sev => {
       const cantidad = informes.filter(i =>
-        i.fecha?.startsWith(fecha) &&
+        i.fechaLocal === fecha &&
         severidadMap[i.severidad] === sev
       ).length;
 
@@ -104,13 +117,11 @@ function crearTimelineSeveridad(informes) {
 }
 
 function crearRiesgoAcumulado(informes) {
-  const fechas = [...new Set(
-    informes.map(i => i.fecha?.split("T")[0])
-  )].sort();
+  const fechas = obtenerFechasUnicas(informes);
 
   const riesgo = fechas.map(fecha => {
     return informes
-      .filter(i => i.fecha?.startsWith(fecha))
+      .filter(i => i.fechaLocal === fecha)
       .reduce((acc, i) => {
         const sevTexto = severidadMap[i.severidad];
         return acc + pesos[sevTexto];
@@ -164,114 +175,5 @@ document.getElementById("btnVolver").addEventListener("click", (e) => {
     window.location.href = `/analysis-list?siteId=${siteId}`;
 });
 
-
-
-
-
-
-
-
-/*const listaAnalisis = [
-  {
-    siteId: "1",
-    nombre: "Example",
-    url: "https://example.com",
-    propietario: "Pedro",
-    analisis: [
-      {
-        id: "1",
-        titulo: "Exposición de credenciales en código cliente",
-        vulnerabilidad: "Alta",
-        fecha: "2025-12-10"
-      },
-      {
-        id: "3",
-        titulo: "Versiones de librerías desactualizadas",
-        vulnerabilidad: "Baja",
-        fecha: "2025-12-15"
-      },
-      {
-        id: "6",
-        titulo: "Endpoint crítico expuesto sin autenticación",
-        vulnerabilidad: "Alta",
-        fecha: "2025-12-20"
-      },
-      {
-        id: "7",
-        titulo: "Falta de encabezados de seguridad HTTP",
-        vulnerabilidad: "Media",
-        fecha: "2025-12-22"
-      },
-      {
-        id: "8",
-        titulo: "Exposición de credenciales en código cliente",
-        vulnerabilidad: "Alta",
-        fecha: "2025-12-10"
-      },
-      {
-        id: "9",
-        titulo: "Exposición de credenciales en código cliente",
-        vulnerabilidad: "Media",
-        fecha: "2025-12-10"
-      },
-      {
-        id: "10",
-        titulo: "Exposición de credenciales en código cliente",
-        vulnerabilidad: "Media",
-        fecha: "2025-12-15"
-      }
-    ]
-  },
-  {
-    siteId: "2",
-    nombre: "MiDominio",
-    url: "https://midominio.com",
-    propietario: "Juan",
-    analisis: [
-      {
-        id: "2",
-        titulo: "Falta de encabezados de seguridad HTTP",
-        vulnerabilidad: "Media",
-        fecha: "2025-12-12"
-      },
-      {
-        id: "5",
-        titulo: "Endpoint expuesto sin autenticación",
-        vulnerabilidad: "Alta",
-        fecha: "2025-12-18"
-      }
-    ]
-  },
-  {
-    siteId: "3",
-    nombre: "TiendaOnline",
-    url: "https://tiendaonline.net",
-    propietario: "Shop SA",
-    analisis: [
-      {
-        id: "4",
-        titulo: "Configuración de cookies mejorable",
-        vulnerabilidad: "Baja",
-        fecha: "2025-12-16"
-      }
-    ]
-  }
-];*/
-
-
-/*const listaFiltrada = [...listaAnalisis];
-
-
-
-
-
-const sitio = listaAnalisis.find(s => s.siteId === siteId);
-if (!sitio) {
-  console.error("Sitio no encontrado");
-}
-
-//Valores de cada severidad
-const severidades = ["Baja", "Media", "Alta"];
-const pesos = {Baja: 1, Media: 2, Alta: 3};*/
 
 

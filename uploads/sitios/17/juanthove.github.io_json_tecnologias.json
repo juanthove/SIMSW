@@ -1,0 +1,50 @@
+[
+    {
+        "name": "Java",
+        "image": "img/logos/javaLogo"
+    },
+    {
+        "name": "C++",
+        "image": "img/logos/c++Logo"
+    },
+
+    {
+        "name": "C#",
+        "image": "img/logos/cLogo"
+    },
+    
+    {
+        "name": "Unity",
+        "image": "img/logos/unityLogo"
+    },
+
+    {
+        "name": "Genexus",
+        "image": "img/logos/genexusLogo"
+    },
+
+    {
+        "name": "HTML",
+        "image": "img/logos/htmlLogo"
+    },
+
+    {
+        "name": "CSS",
+        "image": "img/logos/cssLogo"
+    },
+
+    {
+        "name": "JavaScript",
+        "image": "img/logos/javaScriptLogo"
+    },
+
+    {
+        "name": "NodeJs",
+        "image": "img/logos/nodeJsLogo"
+    },
+
+    {
+        "name": "SQL",
+        "image": "img/logos/sqlLogo"
+    }
+]

@@ -30,32 +30,40 @@ cargarSitios()
 const tablaSitios = document.querySelector("#tablaSitios tbody");
 
 function mostrarListado(lista) {
-    tablaSitios.innerHTML = ""; //Elimino los datos antiguos
+  tablaSitios.innerHTML = "";
 
-    lista.forEach(item => {
-        const tr = document.createElement("tr");
+  lista.forEach(item => {
+    const tr = document.createElement("tr");
 
-        tr.innerHTML = `
-        <td>${item.nombre}</td>
-        <td>${item.url}</td>
-        <td>
-            <button class="btn-estatico" data-url="${item.url}" data-id="${item.id}">
-            Ejecutar
-            </button>
-        </td>
-        <td>
-            <button class="btn-dinamico" data-url="${item.url}" data-id="${item.id}">
-            Ejecutar
-            </button>
-        </td>
-        `;
+    const estaticoDeshabilitado = !item.archivos_base;
 
-        tablaSitios.appendChild(tr);
-    });
+    tr.innerHTML = `
+      <td>${item.nombre}</td>
+      <td>${item.url}</td>
+      <td>
+        <button 
+          class="btn-estatico ${estaticoDeshabilitado ? "disabled" : ""}"
+          data-url="${item.url}"
+          data-id="${item.id}"
+          ${estaticoDeshabilitado ? "disabled title='Requiere archivos base'" : ""}
+        >
+          Ejecutar
+        </button>
+      </td>
+      <td>
+        <button class="btn-dinamico" data-url="${item.url}" data-id="${item.id}">
+          Ejecutar
+        </button>
+      </td>
+    `;
 
-    //Crear los eventListener para cada boton
-    enlazarBotonesAnalisis();
+    tablaSitios.appendChild(tr);
+  });
+
+  //Crear los event listener para cada boton
+  enlazarBotonesAnalisis();
 }
+
 
 //Filtro ascendente y descendente
 const encabezados = document.querySelectorAll("#tablaSitios th.sortable");
@@ -114,16 +122,19 @@ async function ejecutarAnalisis({ url, sitioWebId, tipo, boton }) {
 
     if (!res.ok) {
       mostrarToast(data.error || "No autorizado", "error");
+      boton.classList.add("error");
       boton.textContent = "❌ Error";
       boton.disabled = false;
       return;
     }
 
+    boton.classList.add("completado");
     boton.textContent = "✔ Completado";
     mostrarToast("Análisis ejecutado correctamente", "success");
 
   } catch (err) {
     console.error(err);
+    boton.classList.add("error");
     boton.textContent = "❌ Error";
     boton.disabled = false;
     mostrarToast("Error al ejecutar el análisis", "error");

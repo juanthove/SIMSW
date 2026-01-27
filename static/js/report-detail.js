@@ -1,5 +1,6 @@
 //Obtengo datos
 import { apiFetch } from "./api.js";
+import { formatearFecha } from "./fecha.js";
 
 const params = new URLSearchParams(window.location.search);
 const id = params.get("id");
@@ -45,7 +46,7 @@ function mostrarDetalle(data) {
 
     document.getElementById("url").textContent = data.url;
     document.getElementById("url").href = data.url;
-    document.getElementById("fecha").textContent = data.fechaAnalisis;
+    document.getElementById("fecha").textContent = formatearFecha(data.fechaAnalisis);
     document.getElementById("fuente").textContent = data.tipoAnalisis;
 
     document.getElementById("descripcion").textContent = data.descripcion;
