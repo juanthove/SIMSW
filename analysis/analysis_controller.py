@@ -6,7 +6,7 @@ from database.models.analisis_model import Analisis
 from database.models.informe_model import Informe
 from database.models.detalleOZ_model import DetalleOZ
 from database.models.sitioWeb_model import SitioWeb
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy.exc import SQLAlchemyError
 import json
 
@@ -18,7 +18,7 @@ def analizar_estatico(url, sitio_web_id):
         # 1️⃣ Crear análisis EN PROGRESO
         analisis = Analisis(
             nombre=f"Análisis Estático - {url}",
-            fecha=datetime.now(),
+            fecha=datetime.now(timezone.utc),
             tipo="estatico",
             estado="En Progreso",
             resultado_global=0,
@@ -99,6 +99,15 @@ def analizar_estatico(url, sitio_web_id):
                 db.add(informe)
 
         # 7️⃣ Guardar todo
+
+        print("NOW LOCAL:", datetime.now())
+        print("NOW UTC  :", datetime.now(timezone.utc))
+
+        #Actualizar fecha último monitoreo del sitio (UTC)
+        sitio = db.query(SitioWeb).filter(SitioWeb.id == sitio_web_id).first()
+        if sitio:
+            sitio.fecha_ultimo_monitoreo = datetime.now(timezone.utc)
+
         db.commit()
 
         return {
@@ -173,7 +182,7 @@ def analizar_dinamico(url, sitio_web_id):
         # ===============================
         analisis = Analisis(
             nombre=f"Análisis Dinámico - {url}",
-            fecha=datetime.now(),
+            fecha=datetime.now(timezone.utc),
             tipo="dinamico",
             estado="En Progreso",
             resultado_global=0,
@@ -233,6 +242,11 @@ def analizar_dinamico(url, sitio_web_id):
         # ===============================
         analisis.estado = "Finalizado"
         analisis.resultado_global = calcular_resultado_global(vulnerabilidades_validas)
+
+        #Actualizar fecha último monitoreo del sitio (UTC)
+        sitio = db.query(SitioWeb).filter(SitioWeb.id == sitio_web_id).first()
+        if sitio:
+            sitio.fecha_ultimo_monitoreo = datetime.now(timezone.utc)
 
         db.commit()
 

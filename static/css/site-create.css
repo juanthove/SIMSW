@@ -142,3 +142,131 @@
   border-radius: 4px;
   cursor: pointer;
 }
+
+
+/*Subir archivos base*/
+.campoForm input[type="file"] {
+  padding: 6px;
+  font-size: 13px;
+  border: 1px solid #cfcfcf;
+  border-radius: 6px;
+  background-color: #ffffff;
+  cursor: pointer;
+}
+
+.campoForm input[type="file"]:hover {
+  border-color: #b0b0b0;
+}
+
+.campoForm input[type="file"]:focus {
+  outline: none;
+  border-color: #999999;
+}
+
+/* Texto de ayuda */
+.formHint {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #666666;
+}
+
+/* Deshabilitado */
+.campoForm input[type="file"]:disabled {
+  background-color: #f0f0f0;
+  color: #999999;
+  cursor: not-allowed;
+}
+
+.fileButton {
+  display: inline-block;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 6px;
+  border: 1px solid #d0d0d0;
+  background-color: #ffffff;
+  color: #000000;
+  cursor: pointer;
+  width: fit-content;
+}
+
+.fileButton:hover {
+  background-color: #f9f9f9;
+  border-color: #b0b0b0;
+}
+
+.fileButton:active {
+  background-color: #eeeeee;
+}
+
+/* Info de archivos */
+.archivoInfo {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #555555;
+}
+
+/* Deshabilitado */
+.fileButton.disabled {
+  background-color: #f0f0f0;
+  color: #999999;
+  border-color: #d0d0d0;
+  cursor: not-allowed;
+}
+
+
+/*Eliminar archivos base*/
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #c62828;
+  cursor: pointer;
+}
+
+.checkboxLabel input[type="checkbox"] {
+  cursor: pointer;
+}
+
+
+/*Frecuencia analisis*/
+.campoForm select {
+  padding: 10px 12px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid #cfcfcf;
+  background-color: #ffffff;
+  cursor: pointer;
+}
+
+.campoForm select:hover {
+  border-color: #b0b0b0;
+}
+
+.campoForm select:focus {
+  outline: none;
+  border-color: #999999;
+}
+
+/* Input personalizado de minutos */
+.inputTiempo {
+  margin-top: 6px;
+  padding: 10px 12px;
+  width: 180px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid #cfcfcf;
+}
+
+.inputTiempo:focus {
+  outline: none;
+  border-color: #999999;
+}
+
+/* Error de validación */
+.formError {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #c62828;
+}

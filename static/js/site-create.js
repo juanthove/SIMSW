@@ -32,6 +32,17 @@ const selector = document.getElementById("selectorSitio");
 const btnSubmit = document.getElementById("btnPrincipal");
 const tituloForm = document.getElementById("tituloForm");
 const btnDelete = document.getElementById("btnDelete");
+const inputArchivos = document.getElementById("archivosBase");
+const archivoInfo = document.getElementById("archivoSeleccionado");
+const eliminarArchivosCheckbox = document.getElementById("eliminarArchivos");
+const eliminarArchivosContainer = document.getElementById("eliminarArchivosContainer");
+const frecuenciaSelect = document.getElementById("frecuenciaSelect");
+const customContainer = document.getElementById("frecuenciaCustomContainer");
+const customInput = document.getElementById("frecuenciaCustom");
+const frecuenciaError = document.getElementById("frecuenciaError");
+const fileButton = document.querySelector(".fileButton");
+
+
 
 let sitioSeleccionadoId = null;
 
@@ -59,6 +70,8 @@ selector.addEventListener("change", () => {
     btnSubmit.textContent = "Registrar sitio";
     tituloForm.textContent = "Registrar sitio web";
     btnDelete.style.display = "none";
+    eliminarArchivosContainer.style.display = "none";
+    eliminarArchivosCheckbox.checked = false;
     return;
   }
 
@@ -74,80 +87,166 @@ selector.addEventListener("change", () => {
   btnSubmit.textContent = "Actualizar sitio";
   tituloForm.textContent = "Editar sitio web";
   btnDelete.style.display = "inline-block";
+
+  if (sitio.archivos_base) {
+    eliminarArchivosContainer.style.display = "block";
+  } else {
+    eliminarArchivosContainer.style.display = "none";
+    eliminarArchivosCheckbox.checked = false;
+  }
 });
 
 
+frecuenciaSelect.addEventListener("change", () => {
+    if (frecuenciaSelect.value === "custom") {
+        customContainer.style.display = "block";
+        customInput.focus();
+    } else {
+        customContainer.style.display = "none";
+        frecuenciaError.style.display = "none";
+    }
+});
+
+customInput.addEventListener("input", () => {
+    const valor = parseInt(customInput.value, 10);
+
+    if (valor < 15) {
+        frecuenciaError.style.display = "block";
+    } else {
+        frecuenciaError.style.display = "none";
+    }
+});
+
 
 form.addEventListener("submit", async (e) => {
-  e.preventDefault(); //Evitar que la pagina se recargue
+  e.preventDefault();
 
   const nombre = document.getElementById("nombre").value.trim();
   const url = document.getElementById("url").value.trim();
   const propietario = document.getElementById("propietario").value.trim();
 
   if (!nombre || !url || !propietario) {
-    alert("Todos los campos son obligatorios.");
+    mostrarToast("Todos los campos son obligatorios", "error");
     return;
   }
 
-  const sitio = { nombre, url, propietario };
+  let frecuenciaAnalisis;
+
+  if (frecuenciaSelect.value === "custom") {
+    frecuenciaAnalisis = parseInt(customInput.value, 10);
+
+    if (!frecuenciaAnalisis || frecuenciaAnalisis < 15) {
+      frecuenciaError.style.display = "block";
+      mostrarToast("La frecuencia mínima es de 15 minutos", "error");
+      return;
+    }
+  } else {
+    frecuenciaAnalisis = parseInt(frecuenciaSelect.value, 10);
+  }
+
+  const formData = new FormData();
+  formData.append("nombre", nombre);
+  formData.append("url", url);
+  formData.append("propietario", propietario);
+  formData.append("frecuenciaAnalisis", frecuenciaAnalisis);
+
+
+  //Subir archivos solo si no se marcó eliminar y se seleccionó archivos
+  if (!eliminarArchivosCheckbox.checked && inputArchivos.files.length > 0) {
+    for (const file of inputArchivos.files) {
+      formData.append("archivosBase", file);
+    }
+  }
+
+  //Eliminar archivos (solo en modificar)
+  if (sitioSeleccionadoId && eliminarArchivosCheckbox.checked) {
+    formData.append("eliminarArchivos", "true");
+  }
 
   try {
+    let res;
+
     if (!sitioSeleccionadoId) {
-      // Crear sitio (POST)
-      console.log("Creando sitio:", sitio);
-
-      const res = await apiFetch("/api/sitios", {
+      res = await apiFetch("/api/sitios/", {
         method: "POST",
-        body: JSON.stringify(sitio)
+        body: formData
       });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        mostrarToast(data.error || "Error al registrar el sitio", "error");
-        return;
-      }
-
-      mostrarToast("Sitio registrado correctamente", "success");
-      cargarSitios(); // GET nuevamente
-      form.reset();
-
     } else {
-      // Editar sitio (PUT) – todavía no implementado
-      console.log("Actualizando sitio:", sitioSeleccionadoId, sitio);
-
-      
-      const res = await apiFetch(`/api/sitios/${sitioSeleccionadoId}`, {
+      res = await apiFetch(`/api/sitios/${sitioSeleccionadoId}`, {
         method: "PUT",
-        body: JSON.stringify(sitio)
+        body: formData
       });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        mostrarToast(data.error || "Error al actualizar sitio", "error");
-        return;
-      }
-
-      mostrarToast("Sitio actualizado correctamente", "success");
-      cargarSitios(); // GET nuevamente
-      form.reset();
     }
 
-    // Reset UI (común a POST y PUT)
+    const data = await res.json();
+
+    if (!res.ok) {
+      mostrarToast(data.error || "Error al guardar el sitio", "error");
+      return;
+    }
+
+    mostrarToast(
+      sitioSeleccionadoId
+        ? "Sitio actualizado correctamente"
+        : "Sitio registrado correctamente",
+      "success"
+    );
+
+    //Resetear campos
+    inputArchivos.disabled = false;
+    fileButton.classList.remove("disabled");
+    inputArchivos.value = "";
+    archivoInfo.textContent = "";
+
     form.reset();
     selector.value = "";
     sitioSeleccionadoId = null;
+
     btnSubmit.textContent = "Registrar sitio";
     tituloForm.textContent = "Registrar sitio web";
+    btnDelete.style.display = "none";
+    eliminarArchivosContainer.style.display = "none";
+
+    frecuenciaSelect.value = "60"; // default 1 hora
+    frecuenciaError.style.display = "none";
+    customInput.value = "";
+    customInput.disabled = false;
+    
+    
+    
+
+    await cargarSitios();
 
   } catch (err) {
     console.error(err);
-    alert(err.message || "Error al conectar con el servidor.");
+    mostrarToast("Error al conectar con el servidor", "error");
   }
-
 });
+
+
+inputArchivos.addEventListener("change", () => {
+  if (inputArchivos.files.length > 0) {
+    archivoInfo.textContent = `📁 ${inputArchivos.files.length} archivos seleccionados`;
+  } else {
+    archivoInfo.textContent = "";
+  }
+});
+
+// Integración con eliminar archivos
+eliminarArchivosCheckbox.addEventListener("change", () => {
+
+  if (eliminarArchivosCheckbox.checked) {
+    inputArchivos.value = "";
+    inputArchivos.disabled = true;
+    fileButton.classList.add("disabled");
+    archivoInfo.textContent = "Los archivos actuales serán eliminados";
+  } else {
+    inputArchivos.disabled = false;
+    fileButton.classList.remove("disabled");
+    archivoInfo.textContent = "";
+  }
+});
+
 
 btnDelete.addEventListener("click", async () => {
   if (!sitioSeleccionadoId) return;
@@ -174,6 +273,10 @@ btnDelete.addEventListener("click", async () => {
     btnSubmit.textContent = "Registrar sitio";
     tituloForm.textContent = "Registrar sitio web";
     btnDelete.style.display = "none";
+    inputArchivos.disabled = false;
+    fileButton.classList.remove("disabled");
+    inputArchivos.value = "";
+    archivoInfo.textContent = "";
 
     // Recargar lista
     await cargarSitios();

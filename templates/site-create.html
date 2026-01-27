@@ -43,6 +43,69 @@
             <input type="text" id="propietario" name="propietario" placeholder="Empresa / Persona" required>
         </div>
 
+        <div class="campoForm">
+            <label>Archivos base del sitio</label>
+
+            <label for="archivosBase" class="fileButton">
+                Elegir carpeta
+            </label>
+
+            <input
+                type="file"
+                id="archivosBase"
+                name="archivosBase"
+                webkitdirectory
+                directory
+                multiple
+                hidden
+            >
+
+            <small class="formHint">
+                Seleccioná la carpeta raíz del sitio web
+            </small>
+
+            <div id="archivoSeleccionado" class="archivoInfo"></div>
+            </div>
+
+        <div id="eliminarArchivosContainer" class="campoForm" style="display:none;">
+            <label class="checkboxLabel">
+                <input type="checkbox" id="eliminarArchivos">
+                ❌ Eliminar archivos base del sitio
+            </label>
+        </div>
+
+        <div class="campoForm">
+            <label for="frecuenciaSelect">
+                Frecuencia de análisis automático
+            </label>
+
+            <select id="frecuenciaSelect">
+                <option value="15">Cada 15 minutos</option>
+                <option value="30">Cada 30 minutos</option>
+                <option value="60" selected>Cada 1 hora</option>
+                <option value="360">Cada 6 horas</option>
+                <option value="1440">Cada 24 horas</option>
+                <option value="custom">Personalizado</option>
+            </select>
+        </div>
+
+        <div class="campoForm" id="frecuenciaCustomContainer" style="display:none;">
+            <label for="frecuenciaCustom">
+                Frecuencia personalizada (en minutos)
+            </label>
+            <input
+                type="number"
+                id="frecuenciaCustom"
+                min="15"
+                step="5"
+                placeholder="Mínimo 15"
+            >
+            <small class="formHint" id="frecuenciaError" style="display:none; color:#e74c3c;">
+                ⚠️ La frecuencia mínima es de 15 minutos
+            </small>
+        </div>
+
+
         <div class="accionesForm">
             <button type="button" id="btnDelete" class="btn-delete" style="display:none;">Eliminar sitio</button>
             <button type="submit" class="btnPrincipal" id="btnPrincipal">Registrar sitio</button>

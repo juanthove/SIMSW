@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, Boolean
 from database.connection import Base
 from datetime import datetime, timezone
 
@@ -18,7 +18,10 @@ class SitioWeb(Base):
         DateTime(timezone=True),
         nullable=True
     )
+
     frecuencia_monitoreo_minutos = Column(Integer, default=120)
+
+    archivos_base = Column(Boolean, nullable=False, default=False)
 
     def to_dict(self):
         return {
@@ -28,5 +31,6 @@ class SitioWeb(Base):
             "propietario": self.propietario,
             "fecha_registro": self.fecha_registro,
             "fecha_ultimo_monitoreo": self.fecha_ultimo_monitoreo,
-            "frecuencia_monitoreo_minutos": self.frecuencia_monitoreo_minutos
+            "frecuencia_monitoreo_minutos": self.frecuencia_monitoreo_minutos,
+            "archivos_base": self.archivos_base
         }
