@@ -12,8 +12,9 @@ import json
 
 #Realiza el analisis estatico y guarda en la base de datos
 def analizar_estatico(url, sitio_web_id):
+    print("Antes de la base")
     db = SessionLocal()
-
+    print("despues de la base")
     try:
         # 1️⃣ Crear análisis EN PROGRESO
         analisis = Analisis(
@@ -25,11 +26,16 @@ def analizar_estatico(url, sitio_web_id):
             sitio_web_id=sitio_web_id
         )
 
+        print("Antes de la base 2")
         db.add(analisis)
+        print("Antes de la base 2")
         db.flush()  # Para obtener analisis.id sin commit
+        print("Antes de la base 2")
 
         # 2️⃣ Ejecutar análisis (Playwright + IA)
+        print("Iniciando análisis estático...")
         resultado = ejecutar_analisis_estatico(sitio_web_id)
+        print("Antes de la base 2")
 
         vulnerabilidades = []
         vulnerabilidades_raw = []
@@ -121,10 +127,11 @@ def analizar_estatico(url, sitio_web_id):
         db.rollback()
 
         # 🟥 Si ocurre un error, marcar análisis como ERROR
+        print("Retorno error")
         analisis.estado = "Error"
         analisis.resultado_global = 0
         db.commit()
-
+        print("Retorno error")
         return {
             "analisis_id": analisis.id,
             "estado": "Error",
@@ -132,6 +139,7 @@ def analizar_estatico(url, sitio_web_id):
         }
 
     finally:
+        print("Cierro")
         db.close()
 
 

@@ -3,7 +3,6 @@
 from flask import Blueprint, request, jsonify
 from .analysis_controller import analizar_estatico, analizar_dinamico,analizar_sonar_qube
 from auth.auth_middleware import jwt_required
-import os
 
 
 
@@ -23,12 +22,16 @@ def analizar_estatico_endpoint():
 
     sitio_web_id = int(sitio_web_id)
 
+    
+    print(f"La ruta base es: {sitio_web_id}")
     try:
+        print("Entrando análisis estático...")
         resultado = analizar_estatico(url, sitio_web_id)
         return jsonify(resultado), 200
 
     except Exception as e:
         # HTTP error, pero el estado ya quedó guardado
+        print("Saliendo análisis estático con error...")
         return jsonify({
             "estado": "ERROR",
             "mensaje": "Falló el análisis estático",

@@ -980,7 +980,7 @@ def run_semgrep_analysis(
             "code": code
         })
 
-    return findings, vulberta_inputs
+    return vulberta_inputs
 
 
 def extract_code_with_context(

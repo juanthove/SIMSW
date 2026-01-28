@@ -12,8 +12,8 @@ from scripts.vulberta_api import Vulberta as Vulberta
 from scripts.Owaspzap import OwaspZap as OW
 import time
 from scripts.EnviarAlerta import EnviarAlerta
-
-
+from flask import current_app
+import os
 
 
 def extraer_json(texto):
@@ -94,10 +94,11 @@ def ejecutar_analisis_estatico(sitio_web_id):
 
 
     #Buscar sitio en carpeta
+    ruta_base = os.path.join(current_app.config["UPLOADS_DIR"], "sitios", str(sitio_web_id))
 
     try:
-        print(sitio_web_id)
-        findings, vulberta_data = run_semgrep_analysis(sitio_web_id)
+        print(ruta_base)
+        vulberta_data = run_semgrep_analysis(ruta_base)
         if not vulberta_data:
             return {
                 "mensaje": "No se generaron fragmentos para análisis",
