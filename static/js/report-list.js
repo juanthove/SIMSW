@@ -1,5 +1,6 @@
 //Obtengo datos
 import { apiFetch } from "./api.js";
+import { formatearFecha } from "./fecha.js";
 
 //Obtengo el id de la URL
 const params = new URLSearchParams(window.location.search);
@@ -23,7 +24,7 @@ async function cargarInformes() {
         document.getElementById("analisis").textContent = data.analisis.tipo;
         document.getElementById("estadoAnalisis").textContent = data.analisis.estado;
         document.getElementById("resultadoGlobal").textContent = data.analisis.resultado_global;
-        document.getElementById("fechaAnalisis").textContent = new Date(data.analisis.fecha).toLocaleDateString();
+        document.getElementById("fechaAnalisis").textContent = formatearFecha(data.analisis.fecha);
 
         listaInformes = await data.informes;
         listaFiltrada = [...listaInformes];
@@ -50,7 +51,6 @@ const tablaInforme = document.querySelector("#tablaInforme tbody");
 
 function mostrarListado(lista) {
     tablaInforme.innerHTML = ""; //Elimino los datos antiguos
-
     lista.forEach(item => {
         const tr = document.createElement("tr");
 
@@ -69,7 +69,7 @@ function mostrarListado(lista) {
         tablaInforme.appendChild(tr);
     });
 }
-// test cambio
+
 
 const encabezados = document.querySelectorAll("#tablaInforme th.sortable");
 

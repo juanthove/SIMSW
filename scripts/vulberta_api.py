@@ -64,7 +64,6 @@ class Vulberta(Herramienta):
                     pred_idx = probs.index(max(probs))
                     label = self.__CLASES[pred_idx]
                     confidence = round(max(probs), 3)
-
                     resultado = {
                         "fragment": i // chunk_size + 1,
                         "label": label,

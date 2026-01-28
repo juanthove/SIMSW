@@ -3,6 +3,7 @@ from database.models.analisis_model import Analisis
 from database.models.informe_model import Informe
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import func
+from datetime import timezone
 
 # Obtener todos los análisis
 def obtener_analisis():
@@ -123,7 +124,7 @@ def obtener_resumen_analisis_por_sitio(sitio_web_id):
         return {
             "cantidad_analisis": resultado.cantidad,
             "fecha_ultimo_analisis": (
-                resultado.ultima_fecha.isoformat()
+                resultado.ultima_fecha.replace(tzinfo=timezone.utc).isoformat()
                 if resultado.ultima_fecha else None
             )
         }
@@ -152,14 +153,15 @@ def obtener_detalle_analisis_con_informes(analisis_id):
 
         return {
             "analisis": {
-                "id": analisis.id,
+                "id_analisis": analisis.id,
                 "tipo": analisis.tipo,
                 "estado": analisis.estado,
                 "resultado_global": analisis.resultado_global,
-                "fecha": analisis.fecha.isoformat() if analisis.fecha else None
+                "fecha": analisis.fecha.replace(tzinfo=timezone.utc).isoformat() if analisis.fecha else None
             },
             "informes": [
                 {
+                    "id": i.id,
                     "titulo": i.titulo,
                     "descripcion_humana": i.descripcion_humana,
                     "severidad": i.severidad

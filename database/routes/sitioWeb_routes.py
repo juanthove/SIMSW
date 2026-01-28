@@ -35,45 +35,46 @@ def get_sitio(sitio_id):
 @sitioWeb_bp.route("/", methods=["POST"])
 @jwt_required()
 def post_sitio():
-    data = request.get_json()
-
-    if not data:
-        return jsonify({"error": "JSON requerido"}), 400
+    data = request.form
+    files = request.files.getlist("archivosBase")
 
     try:
-        sitio = crear_sitio(data)
+        sitio = crear_sitio(data, files)
         return jsonify(sitio), 201
 
-    except ValueError:
-        # URL duplicada
-        return jsonify({"error": "La URL ya existe"}), 409
+    except ValueError as e:
+        if str(e) == "URL_DUPLICADA":
+            return jsonify({"error": "La URL ya existe"}), 409
+        return jsonify({"error": str(e)}), 400
 
-    except Exception:
+    except Exception as e:
+        print(e)
         return jsonify({"error": "Error interno del servidor"}), 500
+
 
 
 
 @sitioWeb_bp.route("/<int:sitio_id>", methods=["PUT"])
 @jwt_required()
 def put_sitio(sitio_id):
-    data = request.get_json()
-
-    if not data:
-        return jsonify({"error": "JSON requerido"}), 400
+    data = request.form
+    files = request.files.getlist("archivosBase")
 
     try:
-        sitio = actualizar_sitio(sitio_id, data)
+        sitio = actualizar_sitio(sitio_id, data, files)
 
         if sitio is None:
             return jsonify({"error": "Sitio no encontrado"}), 404
 
         return jsonify(sitio), 200
 
-    except ValueError:
-        # URL duplicada
-        return jsonify({"error": "La URL ya existe"}), 409
+    except ValueError as e:
+        if str(e) == "URL_DUPLICADA":
+            return jsonify({"error": "La URL ya existe"}), 409
+        return jsonify({"error": str(e)}), 400
 
-    except Exception:
+    except Exception as e:
+        print(e)
         return jsonify({"error": "Error interno del servidor"}), 500
 
 
@@ -81,12 +82,17 @@ def put_sitio(sitio_id):
 @sitioWeb_bp.route("/<int:sitio_id>", methods=["DELETE"])
 @jwt_required()
 def delete_sitio(sitio_id):
-    eliminado = eliminar_sitio(sitio_id)
+    try:
+        eliminado = eliminar_sitio(sitio_id)
 
-    if not eliminado:
-        return jsonify({"error": "Sitio no encontrado"}), 404
+        if not eliminado:
+            return jsonify({"error": "Sitio no encontrado"}), 404
 
-    return jsonify({"message": "Sitio eliminado correctamente"}), 200
+        return jsonify({"message": "Sitio eliminado correctamente"}), 200
+
+    except Exception as e:
+        print(e)
+        return jsonify({"error": "Error interno del servidor"}), 500
 
 
 #Obtener el resumen con cantidad de analisis y fecha del ultimo

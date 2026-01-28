@@ -48,11 +48,41 @@
             <p id="evidencia"></p>
         </section>
 
-        <!-- Código (opcional) -->
+
+
+        <!-- Código (opcional solo análisis estático) -->
         <section class="bloque" id="bloqueCodigo" hidden>
             <h2>Código Analizado</h2>
             <pre><code id="codigo"></code></pre>
         </section>
+
+
+        
+        <!-- Detalle OWASP ZAP (solo análisis dinámico) -->
+        <section class="bloque" id="bloqueDetalleOZ" hidden>
+            <h2>Detalle Técnico</h2>
+
+            <div class="oz-item">
+                <strong>Endpoint:</strong>
+                <span id="oz-endpoint"></span>
+            </div>
+
+            <div class="oz-item">
+                <strong>Método:</strong>
+                <span id="oz-metodo"></span>
+            </div>
+
+            <div class="oz-item">
+                <strong>Parámetro:</strong>
+                <span id="oz-parametro"></span>
+            </div>
+
+            <div class="oz-item">
+                <strong>Payload:</strong>
+                <pre><code id="oz-payload"></code></pre>
+            </div>
+        </section>
+
 
     </main>
 

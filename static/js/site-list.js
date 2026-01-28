@@ -4,6 +4,7 @@ let listaFiltrada = [];
 
 
 import { apiFetch } from "./api.js";
+import { formatearFecha } from "./fecha.js";
 
 async function cargarSitios() {
     try {
@@ -42,7 +43,7 @@ function mostrarSitios(lista) {
       <td>${item.nombre}</td>
       <td>${item.url}</td>
       <td>${item.cantAnalisis}</td>
-      <td>${item.ultimoAnalisis ?? "Sin análisis"}</td>
+      <td>${formatearFecha(item.ultimoAnalisis) ?? "Sin análisis"}</td>
     `;
 
 

@@ -829,3 +829,196 @@ def separar_codigo(codigo, tamano=2000):
 # # res = formatear_js_basico(json)
 
 # # print(res)
+
+import os
+import subprocess
+import json
+from typing import List, Dict, Tuple
+
+
+def extract_code_from_file(path: str, start: int, end: int) -> str:
+    try:
+        with open(path, "r", encoding="utf-8", errors="ignore") as f:
+            lines = f.readlines()
+            return "".join(lines[start - 1:end]).strip()
+    except Exception:
+        return ""
+
+
+def run_semgrep_analysis(
+    target_dir: str,
+    config: str = "p/owasp-top-ten"
+) -> Tuple[List[Dict], List[Dict]]:
+    """
+    Ejecuta Semgrep sobre un directorio y devuelve:
+    1) JSON completo de findings
+    2) Lista optimizada para VulBERTa (codigo + path + metadata)
+    """
+
+    # cmd = [
+    #     "semgrep",
+    #     "--config", config,
+    #     "--json",
+    #     target_dir
+    # ]
+
+
+    # cmd = [
+    #     "semgrep",
+    #     "--config", "p/owasp-top-ten",
+    #     "--config", "p/security-audit",
+    #     "--config", "p/python",
+    #     "--config", "p/javascript",
+    #     "--config", "p/java",
+    #     "--config", "p/csharp",
+    #     "--config", "p/secrets",
+    #     target_dir,
+    #     "--json",
+    #     "--metrics=off",
+    # ]
+
+    cmd = [
+        "semgrep",
+
+        # Seguridad general
+        "--config", "p/security-audit",
+        "--config", "p/secrets",
+
+        # Lenguajes
+        "--config", "p/python",
+        "--config", "p/javascript",
+        "--config", "p/java",
+        "--config", "p/csharp",
+
+        # Frameworks
+        "--config", "p/django",
+        "--config", "p/flask",
+        # "--config", "p/express",
+        "--config", "p/react",
+        # "--config", "p/spring",
+        # "--config", "p/rails",
+
+        # Infra / DevOps
+        "--config", "p/docker",
+        "--config", "p/kubernetes",
+        "--config", "p/terraform",
+        "--config", "p/github-actions",
+
+        # Target
+        target_dir,
+
+        # Output
+        "--json",
+        "--metrics=off",
+    ]
+
+    
+    # result = subprocess.run(
+    #     cmd,
+    #     capture_output=True,
+    #     text=True,
+    #     encoding="utf-8",
+    #     errors="ignore",
+    #     env={**os.environ, "SEMGREP_FORCE_COLOR": "0"}
+    # )
+
+    result = subprocess.run(
+        cmd,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        env={**os.environ, "PYTHONUTF8": "1"}
+    )
+
+    if result.returncode not in (0, 1):
+        print("=== SEMGREP ERROR ===")
+        print("Return code:", result.returncode)
+        print("STDOUT:")
+        print(result.stdout[:2000])
+        print("STDERR:")
+        print(result.stderr[:2000])
+        raise RuntimeError("Semgrep failed")
+
+
+    output = json.loads(result.stdout)
+    findings = output.get("results", [])
+
+    vulberta_inputs = []
+
+    for f in findings:
+        path = f.get("path")
+        start = f.get("start", {}).get("line")
+        end = f.get("end", {}).get("line")
+
+        extra = f.get("extra", {})
+        snippet = extra.get("lines", "").strip()
+
+        metadata = extra.get("metadata", {})
+        
+        code = extract_code_from_file(path, start, end)
+
+        context = extract_code_with_context(
+            path,
+            start,
+            end,
+            context_before=5,
+            context_after=5
+        )
+
+        # JSON completo
+        vulberta_inputs.append({
+            "path": path,
+            "start_line": start,
+            "end_line": end,
+            "context_start": context["context_start"],
+            "context_end": context["context_end"],
+            "check_id": f.get("check_id"),
+            "owasp": metadata.get("owasp"),
+            "cwe": metadata.get("cwe"),
+            "code_context": context["code"],
+            "code": code
+        })
+
+    return findings, vulberta_inputs
+
+
+def extract_code_with_context(
+    path: str,
+    start: int,
+    end: int,
+    context_before: int = 5,
+    context_after: int = 5
+) -> Dict:
+    """
+    Extrae código con contexto seguro alrededor de un finding.
+    """
+
+    try:
+        with open(path, "r", encoding="utf-8", errors="ignore") as f:
+            lines = f.readlines()
+
+        total_lines = len(lines)
+
+        # Ajustes seguros
+        safe_start = max(1, start - context_before)
+        safe_end = min(total_lines, end + context_after)
+
+        code = "".join(lines[safe_start - 1:safe_end]).rstrip()
+
+        return {
+            "context_start": safe_start,
+            "context_end": safe_end,
+            "original_start": start,
+            "original_end": end,
+            "code": code
+        }
+
+    except Exception:
+        return {
+            "context_start": None,
+            "context_end": None,
+            "original_start": start,
+            "original_end": end,
+            "code": ""
+        }

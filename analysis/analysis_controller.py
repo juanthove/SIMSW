@@ -4,12 +4,13 @@ from .analysis_service import ejecutar_analisis_estatico, ejecutar_analisis_dina
 from database.connection import SessionLocal
 from database.models.analisis_model import Analisis
 from database.models.informe_model import Informe
+from database.models.detalleOZ_model import DetalleOZ
 from database.models.sitioWeb_model import SitioWeb
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy.exc import SQLAlchemyError
 import json
 
-#Realiza el analisis y guarda en la base de datos
+#Realiza el analisis estatico y guarda en la base de datos
 def analizar_estatico(url, sitio_web_id):
     db = SessionLocal()
 
@@ -17,7 +18,7 @@ def analizar_estatico(url, sitio_web_id):
         # 1️⃣ Crear análisis EN PROGRESO
         analisis = Analisis(
             nombre=f"Análisis Estático - {url}",
-            fecha=datetime.now(),
+            fecha=datetime.now(timezone.utc),
             tipo="estatico",
             estado="En Progreso",
             resultado_global=0,
@@ -28,7 +29,7 @@ def analizar_estatico(url, sitio_web_id):
         db.flush()  # Para obtener analisis.id sin commit
 
         # 2️⃣ Ejecutar análisis (Playwright + IA)
-        resultado = ejecutar_analisis_estatico(url)
+        resultado = ejecutar_analisis_estatico(sitio_web_id)
 
         vulnerabilidades = []
         vulnerabilidades_raw = []
@@ -98,6 +99,15 @@ def analizar_estatico(url, sitio_web_id):
                 db.add(informe)
 
         # 7️⃣ Guardar todo
+
+        print("NOW LOCAL:", datetime.now())
+        print("NOW UTC  :", datetime.now(timezone.utc))
+
+        #Actualizar fecha último monitoreo del sitio (UTC)
+        sitio = db.query(SitioWeb).filter(SitioWeb.id == sitio_web_id).first()
+        if sitio:
+            sitio.fecha_ultimo_monitoreo = datetime.now(timezone.utc)
+
         db.commit()
 
         return {
@@ -161,15 +171,116 @@ def calcular_resultado_global(vulnerabilidades):
 
 
 
+#Realiza el analisis dinamico y guarda en la base de datos
+def analizar_dinamico(url, sitio_web_id):
+    db = SessionLocal()
+    analisis = None
 
-def analizar_dinamico(url):
-    print("Entre en el de control")
-    resultado = ejecutar_analisis_dinamico(url)
+    try:
+        # ===============================
+        # CREAR ANÁLISIS
+        # ===============================
+        analisis = Analisis(
+            nombre=f"Análisis Dinámico - {url}",
+            fecha=datetime.now(timezone.utc),
+            tipo="dinamico",
+            estado="En Progreso",
+            resultado_global=0,
+            sitio_web_id=sitio_web_id
+        )
+        db.add(analisis)
+        db.flush()
 
-    return {
-        "url": url,
-        "resultado": resultado
-    }
+        # ===============================
+        # EJECUTAR DAST
+        # ===============================
+        resultado = ejecutar_analisis_dinamico(url)
+
+        vulnerabilidades = resultado.get("resultado_json", [])
+
+        print("[DEBUG] Vulnerabilidades IA:", len(vulnerabilidades))
+
+        # ===============================
+        # VALIDAR RESULTADO IA
+        # ===============================
+        vulnerabilidades_validas = []
+
+        for v in vulnerabilidades:
+            if isinstance(v, dict):
+                vulnerabilidades_validas.append(v)
+
+        # ===============================
+        # GUARDAR INFORMES + DETALLE OZ (1 a 1)
+        # ===============================
+        for v in vulnerabilidades_validas:
+            informe = Informe(
+                titulo=v.get("titulo"),
+                descripcion=v.get("descripcion"),
+                descripcion_humana=v.get("descripcion_humana"),
+                impacto=v.get("impacto"),
+                recomendacion=v.get("recomendacion"),
+                evidencia=v.get("evidencia"),
+                severidad=v.get("severidad"),
+                codigo=None,  # explícito
+                analisis_id=analisis.id
+            )
+            db.add(informe)
+            db.flush()  # para obtener informe.id
+
+            detalle = DetalleOZ(
+                informe_id=informe.id,
+                endpoint=v.get("endpoint"),
+                metodo=v.get("metodo"),
+                parametro=v.get("parametro"),
+                payload=v.get("payload")
+            )
+
+            db.add(detalle)
+
+        # ===============================
+        # FINALIZAR ANÁLISIS
+        # ===============================
+        analisis.estado = "Finalizado"
+        analisis.resultado_global = calcular_resultado_global(vulnerabilidades_validas)
+
+        #Actualizar fecha último monitoreo del sitio (UTC)
+        sitio = db.query(SitioWeb).filter(SitioWeb.id == sitio_web_id).first()
+        if sitio:
+            sitio.fecha_ultimo_monitoreo = datetime.now(timezone.utc)
+
+        db.commit()
+
+        return {
+            "analisis_id": analisis.id,
+            "estado": analisis.estado,
+            "resultado_global": analisis.resultado_global,
+            "vulnerabilidades": len(vulnerabilidades_validas)
+        }
+
+    except Exception as e:
+        db.rollback()
+
+        if analisis:
+            analisis.estado = "Error"
+            analisis.resultado_global = 0
+            db.commit()
+
+        print("[ERROR] analizar_dinamico:", str(e))
+
+        return {
+            "analisis_id": analisis.id if analisis else None,
+            "estado": "Error",
+            "error": str(e)
+        }
+
+    finally:
+        db.close()
+
+
+
+
+
+
 
 def analizar_sonar_qube(url):
     pass

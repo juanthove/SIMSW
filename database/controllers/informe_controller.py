@@ -3,6 +3,7 @@ from database.connection import SessionLocal
 from database.models.informe_model import Informe
 from database.models.analisis_model import Analisis
 from database.models.sitioWeb_model import SitioWeb
+from datetime import timezone
 
 
 # Obtener todos los informes
@@ -48,7 +49,7 @@ def obtener_informe_por_id(informe_id):
             "tipoAnalisis": analisis.tipo,
             "estadoAnalisis": analisis.estado,
             "resultadoGlobal": analisis.resultado_global,
-            "fechaAnalisis": analisis.fecha.isoformat() if analisis.fecha else None,
+            "fechaAnalisis": analisis.fecha.replace(tzinfo=timezone.utc).isoformat() if analisis.fecha else None,
 
             # ===== CONTEXTO DEL SITIO =====
             "siteId": sitio.id,

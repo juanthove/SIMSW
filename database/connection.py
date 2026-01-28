@@ -2,8 +2,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
 DB_USER = "root"
-DB_PASSWORD = "1234"
-DB_HOST = "localhost"
+DB_PASSWORD = "ProyectoUDE2025"
+DB_HOST = "127.0.0.1"
 DB_NAME = "simsw"
 
 DATABASE_URL = (

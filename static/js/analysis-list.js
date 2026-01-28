@@ -1,5 +1,6 @@
 //Obtengo datos
 import { apiFetch } from "./api.js";
+import { formatearFecha } from "./fecha.js";
 
 //Obtengo el id de la URL
 const params = new URLSearchParams(window.location.search);
@@ -54,7 +55,7 @@ function mostrarListado(lista) {
         <td>${item.estado}</td>
         <td>${item.resultado_global}</td>
         <td>${item.cantidad_informes}</td>
-        <td>${item.fecha}</td>
+        <td>${formatearFecha(item.fecha)}</td>
         `;
 
         tr.style.cursor = "pointer";

@@ -13,4 +13,6 @@ urlsAnalizadas
 ZAP_2.17.0
 
 probarAnalisis.py
-analysis-projects
+
+uploads/sitios/*
+!uploads/sitios/.gitkeep
