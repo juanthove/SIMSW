@@ -12,7 +12,8 @@ from scripts.vulberta_api import Vulberta as Vulberta
 from scripts.Owaspzap import OwaspZap as OW
 import time
 from scripts.EnviarAlerta import EnviarAlerta
-
+from flask import current_app
+import os
 
 def extraer_json(texto):
     #Elimina bloques ```json ``` o ```
@@ -29,67 +30,77 @@ def extraer_json(texto):
 
 
 
-def ejecutar_analisis_estatico(url):
+def promt_default(lista_mayores):
+    
+    prompt = """
+        Actúas como un analista de seguridad de aplicaciones senior.
+
+        Recibirás DOS CONJUNTOS DE INFORMACIÓN:
+
+        1) Fragmentos de código que un modelo ML (VulBERTa) clasificó como VULNERABLES.
+        → Estos tienen ALTA PRIORIDAD.
+
+        2) Hallazgos detectados por Semgrep (análisis estático basado en reglas).
+        → Estos pueden contener FALSOS POSITIVOS.
+
+        Tu tarea:
+        - Analizar TODOS los fragmentos.
+        - Verificar si existe sanitización o mitigación real.
+        - Detectar falsos positivos.
+        - Devolver SOLO vulnerabilidades reales.
+        - Si un fragmento NO es vulnerable, IGNORARLO.
+
+        Devuelve EXCLUSIVAMENTE un JSON válido.
+        NO agregues texto adicional.
+        NO uses ```json.
+
+        Estructura exacta del JSON:
+
+        [
+        {
+            "titulo":  nombre técnico corto de la vulnerabilidad,
+            "descripcion": explicación técnica del problema,
+            "descripcion_humana": explicacion breve en lenguaje simple y entendible,
+            "impacto":  consecuencias reales si se explota,
+            "recomendacion": cómo corregir o mitigar la vulnerabilidad,
+            "evidencia": descripción observable del problema (request, endpoint, comportamiento),
+            "severidad": nivel de severidad del 1 al 3 (1=baja, 2=media, 3=alta),
+            "codigo": fragmento exacto de código vulnerable
+        }
+        ]
+
+        Si no hay vulnerabilidades reales, devuelve [].
+        """
+
+    prompt += "\n=== FRAGMENTOS MARCADOS COMO VULNERABLES POR VulBERTa ===\n"
+
+    for frag in lista_mayores:
+        prompt += f"Código:\n{frag['code_fragment']}\n"
+    
+    prompt += "\n=== HALLAZGOS DETECTADOS POR SEMGREP ===\n"
+
+    return prompt
+
+
+def dividir_en_chunks(lista, n):
+    for i in range(0, len(lista), n):
+        yield lista[i:i+n]
+
+
+
+def ejecutar_analisis_estatico(sitio_web_id):
 
     """Analiza el sitio de forma estatica"""
 
+
+
+    #Buscar sitio en carpeta
+    ruta_base = os.path.join(current_app.config["UPLOADS_DIR"], "sitios", str(sitio_web_id))
+
     try:
-        print("[*] Iniciando crawling liviano...")
-        crawl_results = crawl_light(url)
-        print(f"[*] Páginas analizadas: {len(crawl_results)}")
-
-        top_urls = seleccionar_urls_relevantes(crawl_results, max_urls=1)
-        print(f"[*] {len(top_urls)} URLs seleccionadas para análisis profundo:\n")
-
-        if not top_urls:
-            return {
-                "mensaje": "No se encontraron URLs para analizar",
-                "vulnerabilidades": []
-            }
-
-        deep_results = analizar_urls_con_playwright(top_urls)
-
-        #Quedarse solo con resultados validos
-        deep_results = {
-            url: data
-            for url, data in deep_results.items()
-            if data and isinstance(data, dict)
-        }
-
-        #Hacer checkeo para cuando no hay datos para analizar
-        if not deep_results:
-            return {
-                "mensaje": "No se pudieron analizar las páginas del sitio",
-                "vulnerabilidades": []
-            }
-
-        print("[*] Construyendo AST del sitio...")
-        site_ast = []
-
-        #Corregir error de que no se esta cargando datos en arbol para https://mixy.ba/webplala/sso.login/
-        for url, extracted_data in deep_results.items():
-            #print(f"-LA data extraida es: {extracted_data}")
-
-            if not extracted_data:
-                print(f"[!] Sin datos extraídos para {url}, se omite")
-                continue
-
-            page_ast = build_page_ast(url, extracted_data)
-            site_ast.append(page_ast)
-
-        if not site_ast:
-            return {
-                "mensaje": "No se pudo construir el AST del sitio",
-                "vulnerabilidades": []
-            }
-
-        print("[*] Preparando fragmentos para VulBERTa...")
-        vulberta_inputs = preparar_inputs_vulberta(site_ast)
-
-        print("[*] VulBERTa inputs:", vulberta_inputs)
-        print("[*] Cantidad de fragmentos:", len(vulberta_inputs))
-
-        if not vulberta_inputs:
+        print(ruta_base)
+        vulberta_data = run_semgrep_analysis(ruta_base)
+        if not vulberta_data:
             return {
                 "mensaje": "No se generaron fragmentos para análisis",
                 "vulnerabilidades": []
@@ -100,8 +111,13 @@ def ejecutar_analisis_estatico(url):
             nombre="VulBERTa",
             version="1.0",
         )
+        
+        archivos = []
+        for data in vulberta_data:
+            archivos.append(data["code_context"])
 
-        resultado = herramienta.analizar_sitio(vulberta_inputs)
+        resultado = herramienta.analizar_sitio(list(set(archivos)))
+        
 
         if not resultado:
             return {
@@ -110,91 +126,55 @@ def ejecutar_analisis_estatico(url):
             }
 
 
-        son = 0
-        noson = 0
         lista_mayores = []
 
         for item in resultado:
             if item.get_label() == "Vulnerable":
-                if item.get_confidence() > 0.5:
-                    print(f"Es mayor a 0.5, el confidence es: {item.get_confidence()}\n")
-
-                    lista_mayores.append({
+                lista_mayores.append({
                         "id": item.get_id(),
                         "code_fragment": item.get_code_fragment()
                     })
-                    son += 1
-                else:
-                    print(f"Confidence es menor o igual a 0.5, es: {item.get_confidence()}\n")
-                    noson += 1
-            else:
-                print(f"El label no es 'Vulnerable', es: {item.get_label()}\n")
-
-        print(f"La cantidad que son mayores son: {son}, y menores: {noson}")
-
-        if not lista_mayores:
-            print(f"NO LISTA MAYORES")
-            return {
-                "mensaje": "No se detectaron vulnerabilidades",
-                "vulnerabilidades": []
-            }
-
-        #Luego de armar la lista hacemos el prompt
-        prompt = """
-            Analiza la siguiente lista de fragmentos de código vulnerables segun VulBERTa(aunque pueden ser falsos positivos).
-
-            Devuelve EXCLUSIVAMENTE un JSON válido.
-            NO incluyas texto adicional.
-            NO incluyas ```json ni ```.
-
-            El JSON debe ser un array de objetos con esta estructura exacta:
-
-            [
-            {
-                "titulo":  nombre técnico corto de la vulnerabilidad,
-                "descripcion": explicación técnica del problema,
-                "descripcion_humana": explicacion breve en lenguaje simple y entendible,
-                "impacto":  consecuencias reales si se explota,
-                "recomendacion": cómo corregir o mitigar la vulnerabilidad,
-                "evidencia": descripción observable del problema (request, endpoint, comportamiento),
-                "severidad": nivel de severidad del 1 al 3 (1=baja, 2=media, 3=alta),
-                "codigo": fragmento exacto de código vulnerable
-            }
-            ]
-
-            Verifica si se trata de un falso positivo, en caso de serlo, no me lo devuelvas, ignoralo.
-            En caso de que ninguno sea valido, devuelve un array vacío:
-
-            Aquí están los fragmentos:
-            """
-
-        for frag in lista_mayores:
-            prompt += f"\nID: {frag['id']}, Código:\n{frag['code_fragment']}\n"
-
+        
+        resultados_finales = []
+        chunk_size = 15
         informe = Informe()
-        resultadoFinal = informe.preguntar(prompt)
+        for bloque in dividir_en_chunks(vulberta_data, chunk_size):
+            prompt = promt_default(lista_mayores)
+            for f in bloque:
+                prompt += f"""
+                Archivo: {f['path']}
+                CWE: {f['cwe']}
+                OWASP: {f['owasp']}
+                Check ID: {f['check_id']}
 
-        print("Respuesta de la IA recibida:\n")
+                Codigo sin contexto:
+                {f['code']}
+                Código con contexto:
+                {f['code_context']}
+                """
+            respuesta = informe.preguntar(prompt)
 
-        if hasattr(resultadoFinal, "content"):
-            texto_ia = resultadoFinal.content
-        else:
-            texto_ia = resultadoFinal
+            texto_ia = (
+                respuesta.content
+                if hasattr(respuesta, "content")
+                else respuesta
+            )
+            print("[DEBUG] RESULTADO IAAAA", texto_ia)
 
-        print(f"\n\n{texto_ia}\n\n\n")
+            # 4️⃣ Parsear JSON
+            try:
+                json_limpio = extraer_json(texto_ia)
+                resultado_chunk = json.loads(json_limpio)
 
-        try:
-            json_limpio = extraer_json(texto_ia)
-            resultado_json = json.loads(json_limpio)
-        except Exception as e:
-            return {
-                "mensaje": "La IA no devolvió un JSON válido",
-                "vulnerabilidades": [],
-                "error_tecnico": str(e)
-            }
+                if isinstance(resultado_chunk, list):
+                    resultados_finales.extend(resultado_chunk)
 
-        return resultado_json
-
+            except Exception as e:
+                #Pongo continue para que no se rompa por el fallo de un chunk
+                continue
+        print("[DEBUG] RESULTADO", resultados_finales)
+        return resultados_finales
+    
     except Exception as e:
         print(f"[!] Error inesperado en análisis estático: {e}")
         return {
