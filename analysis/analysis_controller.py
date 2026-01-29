@@ -29,7 +29,7 @@ def analizar_estatico(url, sitio_web_id):
         db.flush()  # Para obtener analisis.id sin commit
 
         # 2️⃣ Ejecutar análisis (Playwright + IA)
-        resultado = ejecutar_analisis_estatico(url)
+        resultado = ejecutar_analisis_estatico(sitio_web_id)
 
         vulnerabilidades = []
         vulnerabilidades_raw = []

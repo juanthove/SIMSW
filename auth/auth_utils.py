@@ -3,7 +3,12 @@ import bcrypt
 import os
 from datetime import datetime, timedelta
 
-JWT_SECRET = os.getenv("JWT_SECRET", "simsw_secret_key")
+JWT_SECRET = os.getenv("JWT_SECRET")
+
+if not JWT_SECRET:
+    raise RuntimeError("JWT_SECRET no definido en el entorno")
+
+
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRE_HOURS = 24
 
