@@ -16,6 +16,7 @@ from database.routes.sitioWeb_routes import sitioWeb_bp
 from database.routes.analisis_routes import analisis_bp_db
 from database.routes.informe_routes import informe_bp
 from database.routes.detalleOZ_routes import detalleOZ_bp
+from database.routes.mail_routes import mail_bp
 
 
 # registrar blueprints
@@ -27,6 +28,7 @@ app.register_blueprint(sitioWeb_bp)
 app.register_blueprint(analisis_bp_db)
 app.register_blueprint(informe_bp)
 app.register_blueprint(detalleOZ_bp)
+app.register_blueprint(mail_bp)
 
 #Rutas a cada pagina
 @app.route("/")
@@ -64,6 +66,10 @@ def report_detail():
 @app.route("/site-history")
 def site_history():
     return render_template("site-history.html")
+
+@app.route("/mail-create")
+def mail_create():
+    return render_template("mail-create.html")
 
 
 #Configurar ruta base

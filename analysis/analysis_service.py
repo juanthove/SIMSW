@@ -63,7 +63,7 @@ def promt_default(lista_mayores):
             "descripcion_humana": explicacion breve en lenguaje simple y entendible,
             "impacto":  consecuencias reales si se explota,
             "recomendacion": cómo corregir o mitigar la vulnerabilidad,
-            "evidencia": descripción observable del problema (request, endpoint, comportamiento),
+            "evidencia": descripción observable del problema (request, endpoint, comportamiento) y nombre del archivo donde se encuentra la vulnerabilidad sin su ruta,
             "severidad": nivel de severidad del 1 al 3 (1=baja, 2=media, 3=alta),
             "codigo": fragmento exacto de código vulnerable
         }

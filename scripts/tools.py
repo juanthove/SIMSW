@@ -415,36 +415,17 @@ def run_semgrep_analysis(
     cmd = [
         "semgrep",
 
-        # Seguridad general
-        "--config", "p/security-audit",
+        "--config", "p/r2c-security-audit",
         "--config", "p/secrets",
+        "--config", "p/supply-chain",
 
-        # Lenguajes
-        "--config", "p/python",
-        "--config", "p/javascript",
-        "--config", "p/java",
-        "--config", "p/csharp",
+        "--no-git-ignore",
 
-        # Frameworks
-        "--config", "p/django",
-        "--config", "p/flask",
-        # "--config", "p/express",
-        "--config", "p/react",
-        # "--config", "p/spring",
-        # "--config", "p/rails",
-
-        # Infra / DevOps
-        "--config", "p/docker",
-        "--config", "p/kubernetes",
-        "--config", "p/terraform",
-        "--config", "p/github-actions",
-
-        # Target
-        target_dir,
-
-        # Output
+        "--timeout", "0",
         "--json",
         "--metrics=off",
+
+        target_dir
     ]
 
 
