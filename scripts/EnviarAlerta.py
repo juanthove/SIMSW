@@ -20,7 +20,7 @@ class EnviarAlerta():
 
         #Agrego el contenido
 
-        mensaje.attach(MIMEText(contenido, 'plain'))
+        mensaje.attach(MIMEText(contenido, 'html'))
 
         try:
             #Conectamos con el servidor en el puerto 587

@@ -213,15 +213,15 @@ def enviar_alertas_criticas(sitio_web_id, vulnerabilidades, url):
             alerta.enviar_alerta(
                 destinatario=mail.correo,
                 asunto = f"🚨 [{fecha}] Vulnerabilidades críticas - {nombre_sitio}",
-                contenido=f"""
-                    Se detectaron vulnerabilidades críticas en el sitio monitoreado.
+                contenido = f"""
+                <b>Se detectaron vulnerabilidades críticas</b><br><br>
 
-                    Sitio: {nombre_sitio}
-                    URL: {url}
-                    Cantidad de vulnerabilidades críticas: {len(vulnerabilidades_criticas)}
+                <b>Sitio:</b> {nombre_sitio}<br>
+                <b>URL:</b> <a href="{url}">{url}</a><br>
+                <b>Cantidad:</b> {len(vulnerabilidades_criticas)}<br><br>
 
-                    Se recomienda tomar acciones inmediatas.
-                    """
+                Se recomienda tomar acciones inmediatas.
+                """
             )
 
         return len(mails)
