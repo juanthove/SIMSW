@@ -9,7 +9,8 @@ from database.controllers.sitioWeb_controller import (
     eliminar_sitio,
     obtener_sitios_con_resumen,
     obtener_detalle_sitio,
-    obtener_informes_por_sitio
+    obtener_informes_por_sitio,
+    subir_un_archivo_base_sitio
 )
 
 sitioWeb_bp = Blueprint("sitioWeb", __name__, url_prefix="/api/sitios")
@@ -36,10 +37,9 @@ def get_sitio(sitio_id):
 @jwt_required()
 def post_sitio():
     data = request.form
-    files = request.files.getlist("archivosBase")
 
     try:
-        sitio = crear_sitio(data, files)
+        sitio = crear_sitio(data)
         return jsonify(sitio), 201
 
     except ValueError as e:
@@ -58,10 +58,9 @@ def post_sitio():
 @jwt_required()
 def put_sitio(sitio_id):
     data = request.form
-    files = request.files.getlist("archivosBase")
 
     try:
-        sitio = actualizar_sitio(sitio_id, data, files)
+        sitio = actualizar_sitio(sitio_id, data)
 
         if sitio is None:
             return jsonify({"error": "Sitio no encontrado"}), 404
@@ -76,6 +75,35 @@ def put_sitio(sitio_id):
     except Exception as e:
         print(e)
         return jsonify({"error": "Error interno del servidor"}), 500
+    
+
+#Subir archivos base
+@sitioWeb_bp.route("/<int:sitio_id>/archivos", methods=["POST"])
+@jwt_required()
+def subir_archivo_base(sitio_id):
+    archivo = request.files.get("archivo")
+    ruta_relativa = request.form.get("ruta_relativa")
+
+    if not archivo or not ruta_relativa:
+        return jsonify({"error": "Faltan datos del archivo"}), 400
+
+    try:
+        resultado = subir_un_archivo_base_sitio(sitio_id, archivo, ruta_relativa)
+        return jsonify(resultado), 200
+
+    except ValueError as e:
+        msg = str(e)
+
+        if "demasiado grande" in msg:
+            return jsonify({"error": msg}), 413  # 👈 clave
+        
+        return jsonify({"error": msg}), 400
+
+    except Exception as e:
+        print(e)
+        return jsonify({"error": "Error interno del servidor"}), 500
+
+
 
 
 
