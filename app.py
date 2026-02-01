@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, jsonify
 from flask_cors import CORS
 import os
 
@@ -73,6 +73,15 @@ UPLOADS_DIR = os.path.join(BASE_DIR, "uploads")
 os.makedirs(UPLOADS_DIR, exist_ok=True)
 
 app.config["UPLOADS_DIR"] = UPLOADS_DIR
+
+
+#app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024  #50 MB
+
+#@app.errorhandler(413)
+#def request_entity_too_large(error):
+#    return jsonify({
+#        "error": "Los archivos superan el tamaño máximo permitido (50 MB)"
+#    }), 413
 
 
 if __name__ == "__main__":

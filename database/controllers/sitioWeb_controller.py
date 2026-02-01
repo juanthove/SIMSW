@@ -5,10 +5,23 @@ from database.models.informe_model import Informe
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import func
 from datetime import timezone
+from pathlib import Path
 import os
 import shutil
 from werkzeug.utils import secure_filename
 from flask import current_app
+
+EXTENSIONES_PERMITIDAS = {"py", "js", "ts", "java", "php", "json", "yml", "yaml", "xml", "html", "css", "sh", "env", "md"}
+
+
+#Saber si un archivo tiene una extension permitida
+def archivo_permitido(filename):
+    return (
+        "." in filename and
+        filename.rsplit(".", 1)[1].lower() in EXTENSIONES_PERMITIDAS
+    )
+
+MAX_FILE_SIZE = 50 * 1024 * 1024  # 50 MB
 
 # Obtener todos los sitios
 def obtener_sitios():
@@ -31,38 +44,20 @@ def obtener_sitio_por_id(sitio_id):
 
 
 # Crear sitio web
-def crear_sitio(data, files):
+def crear_sitio(data):
     db = SessionLocal()
     try:
-        # 1️⃣ Crear el sitio (DB)
         sitio = SitioWeb(
             nombre=data.get("nombre"),
             url=data.get("url"),
             propietario=data.get("propietario"),
             frecuencia_monitoreo_minutos=int(data.get("frecuenciaAnalisis")),
-            archivos_base=False  # por defecto
+            archivos_base=False
         )
 
         db.add(sitio)
         db.commit()
         db.refresh(sitio)
-
-        # 2️⃣ Guardar archivos si vinieron desde el front
-        if files and len(files) > 0:
-            ruta_base = os.path.join(current_app.config["UPLOADS_DIR"], "sitios", str(sitio.id))
-            os.makedirs(ruta_base, exist_ok=True)
-
-            archivos_guardados = False
-
-            for file in files:
-                if file and file.filename:
-                    filename = secure_filename(file.filename)
-                    file.save(os.path.join(ruta_base, filename))
-                    archivos_guardados = True
-
-            if archivos_guardados:
-                sitio.archivos_base = True
-                db.commit()
 
         return sitio.to_dict()
 
@@ -79,8 +74,9 @@ def crear_sitio(data, files):
 
 
 
+
 #Actualizar sitio web
-def actualizar_sitio(sitio_id, data, files):
+def actualizar_sitio(sitio_id, data):
     db = SessionLocal()
     try:
         sitio = db.query(SitioWeb).filter(SitioWeb.id == sitio_id).first()
@@ -88,7 +84,6 @@ def actualizar_sitio(sitio_id, data, files):
         if sitio is None:
             return None
 
-        #Actualizar campos básicos
         if "nombre" in data:
             sitio.nombre = data.get("nombre")
 
@@ -101,27 +96,20 @@ def actualizar_sitio(sitio_id, data, files):
         if "frecuenciaAnalisis" in data:
             sitio.frecuencia_monitoreo_minutos = int(data.get("frecuenciaAnalisis"))
 
-        #Ruta base de archivos
-        ruta_sitio = os.path.join(current_app.config["UPLOADS_DIR"], "sitios", str(sitio.id))
-
-        #Eliminar archivos si viene el flag
+        # Eliminar archivos base si viene el flag
         eliminar_archivos = data.get("eliminarArchivos") == "true"
-        hay_archivos_nuevos = files and any(f.filename for f in files)
 
-        if (eliminar_archivos or hay_archivos_nuevos) and os.path.exists(ruta_sitio):
-            shutil.rmtree(ruta_sitio)
+        if eliminar_archivos:
+            ruta_sitio = os.path.join(
+                current_app.config["UPLOADS_DIR"],
+                "sitios",
+                str(sitio.id)
+            )
+
+            if os.path.exists(ruta_sitio):
+                shutil.rmtree(ruta_sitio)
+
             sitio.archivos_base = False
-
-        #Guardar nuevos archivos (si vinieron)
-        if hay_archivos_nuevos and not eliminar_archivos:
-            os.makedirs(ruta_sitio, exist_ok=True)
-
-            for file in files:
-                if file and file.filename:
-                    filename = secure_filename(file.filename)
-                    file.save(os.path.join(ruta_sitio, filename))
-
-            sitio.archivos_base = True
 
         db.commit()
         db.refresh(sitio)
@@ -138,6 +126,7 @@ def actualizar_sitio(sitio_id, data, files):
 
     finally:
         db.close()
+
 
 
 #Eliminar un sitio web
@@ -290,3 +279,66 @@ def obtener_informes_por_sitio(site_id):
     finally:
         db.close()
 
+def subir_un_archivo_base_sitio(sitio_id, archivo, ruta_relativa):
+    db = SessionLocal()
+
+    try:
+        sitio = db.query(SitioWeb).filter(SitioWeb.id == sitio_id).first()
+        if sitio is None:
+            raise ValueError("Sitio no encontrado")
+
+        # 🔒 sanitizar ruta
+        ruta = Path(ruta_relativa)
+
+        if ".." in ruta.parts:
+            raise ValueError("Ruta inválida")
+
+        filename = secure_filename(archivo.filename)
+
+        if not archivo_permitido(filename):
+            # ⛔ ignorar archivo sin romper nada
+            return {
+                "archivo": filename,
+                "estado": "ignorado"
+            }
+
+
+        # 🔍 tamaño real del archivo
+        archivo.seek(0, os.SEEK_END)
+        size = archivo.tell()
+        archivo.seek(0)
+
+        if size > MAX_FILE_SIZE:
+            raise ValueError(f"Archivo demasiado grande ({size} bytes)")
+
+        # 📂 carpeta base del sitio
+        base_sitio = os.path.join(
+            current_app.config["UPLOADS_DIR"],
+            "sitios",
+            str(sitio.id)
+        )
+
+        # 📂 destino final respetando carpetas
+        destino_final = os.path.join(
+            base_sitio,
+            ruta.parent
+        )
+
+        os.makedirs(destino_final, exist_ok=True)
+
+        archivo.save(
+            os.path.join(destino_final, filename)
+        )
+
+        # ✅ marcar solo si se guardó correctamente
+        if not sitio.archivos_base:
+            sitio.archivos_base = True
+            db.commit()
+
+        return {
+            "archivo": str(ruta),
+            "estado": "subido"
+        }
+
+    finally:
+        db.close()

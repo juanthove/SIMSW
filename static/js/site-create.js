@@ -42,7 +42,7 @@ const customInput = document.getElementById("frecuenciaCustom");
 const frecuenciaError = document.getElementById("frecuenciaError");
 const fileButton = document.querySelector(".fileButton");
 
-
+const rutasIgnoradas = ["node_modules", ".git", "venv", "__pycache__"];
 
 let sitioSeleccionadoId = null;
 
@@ -62,6 +62,12 @@ function cargarSelectorSitios() {
 //Cargar datos al seleccionar un sitio, o eliminarlos si se coloca nuevo sitio
 selector.addEventListener("change", () => {
   const id = selector.value;
+
+  //Resetear boton Elegir carpeta
+  inputArchivos.disabled = false;
+  fileButton.classList.remove("disabled");
+  inputArchivos.value = "";
+  archivoInfo.textContent = "";
 
   if (!id) {
     // Nuevo sitio
@@ -136,7 +142,6 @@ form.addEventListener("submit", async (e) => {
     frecuenciaAnalisis = parseInt(customInput.value, 10);
 
     if (!frecuenciaAnalisis || frecuenciaAnalisis < 15) {
-      frecuenciaError.style.display = "block";
       mostrarToast("La frecuencia mínima es de 15 minutos", "error");
       return;
     }
@@ -150,13 +155,6 @@ form.addEventListener("submit", async (e) => {
   formData.append("propietario", propietario);
   formData.append("frecuenciaAnalisis", frecuenciaAnalisis);
 
-
-  //Subir archivos solo si no se marcó eliminar y se seleccionó archivos
-  if (!eliminarArchivosCheckbox.checked && inputArchivos.files.length > 0) {
-    for (const file of inputArchivos.files) {
-      formData.append("archivosBase", file);
-    }
-  }
 
   //Eliminar archivos (solo en modificar)
   if (sitioSeleccionadoId && eliminarArchivosCheckbox.checked) {
@@ -185,12 +183,83 @@ form.addEventListener("submit", async (e) => {
       return;
     }
 
-    mostrarToast(
-      sitioSeleccionadoId
-        ? "Sitio actualizado correctamente"
-        : "Sitio registrado correctamente",
-      "success"
-    );
+    //Subir archivos solo si no se marcó eliminar y se seleccionó archivos
+    const sitioId = sitioSeleccionadoId ?? data.id;
+
+    let huboArchivoGrande = false;
+
+    if (!eliminarArchivosCheckbox.checked && inputArchivos.files.length > 0) {
+      for (const file of inputArchivos.files) {
+        if (rutasIgnoradas.some(dir => file.webkitRelativePath.includes(dir))) {
+          continue;
+        }
+
+        const partes = file.webkitRelativePath.split("/");
+        partes.shift(); // elimina la carpeta raíz
+        const relativePath = partes.join("/");
+
+        const fd = new FormData();
+        fd.append("archivo", file);
+        fd.append("ruta_relativa", relativePath);
+
+        try {
+          const resUpload = await apiFetch(
+            `/api/sitios/${sitioId}/archivos`,
+            {
+              method: "POST",
+              body: fd
+            }
+          );
+
+          // 🔴 SOLO archivos demasiado grandes
+          if (!resUpload.ok && resUpload.status === 413) {
+            huboArchivoGrande = true;
+
+            console.error(
+              `Archivo demasiado grande: ${file.name} (${file.size} bytes)`
+            );
+
+            mostrarToast(
+              `El archivo ${file.name} es demasiado grande`,
+              "error"
+            );
+          }
+
+          // ❌ otros errores (extensión no permitida, ignorados, etc.)
+          // no hacen nada y NO muestran mensaje
+
+        } catch (err) {
+          // error de red → lo tratamos como archivo grande fallido
+          huboArchivoGrande = true;
+
+          console.error(
+            `Error de red subiendo ${file.name}:`,
+            err
+          );
+
+          mostrarToast(
+            `Error subiendo ${file.name}`,
+            "error"
+          );
+        }
+      }
+    }
+
+    // ⚠️ warning SOLO si hubo archivos grandes
+    if (huboArchivoGrande) {
+      mostrarToast(
+        "El sitio se guardó, pero uno o más archivos eran demasiado grandes",
+        "warning"
+      );
+    } else {
+      mostrarToast(
+        sitioSeleccionadoId
+          ? "Sitio actualizado correctamente"
+          : "Sitio registrado correctamente",
+        "success"
+      );
+    }
+
 
     //Resetear campos
     inputArchivos.disabled = false;
@@ -277,6 +346,7 @@ btnDelete.addEventListener("click", async () => {
     fileButton.classList.remove("disabled");
     inputArchivos.value = "";
     archivoInfo.textContent = "";
+    eliminarArchivosContainer.style.display = "none";
 
     // Recargar lista
     await cargarSitios();
