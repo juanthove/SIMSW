@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurar Gmail</title>
+
+    <link href="../static/css/main.css" rel="stylesheet" type="text/css">
+    <link href="../static/css/site-create.css" rel="stylesheet" type="text/css">
+    <link href="../static/css/responsive.css" rel="stylesheet" type="text/css">
+
+    <script src="../static/js/init.js" defer></script>
+    <script type="module" src="../static/js/mail-create.js"></script>
+</head>
+<body>
+    <div id="navBarDiv"></div>
+
+    <main class="contenedorForm">
+        <h1 id="tituloForm">Configurar Gmail</h1>
+
+        <!-- Selector Gmail -->
+        <div class="campoForm">
+            <label for="selectorGmail">Seleccionar Gmail</label>
+            <select id="selectorGmail">
+                <option value="">Nuevo Gmail</option>
+                <!-- gmail existentes -->
+            </select>
+        </div>
+
+        <form id="formGmail" class="formBase">
+
+            <!-- Nombre -->
+            <div class="campoForm">
+                <label for="nombre">Nombre</label>
+                <input
+                    type="text"
+                    id="nombre"
+                    name="nombre"
+                    placeholder="Ej: Alertas Producción"
+                    required
+                >
+            </div>
+
+            <!-- Gmail -->
+            <div class="campoForm">
+                <label for="email">Dirección Gmail</label>
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="ejemplo@gmail.com"
+                    required
+                >
+            </div>
+
+            <!-- Asociación de sitios -->
+            <div class="campoForm">
+                <label>Asociar sitios web</label>
+
+                <div class="opcionesRelacion">
+                    <label class="checkboxLabel">
+                        <input type="radio" name="modoSitios" value="todos" checked>
+                        📬 Recibir alertas de todos los sitios
+                    </label>
+
+                    <label class="checkboxLabel">
+                        <input type="radio" name="modoSitios" value="personalizado">
+                        🎯 Seleccionar sitios manualmente
+                    </label>
+                </div>
+            </div>
+
+            <!-- Lista de sitios -->
+            <div
+                id="listaSitiosContainer"
+                class="campoForm"
+                style="display:none;"
+            >
+                <div class="listaCheckbox">
+                    <!-- Ejemplo -->
+                    <!--
+                    <label class="checkboxLabel">
+                        <input type="checkbox" value="1">
+                        midominio.com
+                    </label>
+                    -->
+                </div>
+
+                <small class="formHint">
+                    Seleccioná los sitios de los cuales querés recibir alertas
+                </small>
+            </div>
+
+            <!-- Acciones -->
+            <div class="accionesForm">
+                <button
+                    type="button"
+                    id="btnDelete"
+                    class="btn-delete"
+                    style="display:none;"
+                >
+                    Eliminar Gmail
+                </button>
+
+                <button
+                    type="submit"
+                    class="btnPrincipal"
+                    id="btnPrincipal"
+                >
+                    Guardar Gmail
+                </button>
+            </div>
+
+        </form>
+    </main>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Modal confirmación -->
+    <div id="confirmModal" class="modal-overlay hidden">
+        <div class="modal">
+            <h3>Confirmar eliminación</h3>
+            <p>¿Estás seguro de eliminar este Gmail?</p>
+
+            <div class="modal-actions">
+                <button id="btnCancelar">Cancelar</button>
+                <button id="btnConfirmar" class="btn-danger">
+                    Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

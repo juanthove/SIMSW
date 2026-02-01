@@ -6,9 +6,15 @@ from database.models.analisis_model import Analisis
 from database.models.informe_model import Informe
 from database.models.detalleOZ_model import DetalleOZ
 from database.models.sitioWeb_model import SitioWeb
+from database.models.sitioMail_model import SitioMail
+from database.models.mail_model import Mail
 from datetime import datetime, timezone
 from sqlalchemy.exc import SQLAlchemyError
 import json
+from database.controllers.mail_controller import obtener_mails_por_sitio
+from scripts.EnviarAlerta import EnviarAlerta
+from datetime import datetime
+
 
 #Realiza el analisis estatico y guarda en la base de datos
 def analizar_estatico(url, sitio_web_id):
@@ -100,15 +106,15 @@ def analizar_estatico(url, sitio_web_id):
 
         # 7️⃣ Guardar todo
 
-        print("NOW LOCAL:", datetime.now())
-        print("NOW UTC  :", datetime.now(timezone.utc))
-
         #Actualizar fecha último monitoreo del sitio (UTC)
         sitio = db.query(SitioWeb).filter(SitioWeb.id == sitio_web_id).first()
         if sitio:
             sitio.fecha_ultimo_monitoreo = datetime.now(timezone.utc)
 
         db.commit()
+
+        #Enviar alertas de las vulnerabilidades criticas
+        enviar_alertas_criticas(sitio_web_id, vulnerabilidades, url)
 
         return {
             "analisis_id": analisis.id,
@@ -163,6 +169,70 @@ def calcular_resultado_global(vulnerabilidades):
         return 0
 
     return round((total / maximo) * 100)
+
+
+
+
+def enviar_alertas_criticas(sitio_web_id, vulnerabilidades, url):
+    """
+    Envía un mail por cada correo relacionado al sitio
+    si existen vulnerabilidades de severidad 3
+    """
+
+    # 🔴 Filtrar vulnerabilidades críticas
+    vulnerabilidades_criticas = [
+        v for v in vulnerabilidades
+        if isinstance(v, dict) and v.get("severidad") == 3
+    ]
+
+    if not vulnerabilidades_criticas:
+        return 0
+
+    db = SessionLocal()
+
+    try:
+        # 🏷️ Obtener nombre del sitio
+        sitio = db.query(SitioWeb).filter(SitioWeb.id == sitio_web_id).first()
+        nombre_sitio = sitio.nombre if sitio else "Sitio desconocido"
+
+        # 📬 Obtener mails relacionados al sitio
+        mails = (
+            db.query(Mail)
+            .join(SitioMail, SitioMail.mail_id == Mail.id)
+            .filter(SitioMail.sitio_web_id == sitio_web_id)
+            .all()
+        )
+
+        if not mails:
+            return 0
+
+        alerta = EnviarAlerta()
+
+        for mail in mails:
+            fecha = datetime.now().strftime("%d/%m/%Y %H:%M")
+            alerta.enviar_alerta(
+                destinatario=mail.correo,
+                asunto = f"🚨 [{fecha}] Vulnerabilidades críticas - {nombre_sitio}",
+                contenido=f"""
+                    Se detectaron vulnerabilidades críticas en el sitio monitoreado.
+
+                    Sitio: {nombre_sitio}
+                    URL: {url}
+                    Cantidad de vulnerabilidades críticas: {len(vulnerabilidades_criticas)}
+
+                    Se recomienda tomar acciones inmediatas.
+                    """
+            )
+
+        return len(mails)
+
+    except Exception as e:
+        # ⚠️ No rompe el análisis si falla el mail
+        print("[WARN] Error enviando alertas críticas:", str(e))
+        return 0
+
+    finally:
+        db.close()
 
 
 
@@ -249,6 +319,9 @@ def analizar_dinamico(url, sitio_web_id):
             sitio.fecha_ultimo_monitoreo = datetime.now(timezone.utc)
 
         db.commit()
+
+        #Enviar alertas de las vulnerabilidades criticas
+        enviar_alertas_criticas(sitio_web_id, vulnerabilidades_validas, url)
 
         return {
             "analisis_id": analisis.id,

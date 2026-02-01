@@ -20,7 +20,7 @@ if (navBar) {
             </div>
 
             <div id="config">
-                <a href="config.html">Configuración</a>
+                <a href="/mail-create">Configuración Gmail</a>
             </div>
             <div id="sesion">
                 <a href="#" id="logoutBtn">Cerrar Sesión</a>
