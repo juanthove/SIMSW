@@ -1,30 +1,33 @@
 from auth.auth_utils import verify_password, generate_token
-
-# Más adelante esto va a la BD
-USERS = [
-    {
-        "id": 1,
-        "email": "usuario@ejemplo.com",
-        "password": "$2b$12$LNbL9qxsAyP5KACHsWveaOaI8qLG41sVXKixjAlStRSQdgTDSlNRi"  # bcrypt
-    }
-]
+from database.connection import SessionLocal
+from database.models.usuario_model import Usuario
 
 
 def login_user(email: str, password: str):
-    user = next((u for u in USERS if u["email"] == email), None)
+    db = SessionLocal()
 
-    if not user:
-        return None
+    try:
+        user = (
+            db.query(Usuario)
+            .filter(Usuario.email == email)
+            .first()
+        )
 
-    if not verify_password(password, user["password"]):
-        return None
+        if not user:
+            return None
 
-    token = generate_token(user)
+        if not verify_password(password, user.password):
+            return None
 
-    return {
-        "token": token,
-        "user": {
-            "id": user["id"],
-            "email": user["email"]
+        token = generate_token(user)
+
+        return {
+            "token": token,
+            "user": {
+                "id": user.id,
+                "email": user.email
+            }
         }
-    }
+
+    finally:
+        db.close()
