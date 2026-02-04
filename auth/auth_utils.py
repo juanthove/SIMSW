@@ -23,8 +23,8 @@ def verify_password(password: str, hashed: str) -> bool:
 
 def generate_token(user: dict) -> str:
     payload = {
-        "id": user["id"],
-        "email": user["email"],
+        "id": user.id,
+        "email": user.email,
         "exp": datetime.utcnow() + timedelta(hours=JWT_EXPIRE_HOURS)
     }
 
