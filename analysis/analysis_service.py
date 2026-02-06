@@ -1,8 +1,4 @@
 #Funcion que realiza el analisis
-
-from datetime import datetime
-
-from scripts.Archivo import Archivo
 from scripts.tools import *
 import json
 import re
@@ -11,9 +7,23 @@ from scripts.AST import *
 from scripts.vulberta_api import Vulberta as Vulberta
 from scripts.Owaspzap import OwaspZap as OW
 import time
-from scripts.EnviarAlerta import EnviarAlerta
 from flask import current_app
 import os
+from pathlib import Path
+import shutil
+import time
+
+
+#Extensiones para analizarlas
+EXTENSIONES_ANALIZABLES = {
+    ".js",
+    ".html",
+    ".htm",
+    ".php",
+    ".py",
+    ".json"
+}
+
 
 def extraer_json(texto):
     #Elimina bloques ```json ``` o ```
@@ -159,7 +169,7 @@ def ejecutar_analisis_estatico(sitio_web_id):
                 if hasattr(respuesta, "content")
                 else respuesta
             )
-            print("[DEBUG] RESULTADO IAAAA", texto_ia)
+
 
             # 4️⃣ Parsear JSON
             try:
@@ -172,7 +182,7 @@ def ejecutar_analisis_estatico(sitio_web_id):
             except Exception as e:
                 #Pongo continue para que no se rompa por el fallo de un chunk
                 continue
-        print("[DEBUG] RESULTADO", resultados_finales)
+
         return resultados_finales
     
     except Exception as e:
@@ -229,7 +239,6 @@ def ejecutar_analisis_dinamico(url):
                 "resultado_json": []
             }
 
-        print(f"[DEBUG] Alertas finales enviadas a IA: {len(alertas)}")
 
         # ===============================
         # 4️⃣ Construir PROMPT (UNA VEZ)
@@ -323,8 +332,6 @@ def ejecutar_analisis_dinamico(url):
                 "resultado_json": []
             }
 
-        print(f"[DEBUG] Vulnerabilidades finales IA: {(resultado_json)}")
-
         # ===============================
         # 7️⃣ Resultado final (IGUAL AL ESTÁTICO)
         # ===============================
@@ -370,7 +377,220 @@ def deduplicar_alertas(alertas):
     return resultado
 
 
+#Analizar cambios entre los archivos base y la url
+def ejecutar_analisis_alteraciones(sitio_web_id, url):
+
+    BASE_UPLOADS = current_app.config["UPLOADS_DIR"]
+
+    # 📁 Carpetas
+    base_dir = Path(BASE_UPLOADS) / "sitios" / str(sitio_web_id)
+    tmp_dir = Path(BASE_UPLOADS) / "alteraciones_tmp" / f"{sitio_web_id}_{int(time.time())}"
+
+    os.makedirs(tmp_dir, exist_ok=True)
+
+    try:
+        # ===============================
+        # 1️⃣ Descargar recursos actuales
+        # ===============================
+        resources = fetch_site_resources(url)
+
+        if not resources:
+            return {
+                "ok": False,
+                "datos": [],
+                "mensaje": "No se pudieron obtener recursos"
+            }
+
+        save_resources_to_folder(resources, tmp_dir, url)
+
+        # ===============================
+        # 2️⃣ Comparar archivos
+        # ===============================
+        diferencias = []
+
+        archivos_nuevos = set()
+
+        for new_file in tmp_dir.rglob("*"):
+            if not new_file.is_file():
+                continue
+
+            ext = new_file.suffix.lower()
+
+            # 🚫 Ignorar archivos no analizables
+            if ext not in EXTENSIONES_ANALIZABLES:
+                continue
+
+            # 📂 Path relativo respecto a tmp_dir
+            relative_path = new_file.relative_to(tmp_dir)
+            relative_path_str = relative_path.as_posix()
+
+            archivos_nuevos.add(relative_path_str)
+
+            old_file = base_dir / relative_path
+
+            if old_file.exists() and not old_file.is_file():
+                continue
+
+            if not old_file.exists():
+                # 🆕 Archivo nuevo → potencial riesgo
+                diferencias.append({
+                    "archivo": relative_path_str,
+                    "type": "insert",
+                    "category": "archivo_nuevo",
+                    "old_start_line": None,
+                    "old_end_line": None,
+                    "new_start_line": None,
+                    "new_end_line": None,
+                    "old_content": "",
+                    "new_content": "Archivo nuevo no presente en versión base"
+                })
+                continue
+
+            # ===============================
+            # Comparar según tipo
+            # ===============================
+            try:
+                if ext in {".html", ".htm"}:
+                    cambios = compare_html_files(old_file, new_file)
+
+                else:
+                    cambios = compare_text_files(old_file, new_file)
+
+            except Exception as e:
+                #Error
+                diferencias.append({
+                    "archivo": relative_path_str,
+                    "type": "error",
+                    "category": "error_lectura",
+                    "old_start_line": None,
+                    "old_end_line": None,
+                    "new_start_line": None,
+                    "new_end_line": None,
+                    "old_content": "",
+                    "new_content": str(e)
+                })
+                continue
+
+            if cambios:
+                for c in cambios:
+                    c["archivo"] = relative_path_str
+                    diferencias.append(c)
 
 
-def ejecutar_analisis_sonar_qube(ruta):
-    pass
+
+
+        #FALTARIA AGREGAR LOS ARCHIVOS QUE SE HAYAN ELIMINADO PERO ESO SOLO SIRVE SI DESCARGAMOS TODO
+        '''archivos_base = {
+            f.relative_to(base_dir).as_posix()
+            for f in base_dir.rglob("*")
+            if f.is_file() and f.suffix.lower() in EXTENSIONES_ANALIZABLES
+        }
+
+        #Archivos eliminados
+        for archivo in archivos_base - archivos_nuevos:
+            diferencias.append({
+                "archivo": archivo,
+                "type": "delete",
+                "category": "archivo_eliminado",
+                "old_start_line": None,
+                "old_end_line": None,
+                "new_start_line": None,
+                "new_end_line": None,
+                "old_content": "Archivo presente en versión base",
+                "new_content": ""
+            })'''
+        
+
+
+
+        #Si no existen diferencias termino y mando el estado de sin alteraciones
+        if not diferencias:
+            return {
+                "ok": True,
+                "datos": [],
+                "mensaje": "Sin alteraciones"
+            }
+
+        # ===============================
+        # 3️⃣ Llamar IA
+        # ===============================
+        prompt = prompt_alteraciones(diferencias)
+
+        informe = Informe()
+        respuesta = informe.preguntar(prompt)
+
+        texto_ia = (
+            respuesta.content
+            if hasattr(respuesta, "content")
+            else respuesta
+        )
+
+        try:
+            json_limpio = extraer_json(texto_ia)
+            resultado = json.loads(json_limpio)
+        except Exception:
+            resultado = []
+
+        return {
+            "ok": True,
+            "datos": resultado,  # lista de alteraciones
+            "mensaje": None
+        }
+
+    finally:
+        #Eliminar carpeta descargada
+        try:
+            shutil.rmtree(tmp_dir)
+        except Exception:
+            pass
+
+
+
+def prompt_alteraciones(diffs):
+    prompt = """
+    Actúas como un analista de seguridad senior especializado en
+    detección de alteraciones maliciosas en código web.
+
+    Se te proporcionarán DIFERENCIAS entre archivos BASE confiables
+    y archivos ACTUALES descargados desde producción.
+
+    Tu tarea:
+    - Analizar los cambios
+    - Detectar inyecciones maliciosas, backdoors, obfuscación,
+      scripts sospechosos, trackers no autorizados, etc.
+    - Ignorar cambios legítimos
+    - Devolver SOLO alteraciones con impacto en seguridad
+
+    Devuelve EXCLUSIVAMENTE un JSON válido con esta estructura EXACTA:
+
+    [
+      {
+        "titulo": "...",
+        "descripcion": "...",
+        "descripcion_humana": "...",
+        "impacto": "...",
+        "recomendacion": "...",
+        "evidencia": "...",
+        "severidad": 1|2|3,
+        "codigo": "fragmento alterado"
+      }
+    ]
+
+    Si no hay alteraciones de seguridad, devuelve [].
+    """
+
+    for d in diffs:
+        prompt += f"""
+        ---
+        Archivo: {d.get("archivo")}
+        Tipo de cambio: {d.get("type", "unknown")}
+        Categoría: {d.get("category", "unknown")}
+
+        Código anterior:
+        {d.get("old_content", "")}
+
+        Código actual:
+        {d.get("new_content", "")}
+        """
+
+    return prompt

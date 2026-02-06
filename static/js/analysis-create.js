@@ -35,23 +35,33 @@ function mostrarListado(lista) {
   lista.forEach(item => {
     const tr = document.createElement("tr");
 
-    const estaticoDeshabilitado = !item.archivos_base;
+    const botonDeshabilitado = !item.archivos_base;
 
     tr.innerHTML = `
       <td>${item.nombre}</td>
       <td>${item.url}</td>
       <td>
         <button 
-          class="btn-estatico ${estaticoDeshabilitado ? "disabled" : ""}"
+          class="btn-estatico ${botonDeshabilitado ? "disabled" : ""}"
           data-url="${item.url}"
           data-id="${item.id}"
-          ${estaticoDeshabilitado ? "disabled title='Requiere archivos base'" : ""}
+          ${botonDeshabilitado ? "disabled title='Requiere archivos base'" : ""}
         >
           Ejecutar
         </button>
       </td>
       <td>
         <button class="btn-dinamico" data-url="${item.url}" data-id="${item.id}">
+          Ejecutar
+        </button>
+      </td>
+      <td>
+        <button 
+          class="btn-alteracion ${botonDeshabilitado ? "disabled" : ""}"
+          data-url="${item.url}"
+          data-id="${item.id}"
+          ${botonDeshabilitado ? "disabled title='Requiere archivos base'" : ""}
+        >
           Ejecutar
         </button>
       </td>
@@ -102,12 +112,14 @@ async function ejecutarAnalisis({ url, sitioWebId, tipo, boton }) {
   const textoOriginal = boton.textContent;
   boton.textContent = "⏳ Analizando...";
 
-  const endpoint =
-    tipo === "dinamico"
-      ? "/analizarDinamico"
-      : "/analizarEstatico";
+  const endpoints = {
+    estatico: "/analizarEstatico",
+    dinamico: "/analizarDinamico",
+    alteracion: "/analizarAlteraciones"
+  };
 
-  const token = localStorage.getItem("token");
+  const endpoint = endpoints[tipo];
+
 
   try {
     const res = await apiFetch(endpoint, {
@@ -164,6 +176,17 @@ function enlazarBotonesAnalisis() {
         url: btn.dataset.url,
         sitioWebId: btn.dataset.id,
         tipo: "dinamico",
+        boton: btn
+      });
+    });
+  });
+
+  document.querySelectorAll(".btn-alteracion").forEach(btn => {
+    btn.addEventListener("click", () => {
+      ejecutarAnalisis({
+        url: btn.dataset.url,
+        sitioWebId: btn.dataset.id,
+        tipo: "alteracion",
         boton: btn
       });
     });

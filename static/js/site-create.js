@@ -44,6 +44,19 @@ const fileButton = document.querySelector(".fileButton");
 
 const rutasIgnoradas = ["node_modules", ".git", "venv", "__pycache__"];
 
+function debeIgnorarse(file) {
+  const path = file.webkitRelativePath
+    .replaceAll("\\", "/")
+    .toLowerCase();
+
+  const partes = path.split("/");
+
+  return rutasIgnoradas.some(dir =>
+    partes.includes(dir.toLowerCase())
+  );
+}
+
+
 let sitioSeleccionadoId = null;
 
 //Cargar los sitios registrados en el selector
@@ -157,7 +170,7 @@ form.addEventListener("submit", async (e) => {
 
 
   //Eliminar archivos (solo en modificar)
-  if (sitioSeleccionadoId && eliminarArchivosCheckbox.checked) {
+  if (sitioSeleccionadoId && (eliminarArchivosCheckbox.checked || inputArchivos.files.length > 0)) {
     formData.append("eliminarArchivos", "true");
   }
 
@@ -190,13 +203,20 @@ form.addEventListener("submit", async (e) => {
 
     if (!eliminarArchivosCheckbox.checked && inputArchivos.files.length > 0) {
       for (const file of inputArchivos.files) {
-        if (rutasIgnoradas.some(dir => file.webkitRelativePath.includes(dir))) {
+        if (debeIgnorarse(file)) {
           continue;
         }
+        console.log(
+          file.name,
+          file.webkitRelativePath
+        );
 
         const partes = file.webkitRelativePath.split("/");
         partes.shift(); // elimina la carpeta raíz
-        const relativePath = partes.join("/");
+        let relativePath = partes.join("/");
+        if (!relativePath) {
+          relativePath = file.name;
+        }
 
         const fd = new FormData();
         fd.append("archivo", file);

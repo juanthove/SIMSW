@@ -1,7 +1,7 @@
 #Endpoint de la api para realizar los analisis
 
 from flask import Blueprint, request, jsonify
-from .analysis_controller import analizar_estatico, analizar_dinamico,analizar_sonar_qube
+from .analysis_controller import analizar_estatico, analizar_dinamico, analizar_alteraciones
 from auth.auth_middleware import jwt_required
 
 analysis_bp = Blueprint("analysis", __name__)
@@ -60,13 +60,31 @@ def analizar_dinamico_endpoint():
         }), 500
 
     
-
-    
-@analysis_bp.route("/analizarSonarQube", methods=["POST"])
+#Analizar cambios entre los archivos base y la url
+@analysis_bp.route("/analizarAlteraciones", methods=["POST"])
 @jwt_required()
-def analizar_sonar_endpoint():
-    #Tendria que fijarme si existe la direccion de la carpeta que me llega
-    #Si existe, voy directo a ella. 
-    #Si no existe, debo descargarla y ponerla en documentos/SIMSW/Proyectos(?)
-    #Una ves descargado, comienzo el analisis
-    pass
+def analizar_alteraciones_endpoint():
+    data = request.get_json()
+
+    url = data.get("url")
+    sitio_web_id = data.get("sitio_web_id")
+
+    if not url or sitio_web_id is None:
+        return jsonify({"error": "Faltan datos"}), 400
+
+    try:
+        sitio_web_id = int(sitio_web_id)
+    except ValueError:
+        return jsonify({"error": "sitio_web_id inválido"}), 400
+
+    try:
+        resultado = analizar_alteraciones(url, sitio_web_id)
+        return jsonify(resultado), 200
+
+    except Exception as e:
+        # El estado interno ya debería quedar persistido
+        return jsonify({
+            "estado": "ERROR",
+            "mensaje": "Falló el análisis de alteraciones",
+            "detalle": str(e)
+        }), 500

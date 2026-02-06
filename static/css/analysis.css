@@ -196,7 +196,8 @@ td[data-vuln="1"] {
 
 /*Botones analizar*/
 .btn-estatico,
-.btn-dinamico {
+.btn-dinamico,
+.btn-alteracion {
   padding: 6px 14px;
   font-size: 13px;
   font-weight: 500;
@@ -214,14 +215,16 @@ td[data-vuln="1"] {
 
 /* Hover general */
 .btn-estatico:hover,
-.btn-dinamico:hover {
+.btn-dinamico:hover,
+.btn-alteracion:hover {
   background-color: #f9f9f9;
   border-color: #b0b0b0;
 }
 
 /* Focus (accesibilidad) */
 .btn-estatico:focus,
-.btn-dinamico:focus {
+.btn-dinamico:focus,
+.btn-alteracion:focus {
   outline: none;
   border-color: #999999;
   box-shadow: 0 0 0 2px rgba(0,0,0,0.05);
@@ -251,13 +254,24 @@ td[data-vuln="1"] {
   border-color: #a5d6a7;
 }
 
+/* Alteración → azul sobrio */
+.btn-alteracion {
+  color: #f57c00;
+}
+
+.btn-alteracion:hover {
+  background-color: #fff3e0;
+  border-color: #ffcc80;
+}
+
 /* =========================
    Estados
    ========================= */
 
 /* Deshabilitado (cuando analiza) */
 .btn-estatico:disabled,
-.btn-dinamico:disabled {
+.btn-dinamico:disabled,
+.btn-alteracion:disabled {
   background-color: #f0f0f0;
   color: #999999;
   border-color: #d0d0d0;
@@ -267,7 +281,8 @@ td[data-vuln="1"] {
 
 /* Completado */
 .btn-estatico.completado,
-.btn-dinamico.completado {
+.btn-dinamico.completado,
+.btn-alteracion.completado {
   background-color: #f5f5f5;
   border-color: #bdbdbd;
   color: #555555;
@@ -276,7 +291,8 @@ td[data-vuln="1"] {
 
 /* Error */
 .btn-estatico.error,
-.btn-dinamico.error {
+.btn-dinamico.error,
+.btn-alteracion.error {
   background-color: #fdecea;
   border-color: #e57373;
   color: #c62828;
