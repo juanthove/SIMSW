@@ -1,16 +1,18 @@
 #from selenium import webdriver
 #from selenium.webdriver.chrome.service import Service
 #from webdriver_manager.chrome import ChromeDriverManager
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Comment
 from urllib.parse import urljoin
 import hashlib
+from pathlib import Path
+import difflib
 
 
 
 #from pprint import pprint
 import requests
 
-#PAra lo de guardado
+#Para lo de guardado
 import os
 import re
 
@@ -529,3 +531,385 @@ def extract_code_with_context(
             "original_end": end,
             "code": ""
         }
+    
+
+
+
+
+
+#Comienzo lo de requerimiento 1
+
+#Compara archivos js
+def compare_js_files(file_old: str, file_new: str):
+    """
+    Compara dos archivos JS y retorna:
+      - diff_text (formato git)
+      - cambios estructurados (JSON friendly)
+    """
+
+    old_lines = Path(file_old).read_text(encoding="utf-8").splitlines()
+    new_lines = Path(file_new).read_text(encoding="utf-8").splitlines()
+
+    matcher = difflib.SequenceMatcher(None, old_lines, new_lines)
+
+    changes = []
+
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+
+        if tag == "equal":
+            continue
+
+        changes.append({
+            "type": tag,  # replace | delete | insert
+            "old_start_line": i1 + 1,
+            "old_end_line": i2,
+            "new_start_line": j1 + 1,
+            "new_end_line": j2,
+            "old_content": "\n".join(old_lines[i1:i2]),
+            "new_content": "\n".join(new_lines[j1:j2])
+        })
+
+    return changes
+
+
+
+#Compara archivos html
+def find_line_range(text: str, fragment: str):
+    """
+    Devuelve (start_line, end_line) aproximado de un fragmento dentro de text.
+    """
+    if not fragment:
+        return None, None
+
+    idx = text.find(fragment)
+    if idx == -1:
+        return None, None
+
+    start_line = text[:idx].count("\n") + 1
+    end_line = start_line + fragment.count("\n")
+    return start_line, end_line
+
+
+def compare_html_files(file_old: str, file_new: str):
+    """
+    Compara HTML enfocado en seguridad.
+    Devuelve cambios usando el MISMO schema que compare_text_files.
+    """
+
+    old_html = Path(file_old).read_text(encoding="utf-8", errors="ignore")
+    new_html = Path(file_new).read_text(encoding="utf-8", errors="ignore")
+
+    soup_old = BeautifulSoup(old_html, "html.parser")
+    soup_new = BeautifulSoup(new_html, "html.parser")
+
+    cambios = []
+
+    # ===============================
+    # 1️⃣ Scripts
+    # ===============================
+    old_scripts = {str(s).strip() for s in soup_old.find_all("script")}
+    new_scripts = {str(s).strip() for s in soup_new.find_all("script")}
+
+    for s in new_scripts - old_scripts:
+        start, end = find_line_range(new_html, s)
+        cambios.append({
+            "type": "insert",
+            "category": "html_script",
+            "old_start_line": None,
+            "old_end_line": None,
+            "new_start_line": start,
+            "new_end_line": end,
+            "old_content": "",
+            "new_content": s
+        })
+
+    for s in old_scripts - new_scripts:
+        start, end = find_line_range(old_html, s)
+        cambios.append({
+            "type": "delete",
+            "category": "html_script",
+            "old_start_line": start,
+            "old_end_line": end,
+            "new_start_line": None,
+            "new_end_line": None,
+            "old_content": s,
+            "new_content": ""
+        })
+
+    # ===============================
+    # 2️⃣ Eventos inline (on*)
+    # ===============================
+    def extract_events(soup):
+        eventos = set()
+        for tag in soup.find_all(True):
+            for attr, value in tag.attrs.items():
+                if attr.lower().startswith("on"):
+                    eventos.add(f"<{tag.name} {attr}=\"{value}\">")
+        return eventos
+
+    old_events = extract_events(soup_old)
+    new_events = extract_events(soup_new)
+
+    for e in new_events - old_events:
+        start, end = find_line_range(new_html, e)
+        cambios.append({
+            "type": "insert",
+            "category": "html_inline_event",
+            "old_start_line": None,
+            "old_end_line": None,
+            "new_start_line": start,
+            "new_end_line": end,
+            "old_content": "",
+            "new_content": e
+        })
+
+    # ===============================
+    # 3️⃣ Forms
+    # ===============================
+    old_forms = {str(f).strip() for f in soup_old.find_all("form")}
+    new_forms = {str(f).strip() for f in soup_new.find_all("form")}
+
+    for f in new_forms - old_forms:
+        start, end = find_line_range(new_html, f)
+        cambios.append({
+            "type": "insert",
+            "category": "html_form",
+            "old_start_line": None,
+            "old_end_line": None,
+            "new_start_line": start,
+            "new_end_line": end,
+            "old_content": "",
+            "new_content": f
+        })
+
+    # ===============================
+    # 4️⃣ Iframes
+    # ===============================
+    old_iframes = {str(i).strip() for i in soup_old.find_all("iframe")}
+    new_iframes = {str(i).strip() for i in soup_new.find_all("iframe")}
+
+    for i in new_iframes - old_iframes:
+        start, end = find_line_range(new_html, i)
+        cambios.append({
+            "type": "insert",
+            "category": "html_iframe",
+            "old_start_line": None,
+            "old_end_line": None,
+            "new_start_line": start,
+            "new_end_line": end,
+            "old_content": "",
+            "new_content": i
+        })
+
+    # ===============================
+    # 5️⃣ Comentarios HTML
+    # ===============================
+    def extract_comments(soup):
+        return {
+            str(c).strip()
+            for c in soup.find_all(string=lambda t: isinstance(t, Comment))
+        }
+
+    old_comments = extract_comments(soup_old)
+    new_comments = extract_comments(soup_new)
+
+    for c in new_comments - old_comments:
+        start, end = find_line_range(new_html, c)
+        cambios.append({
+            "type": "insert",
+            "category": "html_comment",
+            "old_start_line": None,
+            "old_end_line": None,
+            "new_start_line": start,
+            "new_end_line": end,
+            "old_content": "",
+            "new_content": c
+        })
+
+    # ===============================
+    # 6️⃣ Fallback: diff textual real
+    # ===============================
+    if not cambios:
+        matcher = difflib.SequenceMatcher(
+            None,
+            old_html.splitlines(),
+            new_html.splitlines(),
+            autojunk=False
+        )
+
+        for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+            if tag == "equal":
+                continue
+
+            cambios.append({
+                "type": tag,
+                "category": "text",
+                "old_start_line": i1 + 1,
+                "old_end_line": i2,
+                "new_start_line": j1 + 1,
+                "new_end_line": j2,
+                "old_content": "\n".join(old_html.splitlines()[i1:i2]).strip(),
+                "new_content": "\n".join(new_html.splitlines()[j1:j2]).strip()
+            })
+
+    return cambios
+
+
+#Comparar archivos de texto
+def compare_text_files(file_old: str, file_new: str):
+    """
+    Compara dos archivos de texto (JS, HTML, etc.)
+    y devuelve diferencias estructuradas.
+
+    Retorna:
+    [
+        {
+            type: replace | delete | insert,
+            old_start_line,
+            old_end_line,
+            new_start_line,
+            new_end_line,
+            old_content,
+            new_content
+        }
+    ]
+    """
+
+    old_lines = Path(file_old).read_text(
+        encoding="utf-8",
+        errors="ignore"
+    ).splitlines()
+
+    new_lines = Path(file_new).read_text(
+        encoding="utf-8",
+        errors="ignore"
+    ).splitlines()
+
+    matcher = difflib.SequenceMatcher(
+        None,
+        old_lines,
+        new_lines,
+        autojunk=False  # importante para archivos grandes
+    )
+
+    changes = []
+
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+
+        if tag == "equal":
+            continue
+
+        changes.append({
+            "type": tag,  # replace | delete | insert
+            "old_start_line": i1 + 1,
+            "old_end_line": i2,
+            "new_start_line": j1 + 1,
+            "new_end_line": j2,
+            "old_content": "\n".join(old_lines[i1:i2]).strip(),
+            "new_content": "\n".join(new_lines[j1:j2]).strip()
+        })
+
+    return changes
+
+
+#Aca para traer archivs desde url
+
+def fetch_site_resources(url: str, timeout: int = 15000) -> dict:
+    """
+    Abre la URL con un navegador headless y captura
+    todos los recursos reales cargados (html, js, css).
+
+    Retorna:
+        {
+            url_recurso: contenido_texto
+        }
+    """
+    resources = {}
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page()
+
+        def handle_response(response):
+            try:
+                rtype = response.request.resource_type
+
+                # solo lo que te interesa para integridad
+                if rtype in ["document", "script", "stylesheet"]:
+                    body = response.text()
+                    if body:
+                        resources[response.url] = body
+
+            except Exception:
+                pass
+
+        page.on("response", handle_response)
+
+        page.goto(url, wait_until="networkidle", timeout=timeout)
+
+        browser.close()
+
+    return resources
+
+#Estas dos para guardarlas en la carpeta, que si no esta creada, se crea
+
+def relative_path_from_url(resource_url: str, site_base: Path) -> Path:
+    parsed = urlparse(resource_url)
+    path = Path(parsed.path.lstrip("/"))
+
+    # 🚫 si no tiene extensión, NO se guarda
+    if "." not in Path(path).name:
+        return
+
+    # quitar prefijo del sitio (ej: proyecto_DW_grupo3)
+    try:
+        path = path.relative_to(site_base)
+    except ValueError:
+        pass  # el recurso no estaba bajo el prefijo
+
+    if not path.name:
+        path = path / "index.html"
+
+    # sanitizar
+    parts = [
+        re.sub(r"[^a-zA-Z0-9._-]", "", p)
+        for p in path.parts
+    ]
+
+    return Path(*parts)
+
+
+
+def save_resources_to_folder(resources: dict, base_folder: Path, site_url: str):
+    """
+    Guarda los recursos en:
+    ./folder_name/
+
+    Crea la carpeta si no existe.
+    """
+    site_base = get_site_base_path(site_url)
+
+    for url, content in resources.items():
+        rel_path = relative_path_from_url(url, site_base)
+
+        #Si no tiene path se ignora
+        if not rel_path:
+            continue
+
+
+        file_path = base_folder / rel_path
+
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+
+        with open(file_path, "w", encoding="utf-8", errors="ignore") as f:
+            f.write(content)
+
+
+def get_site_base_path(url: str) -> Path:
+    parsed = urlparse(url)
+    path = parsed.path.strip("/")
+
+    if not path:
+        return Path()  # raíz
+
+    return Path(path)

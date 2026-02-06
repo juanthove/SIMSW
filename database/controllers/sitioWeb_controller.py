@@ -287,23 +287,28 @@ def subir_un_archivo_base_sitio(sitio_id, archivo, ruta_relativa):
         if sitio is None:
             raise ValueError("Sitio no encontrado")
 
-        # 🔒 sanitizar ruta
+        # ===============================
+        # 🔒 Sanitizar ruta relativa
+        # ===============================
         ruta = Path(ruta_relativa)
 
-        if ".." in ruta.parts:
+        # Evitar path traversal
+        if ".." in ruta.parts or ruta.is_absolute():
             raise ValueError("Ruta inválida")
 
-        filename = secure_filename(archivo.filename)
+        # 📄 Nombre real del archivo (solo el nombre, no el path)
+        filename = secure_filename(ruta.name)
 
         if not archivo_permitido(filename):
-            # ⛔ ignorar archivo sin romper nada
+            # ⛔ ignorar archivo sin romper el flujo
             return {
-                "archivo": filename,
+                "archivo": str(ruta),
                 "estado": "ignorado"
             }
 
-
-        # 🔍 tamaño real del archivo
+        # ===============================
+        # 🔍 Verificar tamaño real
+        # ===============================
         archivo.seek(0, os.SEEK_END)
         size = archivo.tell()
         archivo.seek(0)
@@ -311,26 +316,27 @@ def subir_un_archivo_base_sitio(sitio_id, archivo, ruta_relativa):
         if size > MAX_FILE_SIZE:
             raise ValueError(f"Archivo demasiado grande ({size} bytes)")
 
-        # 📂 carpeta base del sitio
-        base_sitio = os.path.join(
-            current_app.config["UPLOADS_DIR"],
-            "sitios",
-            str(sitio.id)
-        )
+        # ===============================
+        # 📂 Carpeta base del sitio
+        # ===============================
+        base_sitio = Path(
+            current_app.config["UPLOADS_DIR"]
+        ) / "sitios" / str(sitio.id)
 
-        # 📂 destino final respetando carpetas
-        destino_final = os.path.join(
-            base_sitio,
-            ruta.parent
-        )
+        # ===============================
+        # 📂 Destino final respetando carpetas
+        # ===============================
+        destino_final = base_sitio / ruta.parent
+        destino_final.mkdir(parents=True, exist_ok=True)
 
-        os.makedirs(destino_final, exist_ok=True)
+        # ===============================
+        # 💾 Guardar archivo
+        # ===============================
+        archivo.save(destino_final / filename)
 
-        archivo.save(
-            os.path.join(destino_final, filename)
-        )
-
-        # ✅ marcar solo si se guardó correctamente
+        # ===============================
+        # ✅ Marcar sitio con archivos base
+        # ===============================
         if not sitio.archivos_base:
             sitio.archivos_base = True
             db.commit()
