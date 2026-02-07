@@ -19,11 +19,11 @@
     <table id="tablaSitios" class="tablaBase">
         <thead>
             <tr>
-            <th class="sortable" data-column="sitio">Sitio Web</th>
+            <th class="sortable" data-column="nombre">Sitio Web</th>
             <th class="sortable" data-column="url">URL</th>
-            <th>Estatico</th>
-            <th>Dinamico</th>
-            <th>Alteraciones</th>
+            <th>Estatico<span class="info-icon" data-tooltip="Analiza el código fuente del sitio sin ejecutarlo.">ⓘ</span></th>
+            <th>Dinamico<span class="info-icon" data-tooltip="Ejecuta el sitio y analiza su comportamiento en tiempo real.">ⓘ</span></th>
+            <th>Alteraciones<span class="info-icon" data-tooltip="Compara el sitio actual con la versión base para detectar cambios sospechosos.">ⓘ</span></th>
             </tr>
         </thead>
         <tbody>
@@ -31,7 +31,7 @@
         </tbody>
     </table>
 
-    <div id="toast" class="toast"></div>
+    <div id="toast" class="toast" aria-live="polite"></div>
 
 </body>
 </html>

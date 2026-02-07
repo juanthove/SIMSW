@@ -28,19 +28,21 @@
                 <div><strong>Propietario:</strong> <span id="propietarioSitio"></span></div>
                 <div><strong>URL:</strong> <span id="urlSitio"></span></div>
                 <div><strong>Análisis realizados:</strong> <span id="cantidadAnalisis"></span></div>
+                <a href="#" id="btnHistorico">Ver histórico</a>
             </div>
         </div>
 
         <div class="toolbar">
             <div class="filtrosIzq">
 
-                <select class="filtro" id="filtroTipo">
+                <select class="filtro selector" id="filtroTipo">
                     <option value="">Todos</option>
                     <option value="Estatico">Estático</option>
                     <option value="Dinamico">Dinámico</option>
+                    <option value="Alteracion">Alteración</option>
                 </select>
 
-                <select class="filtro" id="filtroEstado">
+                <select class="filtro selector" id="filtroEstado">
                     <option value="">Todos</option>
                     <option value="Finalizado">Finalizado</option>
                     <option value="Sin Datos">Sin datos</option>
@@ -48,7 +50,13 @@
                 </select>
 
             </div>
-            <a href="#" id="btnHistorico">Ver histórico</a>
+
+            <div class="filtrosDer">
+                <input type="date" id="filtroDesde" class="filtro">
+                <input type="date" id="filtroHasta" class="filtro">
+                <button id="btnLimpiarFiltros" class="btn-limpiar">Limpiar filtros</button>
+            </div>
+            
         </div>
 
         <table id="tablaAnalisis" class="tablaBase">
