@@ -389,132 +389,48 @@ def ejecutar_analisis_alteraciones(sitio_web_id, url):
     os.makedirs(tmp_dir, exist_ok=True)
 
     try:
-        # ===============================
-        # 1️⃣ Descargar recursos actuales
-        # ===============================
-        resources = fetch_site_resources(url)
 
-        if not resources:
+        ow = OW("Owasp zap", "2.17.0")
+        ow.start_zap()
+        urls = ow.obtener_urls_zap(url)
+
+        lista = []
+        for u in urls:
+            print(f"La url es: {u}")
+            final = fetch_site_resources(u)
+            lista.append(final)
+
+        if len(lista) == 0:
             return {
                 "ok": False,
                 "datos": [],
                 "mensaje": "No se pudieron obtener recursos"
             }
 
-        save_resources_to_folder(resources, tmp_dir, url)
-
-        # ===============================
-        # 2️⃣ Comparar archivos
-        # ===============================
-        diferencias = []
-
-        archivos_nuevos = set()
-
-        for new_file in tmp_dir.rglob("*"):
-            if not new_file.is_file():
-                continue
-
-            ext = new_file.suffix.lower()
-
-            # 🚫 Ignorar archivos no analizables
-            if ext not in EXTENSIONES_ANALIZABLES:
-                continue
-
-            # 📂 Path relativo respecto a tmp_dir
-            relative_path = new_file.relative_to(tmp_dir)
-            relative_path_str = relative_path.as_posix()
-
-            archivos_nuevos.add(relative_path_str)
-
-            old_file = base_dir / relative_path
-
-            if old_file.exists() and not old_file.is_file():
-                continue
-
-            if not old_file.exists():
-                # 🆕 Archivo nuevo → potencial riesgo
-                diferencias.append({
-                    "archivo": relative_path_str,
-                    "type": "insert",
-                    "category": "archivo_nuevo",
-                    "old_start_line": None,
-                    "old_end_line": None,
-                    "new_start_line": None,
-                    "new_end_line": None,
-                    "old_content": "",
-                    "new_content": "Archivo nuevo no presente en versión base"
-                })
-                continue
-
-            # ===============================
-            # Comparar según tipo
-            # ===============================
-            try:
-                if ext in {".html", ".htm"}:
-                    cambios = compare_html_files(old_file, new_file)
-
-                else:
-                    cambios = compare_text_files(old_file, new_file)
-
-            except Exception as e:
-                #Error
-                diferencias.append({
-                    "archivo": relative_path_str,
-                    "type": "error",
-                    "category": "error_lectura",
-                    "old_start_line": None,
-                    "old_end_line": None,
-                    "new_start_line": None,
-                    "new_end_line": None,
-                    "old_content": "",
-                    "new_content": str(e)
-                })
-                continue
-
-            if cambios:
-                for c in cambios:
-                    c["archivo"] = relative_path_str
-                    diferencias.append(c)
+        for list in lista:
+            save_resources_to_folder(list, tmp_dir, url)
 
 
+        exts = {".js", ".html"}
 
+        old_map = indexar_carpeta(base_dir, exts)
+        new_map = indexar_carpeta(tmp_dir, exts)
 
-        #FALTARIA AGREGAR LOS ARCHIVOS QUE SE HAYAN ELIMINADO PERO ESO SOLO SIRVE SI DESCARGAMOS TODO
-        '''archivos_base = {
-            f.relative_to(base_dir).as_posix()
-            for f in base_dir.rglob("*")
-            if f.is_file() and f.suffix.lower() in EXTENSIONES_ANALIZABLES
-        }
+        res = detectar_parecidos(old_map,new_map)
 
-        #Archivos eliminados
-        for archivo in archivos_base - archivos_nuevos:
-            diferencias.append({
-                "archivo": archivo,
-                "type": "delete",
-                "category": "archivo_eliminado",
-                "old_start_line": None,
-                "old_end_line": None,
-                "new_start_line": None,
-                "new_end_line": None,
-                "old_content": "Archivo presente en versión base",
-                "new_content": ""
-            })'''
-        
+        for r in res:
+            old_full = old_map[r["old"]]["path"]
+            new_full = new_map[r["new"]]["path"]
 
+            print("OLD:", old_full)
+            print("NEW:", new_full)
 
+            diff = compare_html_files(old_full, new_full)
 
-        #Si no existen diferencias termino y mando el estado de sin alteraciones
-        if not diferencias:
-            return {
-                "ok": True,
-                "datos": [],
-                "mensaje": "Sin alteraciones"
-            }
-
-        # ===============================
-        # 3️⃣ Llamar IA
-        # ===============================
-        prompt = prompt_alteraciones(diferencias)
+            print(f"El valor de diff fue: {diff}\n")
+            time.sleep(10)
+    
+        prompt = prompt_alteraciones(diff)
 
         informe = Informe()
         respuesta = informe.preguntar(prompt)

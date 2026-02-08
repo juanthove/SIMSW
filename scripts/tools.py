@@ -814,6 +814,138 @@ def compare_text_files(file_old: str, file_new: str):
 
 #Aca para traer archivs desde url
 
+# def fetch_site_resources(url: str, timeout: int = 15000) -> dict:
+#     """
+#     Abre la URL con un navegador headless y captura
+#     todos los recursos reales cargados (html, js, css).
+
+#     Retorna:
+#         {
+#             url_recurso: contenido_texto
+#         }
+#     """
+#     resources = {}
+
+#     with sync_playwright() as p:
+#         browser = p.chromium.launch(headless=True)
+#         page = browser.new_page()
+
+#         def handle_response(response):
+#             try:
+#                 rtype = response.request.resource_type
+
+#                 # solo lo que te interesa para integridad
+#                 if rtype in ["document", "script", "stylesheet"]:
+#                     body = response.text()
+#                     if body:
+#                         resources[response.url] = body
+
+#             except Exception:
+#                 pass
+
+#         page.on("response", handle_response)
+
+#         page.goto(url, wait_until="networkidle", timeout=timeout)
+
+#         browser.close()
+
+#     return resources
+
+#Estas dos para guardarlas en la carpeta, que si no esta creada, se crea
+
+# def relative_path_from_url(resource_url: str, site_base: Path) -> Path:
+#     parsed = urlparse(resource_url)
+#     path = Path(parsed.path.lstrip("/"))
+
+#     # 🚫 si no tiene extensión, NO se guarda
+#     if "." not in Path(path).name:
+#         return
+
+#     # quitar prefijo del sitio (ej: proyecto_DW_grupo3)
+#     try:
+#         path = path.relative_to(site_base)
+#     except ValueError:
+#         pass  # el recurso no estaba bajo el prefijo
+
+#     if not path.name:
+#         path = path / "index.html"
+
+#     # sanitizar
+#     parts = [
+#         re.sub(r"[^a-zA-Z0-9._-]", "", p)
+#         for p in path.parts
+#     ]
+
+#     return Path(*parts)
+
+
+
+def save_resources_to_folder(resources: dict, base_folder: Path, site_url: str):
+    """
+    Guarda los recursos en:
+    ./folder_name/
+
+    Crea la carpeta si no existe.
+    """
+    site_base = get_site_base_path(site_url)
+
+    for url, content in resources.items():
+        rel_path = relative_path_from_url(url, site_base)
+
+        #Si no tiene path se ignora
+        if not rel_path:
+            continue
+
+
+        file_path = base_folder / rel_path
+
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+
+        with open(file_path, "w", encoding="utf-8", errors="ignore") as f:
+            f.write(content)
+
+
+def get_site_base_path(url: str) -> Path:
+    parsed = urlparse(url)
+    path = parsed.path.strip("/")
+
+    if not path:
+        return Path()  # raíz
+
+    return Path(path)
+
+
+#Aca para traer archivs desde url
+# def fetch_site_resources(url: str, timeout: int = 15000) -> dict:
+#     resources = {}
+
+#     with sync_playwright() as p:
+#         browser = p.chromium.launch(headless=True)
+#         page = browser.new_page()
+
+#         def handle_response(response):
+#             try:
+#                 rtype = response.request.resource_type
+
+#                 if rtype in ["script", "stylesheet"]:
+#                     body = response.text()
+#                     if body:
+#                         resources[response.url] = body
+
+#             except Exception:
+#                 pass
+
+#         page.on("response", handle_response)
+
+#         page.goto(url, wait_until="networkidle", timeout=timeout)
+
+#         # ✅ guardar con la URL REAL
+#         resources[url] = page.content()
+
+#         browser.close()
+
+#     return resources
+
 def fetch_site_resources(url: str, timeout: int = 15000) -> dict:
     """
     Abre la URL con un navegador headless y captura
@@ -853,24 +985,49 @@ def fetch_site_resources(url: str, timeout: int = 15000) -> dict:
 
 #Estas dos para guardarlas en la carpeta, que si no esta creada, se crea
 
+# def relative_path_from_url(resource_url: str, site_base: Path) -> Path:
+#     parsed = urlparse(resource_url)
+
+#     path = Path(parsed.path.lstrip("/"))
+
+#     # 🌱 raíz
+#     if not path or path == Path(""):
+#         path = Path("index.html")
+
+#     # 🌐 vista MVC/SPA
+#     elif "." not in path.name:
+#         path = path / "index.html"   # 👈 MUCHO MEJOR QUE .with_suffix
+
+#     try:
+#         path = path.relative_to(site_base)
+#     except ValueError:
+#         pass
+
+#     parts = [
+#         re.sub(r"[^a-zA-Z0-9._-]", "", p).lower()
+#         for p in path.parts
+#     ]
+
+#     return Path(*parts)
+
+#probar esta sino
 def relative_path_from_url(resource_url: str, site_base: Path) -> Path:
     parsed = urlparse(resource_url)
     path = Path(parsed.path.lstrip("/"))
 
-    # 🚫 si no tiene extensión, NO se guarda
-    if "." not in Path(path).name:
-        return
+    # raíz del sitio
+    if not path or path == Path(""):
+        path = Path("Index.html")
 
-    # quitar prefijo del sitio (ej: proyecto_DW_grupo3)
+    # 👉 si NO tiene extensión => es vista MVC/SPA
+    elif "." not in path.name:
+        path = path.with_suffix(".html")
+
     try:
         path = path.relative_to(site_base)
     except ValueError:
-        pass  # el recurso no estaba bajo el prefijo
+        pass
 
-    if not path.name:
-        path = path / "index.html"
-
-    # sanitizar
     parts = [
         re.sub(r"[^a-zA-Z0-9._-]", "", p)
         for p in path.parts
@@ -879,37 +1036,109 @@ def relative_path_from_url(resource_url: str, site_base: Path) -> Path:
     return Path(*parts)
 
 
+#Viejo
 
-def save_resources_to_folder(resources: dict, base_folder: Path, site_url: str):
-    """
-    Guarda los recursos en:
-    ./folder_name/
 
-    Crea la carpeta si no existe.
-    """
-    site_base = get_site_base_path(site_url)
+# def relative_path_from_url(resource_url: str, site_base: Path) -> Path:
+#     parsed = urlparse(resource_url)
+#     path = Path(parsed.path.lstrip("/"))
 
-    for url, content in resources.items():
-        rel_path = relative_path_from_url(url, site_base)
+#     # 🚫 si no tiene extensión, NO se guarda
+#     if "." not in Path(path).name:
+#         return
 
-        #Si no tiene path se ignora
-        if not rel_path:
+#     # quitar prefijo del sitio (ej: proyecto_DW_grupo3)
+#     try:
+#         path = path.relative_to(site_base)
+#     except ValueError:
+#         pass  # el recurso no estaba bajo el prefijo
+
+#     if not path.name:
+#         path = path / "index.html"
+
+#     # sanitizar
+#     parts = [
+#         re.sub(r"[^a-zA-Z0-9._-]", "", p)
+#         for p in path.parts
+#     ]
+
+#     return Path(*parts)
+
+
+
+
+
+#Aca arranca la mierda
+
+import hashlib
+from collections import defaultdict
+
+import difflib
+
+def similar(a, b):
+    return difflib.SequenceMatcher(None, a, b).ratio()
+
+
+def detectar_parecidos(old_map, new_map, threshold=0.7):
+    matches = []
+    usados = set()
+
+    for old_rel, old_info in old_map.items():
+
+        mejor_score = 0
+        mejor_match = None
+
+        for new_rel, new_info in new_map.items():
+
+            if new_rel in usados:
+                continue
+
+            score = similar(old_rel.split("/")[-1], new_rel.split("/")[-1])
+
+            if score > mejor_score:
+                mejor_score = score
+                mejor_match = new_rel
+
+        if mejor_score >= threshold:
+            usados.add(mejor_match)
+
+            matches.append({
+                "old": old_rel,
+                "new": mejor_match,
+                "score": mejor_score,
+                "hash_equal": old_map[old_rel]["hash"] == new_map[mejor_match]["hash"]
+            })
+
+    return matches
+
+
+def hash_file(path, chunk_size=8192):
+    h = hashlib.sha256()
+
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(chunk_size), b""):
+            h.update(chunk)
+
+    return h.hexdigest()
+
+def indexar_carpeta(base_dir, extensiones):
+    base_dir = Path(base_dir)
+
+    index = {}
+
+    for file in base_dir.rglob("*"):
+        if not file.is_file():
             continue
 
+        if file.suffix.lower() not in extensiones:
+            continue
 
-        file_path = base_folder / rel_path
+        rel = file.relative_to(base_dir).as_posix()
 
-        file_path.parent.mkdir(parents=True, exist_ok=True)
+        index[rel] = {
+            "path": file,
+            "hash": hash_file(file)   # 🔥 clave
+        }
 
-        with open(file_path, "w", encoding="utf-8", errors="ignore") as f:
-            f.write(content)
+    return index
 
-
-def get_site_base_path(url: str) -> Path:
-    parsed = urlparse(url)
-    path = parsed.path.strip("/")
-
-    if not path:
-        return Path()  # raíz
-
-    return Path(path)
