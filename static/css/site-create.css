@@ -24,12 +24,6 @@
   cursor: pointer;
 }
 
-/*Quitar borde al seleccionar*/
-#selectorSitio:focus {
-  outline: none;
-  border-color: #999999;
-}
-
 #selectorSitio:hover {
   border-color: #b0b0b0;
 }
@@ -62,9 +56,12 @@
   border: 1px solid #cfcfcf;
 }
 
-.campoForm input:focus {
-  outline: none;
-  border-color: #999999;
+
+/*Bordes*/
+select:focus,
+button:focus {
+  outline: 2px solid #000000;
+  outline-offset: 2px;
 }
 
 /*Acciones*/
@@ -96,13 +93,13 @@
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  background-color: #e5e5e5;
-  color: #000000;
+  background-color: #43A047;
+  color: #ffffff;
   margin-left: auto;
 }
 
 .btnPrincipal:hover {
-  background-color: #dcdcdc;
+  background-color: #388E3C;
 }
 
 /*Confirmación*/
@@ -114,6 +111,19 @@
   align-items: center;
   justify-content: center;
   z-index: 9998;
+}
+
+/*Boton cancelar*/
+#btnCancelar {
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background-color: #e5e5e5;
+  color: #000000;
+  margin-left: auto;
 }
 
 .modal-overlay.hidden {
@@ -139,7 +149,7 @@
   color: white;
   border: none;
   padding: 8px 14px;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
 }
 
@@ -152,15 +162,6 @@
   border-radius: 6px;
   background-color: #ffffff;
   cursor: pointer;
-}
-
-.campoForm input[type="file"]:hover {
-  border-color: #b0b0b0;
-}
-
-.campoForm input[type="file"]:focus {
-  outline: none;
-  border-color: #999999;
 }
 
 /* Texto de ayuda */
@@ -219,14 +220,95 @@
 .checkboxLabel {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   font-size: 14px;
-  color: #c62828;
+  color: #1f2937;
   cursor: pointer;
+  user-select: none;
 }
 
+/* ocultamos el checkbox real */
 .checkboxLabel input[type="checkbox"] {
-  cursor: pointer;
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* caja custom */
+.checkboxLabel .checkmark {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #9ca3af;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  background-color: #fff;
+}
+
+/* check */
+.checkboxLabel .checkmark::after {
+  content: "";
+  width: 5px;
+  height: 9px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) translateY(-1px) scale(0);
+  transform-origin: center;
+  transition: transform 0.15s ease;
+}
+
+/* checked */
+.checkboxLabel input:checked + .checkmark {
+  background-color: #1f2937;
+  border-color: #1f2937;
+}
+
+.checkboxLabel input:checked + .checkmark::after {
+  transform: rotate(45deg) translateY(-1px) scale(1);
+}
+
+/* hover */
+.checkboxLabel:hover .checkmark {
+  border-color: #000000;
+}
+
+/* focus accesible (REDONDO) */
+.checkboxLabel input:focus-visible + .checkmark {
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.35);
+}
+
+.checkboxLabel input[type="radio"]:focus-visible,
+.checkboxLabel input[type="checkbox"]:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(0, 0, 0);
+  border-radius: 50%;
+}
+
+
+/*Checkbox rojo*/
+.checkboxLabel.danger .checkmark {
+  border-color: #dc2626;
+}
+
+.checkboxLabel.danger input:checked + .checkmark {
+  background-color: #dc2626;
+  border-color: #dc2626;
+}
+
+.checkboxLabel.danger input:focus-visible + .checkmark {
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.4);
+}
+
+.checkboxLabel.danger input:checked + .checkmark::after {
+  transform: rotate(45deg) translateY(-2px) scale(1);
+}
+
+.checkboxText {
+  display: flex;
+  align-items: center;
+  line-height: 1.6;
 }
 
 
@@ -244,11 +326,6 @@
   border-color: #b0b0b0;
 }
 
-.campoForm select:focus {
-  outline: none;
-  border-color: #999999;
-}
-
 /* Input personalizado de minutos */
 .inputTiempo {
   margin-top: 6px;
@@ -259,10 +336,6 @@
   border: 1px solid #cfcfcf;
 }
 
-.inputTiempo:focus {
-  outline: none;
-  border-color: #999999;
-}
 
 /* Error de validación */
 .formError {

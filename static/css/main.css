@@ -159,3 +159,23 @@ body{
 .toast.success { background-color: #2e7d32; }
 .toast.error   { background-color: #c62828; }
 .toast.info    { background-color: #1565c0; }
+
+
+/*Mantener la misma fuente en los selectores de fecha*/
+input[type="date"] {
+  font-family: inherit;
+  font-size: 14px;
+}
+
+
+/*Modificar flechas de los selectores*/
+.selector {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  background-image: url("data:image/svg+xml;utf8,<svg fill='black' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 18px;
+}

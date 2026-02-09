@@ -402,11 +402,13 @@ def ejecutar_analisis_alteraciones(sitio_web_id, url):
         urls_html = [u for u in urls if es_pagina_html(u)]
 
         if len(urls_html) == 0:
+
             return {
                 "ok": False,
                 "datos": [],
                 "mensaje": "No se pudieron obtener recursos"
             }
+        
 
         for u in urls_html:
             recursos = fetch_site_resources(u)
@@ -490,6 +492,7 @@ def prompt_alteraciones(diffs):
       scripts sospechosos, trackers no autorizados, etc.
     - Ignorar cambios legítimos
     - Devolver SOLO alteraciones con impacto en seguridad
+    - Ten en cuenta que el proyecto puede ser ASP.NET
 
     Devuelve EXCLUSIVAMENTE un JSON válido con esta estructura EXACTA:
 

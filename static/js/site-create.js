@@ -113,6 +113,29 @@ selector.addEventListener("change", () => {
     eliminarArchivosContainer.style.display = "none";
     eliminarArchivosCheckbox.checked = false;
   }
+
+  //Setear frecuencia de analisis segun lo que haya en la base
+  const frecuencia = sitio.frecuencia_monitoreo_minutos;
+
+  if (["0", "15", "30", "60", "360", "1440"].includes(String(frecuencia))) {
+    // Coincide con una opción predefinida
+    frecuenciaSelect.value = String(frecuencia);
+    customContainer.style.display = "none";
+    frecuenciaError.style.display = "none";
+    customInput.value = "";
+  } else if (frecuencia && frecuencia > 0) {
+    // Personalizado
+    frecuenciaSelect.value = "custom";
+    customContainer.style.display = "block";
+    customInput.value = frecuencia;
+    frecuenciaError.style.display = frecuencia < 15 ? "block" : "none";
+  } else {
+    // fallback por las dudas
+    frecuenciaSelect.value = "0";
+    customContainer.style.display = "none";
+    customInput.value = "";
+  }
+
 });
 
 
