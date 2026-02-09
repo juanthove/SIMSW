@@ -11,7 +11,7 @@ import shutil
 from werkzeug.utils import secure_filename
 from flask import current_app
 
-EXTENSIONES_PERMITIDAS = {"py", "js", "ts", "java", "php", "json", "yml", "yaml", "xml", "html", "css", "sh", "env", "md"}
+EXTENSIONES_PERMITIDAS = {"py", "js", "ts", "java", "php", "json", "yml", "yaml", "xml", "html", "css", "sh", "env", "md", "cs", "cshtml"}
 
 
 #Saber si un archivo tiene una extension permitida

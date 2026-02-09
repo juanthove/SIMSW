@@ -392,16 +392,30 @@ def ejecutar_analisis_alteraciones(sitio_web_id, url):
         # ===============================
         # 1️⃣ Descargar recursos actuales
         # ===============================
-        resources = fetch_site_resources(url)
 
-        if not resources:
+        res = crawl_light(url)
+        relevantes = seleccionar_urls_relevantes(res)
+
+        resources_globales = {}
+
+        for page_url in relevantes:
+            fetched = fetch_site_resources(page_url)
+
+            for resource_url, content in fetched.items():
+                # deduplicar por URL
+                if resource_url not in resources_globales:
+                    resources_globales[resource_url] = content
+        
+
+        if not resources_globales:
             return {
                 "ok": False,
                 "datos": [],
                 "mensaje": "No se pudieron obtener recursos"
             }
+        
 
-        save_resources_to_folder(resources, tmp_dir, url)
+        save_resources_to_folder(resources_globales, tmp_dir, url)
 
         # ===============================
         # 2️⃣ Comparar archivos
@@ -427,6 +441,7 @@ def ejecutar_analisis_alteraciones(sitio_web_id, url):
             archivos_nuevos.add(relative_path_str)
 
             old_file = base_dir / relative_path
+
 
             if old_file.exists() and not old_file.is_file():
                 continue
@@ -560,6 +575,7 @@ def prompt_alteraciones(diffs):
       scripts sospechosos, trackers no autorizados, etc.
     - Ignorar cambios legítimos
     - Devolver SOLO alteraciones con impacto en seguridad
+    - Ten en cuenta que el proyecto puede ser ASP.NET
 
     Devuelve EXCLUSIVAMENTE un JSON válido con esta estructura EXACTA:
 

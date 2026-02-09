@@ -29,7 +29,6 @@ async function cargarAnalisis() {
         listaFiltrada = [...listaAnalisis];
 
         document.getElementById("cantidadAnalisis").textContent = listaAnalisis.length;
-        console.log(listaAnalisis);
         mostrarListado(listaFiltrada);
 
     } catch (error) {
@@ -39,6 +38,9 @@ async function cargarAnalisis() {
 
 //Cargar los sitios al entrar
 cargarAnalisis()
+
+
+
 
 
 //Obtengo la tabla
@@ -68,6 +70,8 @@ function mostrarListado(lista) {
     });
 }
 
+
+
 const encabezados = document.querySelectorAll("#tablaAnalisis th.sortable");
 
 encabezados.forEach(th => {
@@ -94,8 +98,8 @@ encabezados.forEach(th => {
           break;
 
         case "vulnerabilidades":
-          A = Number(a.cant_vulnerabilidades);
-          B = Number(b.cant_vulnerabilidades);
+          A = Number(a.cantidad_informes);
+          B = Number(b.cantidad_informes);
           break;
 
         case "tipo":
@@ -112,9 +116,15 @@ encabezados.forEach(th => {
           return 0;
       }
 
+      // 1️⃣ criterio principal
       if (A < B) return asc ? -1 : 1;
       if (A > B) return asc ? 1 : -1;
-      return 0;
+
+      // 2️⃣ desempate SIEMPRE por fecha DESC
+      const fechaA = new Date(a.fecha);
+      const fechaB = new Date(b.fecha);
+
+      return fechaB - fechaA;
     });
 
     mostrarListado(listaFiltrada);
@@ -122,13 +132,23 @@ encabezados.forEach(th => {
 });
 
 
+
 //Filtros
 const filtroTipo = document.getElementById("filtroTipo");
 const filtroEstado = document.getElementById("filtroEstado");
+const filtroDesde = document.getElementById("filtroDesde");
+const filtroHasta = document.getElementById("filtroHasta");
 
 function aplicarFiltros() {
   const tipo = filtroTipo.value.toLowerCase().trim();
   const estado = filtroEstado.value.toLowerCase().trim();
+  const desde = filtroDesde.value ? new Date(filtroDesde.value) : null;
+  const hasta = filtroHasta.value ? new Date(filtroHasta.value) : null;
+
+  // Ajuste: incluir todo el día "hasta"
+  if (hasta) {
+    hasta.setHours(23, 59, 59, 999);
+  }
 
   listaFiltrada = listaAnalisis.filter(item => {
     const coincideTipo =
@@ -137,15 +157,43 @@ function aplicarFiltros() {
     const coincideEstado =
       !estado || item.estado?.toLowerCase().trim() === estado;
 
-    return coincideTipo && coincideEstado;
+    const fechaItem = new Date(item.fecha);
+
+    const coincideDesde =
+      !desde || fechaItem >= desde;
+
+    const coincideHasta =
+      !hasta || fechaItem <= hasta;
+
+    return coincideTipo && coincideEstado && coincideDesde && coincideHasta;
   });
 
   mostrarListado(listaFiltrada);
 }
+
 // Eventos
 filtroTipo.addEventListener("change", aplicarFiltros);
 filtroEstado.addEventListener("change", aplicarFiltros);
+filtroDesde.addEventListener("change", aplicarFiltros);
+filtroHasta.addEventListener("change", aplicarFiltros);
 
+
+//Limpiar filtros
+document.getElementById("btnLimpiarFiltros").addEventListener("click", () => {
+  filtroTipo.value = "";
+  filtroEstado.value = "";
+  filtroDesde.value = "";
+  filtroHasta.value = "";
+
+  resetearOrden(); 
+
+  listaFiltrada = [...listaAnalisis];
+  mostrarListado(listaFiltrada);
+});
+
+function resetearOrden() {
+  encabezados.forEach(th => th.classList.remove("asc", "desc"));
+}
 
 
 //Analisis Historico

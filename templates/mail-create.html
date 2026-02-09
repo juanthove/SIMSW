@@ -21,7 +21,7 @@
         <!-- Selector Gmail -->
         <div class="campoForm">
             <label for="selectorGmail">Seleccionar Gmail</label>
-            <select id="selectorGmail">
+            <select id="selectorGmail" class="selector">
                 <option value="">Nuevo Gmail</option>
                 <!-- gmail existentes -->
             </select>
@@ -44,13 +44,7 @@
             <!-- Gmail -->
             <div class="campoForm">
                 <label for="email">Dirección Gmail</label>
-                <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    placeholder="ejemplo@gmail.com"
-                    required
-                >
+                <input type="email" id="email" name="email" placeholder="ejemplo@gmail.com" required>
             </div>
 
             <!-- Asociación de sitios -->
@@ -71,19 +65,9 @@
             </div>
 
             <!-- Lista de sitios -->
-            <div
-                id="listaSitiosContainer"
-                class="campoForm"
-                style="display:none;"
-            >
+            <div id="listaSitiosContainer" class="campoForm" style="display:none;">
                 <div class="listaCheckbox">
-                    <!-- Ejemplo -->
-                    <!--
-                    <label class="checkboxLabel">
-                        <input type="checkbox" value="1">
-                        midominio.com
-                    </label>
-                    -->
+                    <!--Gmails cargados dinamicamente-->
                 </div>
 
                 <small class="formHint">
@@ -93,29 +77,15 @@
 
             <!-- Acciones -->
             <div class="accionesForm">
-                <button
-                    type="button"
-                    id="btnDelete"
-                    class="btn-delete"
-                    style="display:none;"
-                >
-                    Eliminar Gmail
-                </button>
-
-                <button
-                    type="submit"
-                    class="btnPrincipal"
-                    id="btnPrincipal"
-                >
-                    Guardar Gmail
-                </button>
+                <button type="button" id="btnDelete" class="btn-delete" style="display:none;">Eliminar Gmail</button>
+                <button type="submit" class="btnPrincipal" id="btnPrincipal">Guardar Gmail</button>
             </div>
 
         </form>
     </main>
 
     <!-- Toast -->
-    <div id="toast" class="toast"></div>
+    <div id="toast" class="toast" aria-live="polite"></div>
 
     <!-- Modal confirmación -->
     <div id="confirmModal" class="modal-overlay hidden">
