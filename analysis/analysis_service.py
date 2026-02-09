@@ -389,25 +389,20 @@ def ejecutar_analisis_alteraciones(sitio_web_id, url):
     os.makedirs(tmp_dir, exist_ok=True)
 
     try:
-        # ===============================
-        # 1️⃣ Descargar recursos actuales
-        # ===============================
 
-        res = crawl_light(url)
-        relevantes = seleccionar_urls_relevantes(res)
+        ow = OW("Owasp zap", "2.17.0")
+        ow.start_zap()
+        urls = ow.obtener_urls_zap(url)
+        # recursos = ow.obtener_recursos_zap(url)
 
-        resources_globales = {}
+        # for u, html in recursos.items():
+        #     print(u, len(html))
 
-        for page_url in relevantes:
-            fetched = fetch_site_resources(page_url)
-
-            for resource_url, content in fetched.items():
-                # deduplicar por URL
-                if resource_url not in resources_globales:
-                    resources_globales[resource_url] = content
         
+        urls_html = [u for u in urls if es_pagina_html(u)]
 
-        if not resources_globales:
+        if len(urls_html) == 0:
+
             return {
                 "ok": False,
                 "datos": [],
@@ -415,121 +410,43 @@ def ejecutar_analisis_alteraciones(sitio_web_id, url):
             }
         
 
-        save_resources_to_folder(resources_globales, tmp_dir, url)
-
-        # ===============================
-        # 2️⃣ Comparar archivos
-        # ===============================
-        diferencias = []
-
-        archivos_nuevos = set()
-
-        for new_file in tmp_dir.rglob("*"):
-            if not new_file.is_file():
-                continue
-
-            ext = new_file.suffix.lower()
-
-            # 🚫 Ignorar archivos no analizables
-            if ext not in EXTENSIONES_ANALIZABLES:
-                continue
-
-            # 📂 Path relativo respecto a tmp_dir
-            relative_path = new_file.relative_to(tmp_dir)
-            relative_path_str = relative_path.as_posix()
-
-            archivos_nuevos.add(relative_path_str)
-
-            old_file = base_dir / relative_path
+        for u in urls_html:
+            recursos = fetch_site_resources(u)
+            save_resources_to_folder(recursos, tmp_dir, url)
 
 
-            if old_file.exists() and not old_file.is_file():
-                continue
+        exts = {".js", ".html"}
 
-            if not old_file.exists():
-                # 🆕 Archivo nuevo → potencial riesgo
-                diferencias.append({
-                    "archivo": relative_path_str,
-                    "type": "insert",
-                    "category": "archivo_nuevo",
-                    "old_start_line": None,
-                    "old_end_line": None,
-                    "new_start_line": None,
-                    "new_end_line": None,
-                    "old_content": "",
-                    "new_content": "Archivo nuevo no presente en versión base"
-                })
-                continue
+        old_map = indexar_carpeta(base_dir, exts)
+        new_map = indexar_carpeta(tmp_dir, exts)
 
-            # ===============================
-            # Comparar según tipo
-            # ===============================
-            try:
-                if ext in {".html", ".htm"}:
-                    cambios = compare_html_files(old_file, new_file)
+        print(f"Lo que tiene el indexar de old: {old_map}")
+        print("\n\n================")
+        print(f"Lo que tiene el indexar de old: {new_map}")
 
-                else:
-                    cambios = compare_text_files(old_file, new_file)
+        time.sleep(20)
+        res = detectar_parecidos(old_map,new_map)
 
-            except Exception as e:
-                #Error
-                diferencias.append({
-                    "archivo": relative_path_str,
-                    "type": "error",
-                    "category": "error_lectura",
-                    "old_start_line": None,
-                    "old_end_line": None,
-                    "new_start_line": None,
-                    "new_end_line": None,
-                    "old_content": "",
-                    "new_content": str(e)
-                })
-                continue
+        for r in res:
+            old_full = old_map[r["old"]]["path"]
+            new_full = new_map[r["new"]]["path"]
 
-            if cambios:
-                for c in cambios:
-                    c["archivo"] = relative_path_str
-                    diferencias.append(c)
+            print("OLD:", old_full)
+            print("NEW:", new_full)
 
+            #Verifico extencion
+            ext = Path(new_full).suffix.lower()
+            print(f"ext es: {ext}")
+            time.sleep(5)
+            if ext == ".html":            
+                diff = compare_html_files(old_full, new_full)
+            elif(ext == ".js"):
+                diff = compare_js_files(old_full, new_full)
 
-
-
-        #FALTARIA AGREGAR LOS ARCHIVOS QUE SE HAYAN ELIMINADO PERO ESO SOLO SIRVE SI DESCARGAMOS TODO
-        '''archivos_base = {
-            f.relative_to(base_dir).as_posix()
-            for f in base_dir.rglob("*")
-            if f.is_file() and f.suffix.lower() in EXTENSIONES_ANALIZABLES
-        }
-
-        #Archivos eliminados
-        for archivo in archivos_base - archivos_nuevos:
-            diferencias.append({
-                "archivo": archivo,
-                "type": "delete",
-                "category": "archivo_eliminado",
-                "old_start_line": None,
-                "old_end_line": None,
-                "new_start_line": None,
-                "new_end_line": None,
-                "old_content": "Archivo presente en versión base",
-                "new_content": ""
-            })'''
-        
-
-
-
-        #Si no existen diferencias termino y mando el estado de sin alteraciones
-        if not diferencias:
-            return {
-                "ok": True,
-                "datos": [],
-                "mensaje": "Sin alteraciones"
-            }
-
-        # ===============================
-        # 3️⃣ Llamar IA
-        # ===============================
-        prompt = prompt_alteraciones(diferencias)
+            print(f"El valor de diff fue: {diff}\n")
+            time.sleep(10)
+    
+        prompt = prompt_alteraciones(diff)
 
         informe = Informe()
         respuesta = informe.preguntar(prompt)

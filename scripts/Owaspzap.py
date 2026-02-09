@@ -146,7 +146,43 @@ class OwaspZap(Herramienta):
 
 
         return resultado
+    
+    def obtener_urls_zap(self, baseurl):
+        zap = ZAPv2(proxies=self._proxies())
 
+        print("Conectado a ZAP, versión:", zap.core.version)
+
+        # 🔎 Spider primero (OBLIGATORIO o urls() queda vacío)
+        print(f"[+] Spider a {baseurl}")
+        spider_id = zap.spider.scan(baseurl)
+
+        SPIDER_TIMEOUT = 120
+        start_time = time.time()
+
+        while int(zap.spider.status(spider_id)) < 100:
+            if time.time() - start_time > SPIDER_TIMEOUT:
+                print("[!] Timeout en Spider")
+                break
+
+            print("Spider:", zap.spider.status(spider_id), "%")
+            time.sleep(2)
+
+        print("[✓] Spider finalizado")
+
+        # ⏳ Esperar passive
+        while int(zap.pscan.records_to_scan) > 0:
+            time.sleep(1)
+
+        # ✅ ahora sí obtener urls
+        print("[+] Obteniendo URLs descubiertas")
+
+        todas = zap.core.urls()
+
+        filtradas = [u for u in todas if u.startswith(baseurl)]
+
+        print(f"[+] URLs encontradas: {len(filtradas)}")
+
+        return filtradas
 
     # def scan_activo(self,url):
     #     print(f"La url es: {url}")
