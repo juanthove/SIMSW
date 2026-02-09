@@ -946,16 +946,9 @@ def get_site_base_path(url: str) -> Path:
 
 #     return resources
 
-def fetch_site_resources(url: str, timeout: int = 15000) -> dict:
-    """
-    Abre la URL con un navegador headless y captura
-    todos los recursos reales cargados (html, js, css).
 
-    Retorna:
-        {
-            url_recurso: contenido_texto
-        }
-    """
+
+def fetch_site_resources(url: str, timeout: int = 15000):
     resources = {}
 
     with sync_playwright() as p:
@@ -964,24 +957,76 @@ def fetch_site_resources(url: str, timeout: int = 15000) -> dict:
 
         def handle_response(response):
             try:
-                rtype = response.request.resource_type
+                headers = response.headers
+                ct = headers.get("content-type", "")
 
-                # solo lo que te interesa para integridad
-                if rtype in ["document", "script", "stylesheet"]:
-                    body = response.text()
-                    if body:
-                        resources[response.url] = body
+                if not any(x in ct for x in [
+                    "text/html",
+                    "javascript",
+                    "text/css"
+                ]):
+                    return
 
-            except Exception:
+                body = response.text()
+                if body:
+                    resources[response.url] = body
+
+            except:
                 pass
 
         page.on("response", handle_response)
 
         page.goto(url, wait_until="networkidle", timeout=timeout)
-
         browser.close()
 
     return resources
+
+def es_pagina_html(url):
+    path = url.split("?")[0]
+
+    # sin extensión = probablemente MVC view
+    if "." not in path.split("/")[-1]:
+        return True
+
+    return path.endswith(".html")
+
+#ESte es el que venia usando
+# def fetch_site_resources(url: str, timeout: int = 15000) -> dict:
+#     """
+#     Abre la URL con un navegador headless y captura
+#     todos los recursos reales cargados (html, js, css).
+
+#     Retorna:
+#         {
+#             url_recurso: contenido_texto
+#         }
+#     """
+#     resources = {}
+
+#     with sync_playwright() as p:
+#         browser = p.chromium.launch(headless=True)
+#         page = browser.new_page()
+
+#         def handle_response(response):
+#             try:
+#                 rtype = response.request.resource_type
+
+#                 # solo lo que te interesa para integridad
+#                 if rtype in ["document", "script", "stylesheet"]:
+#                     body = response.text()
+#                     if body:
+#                         resources[response.url] = body
+
+#             except Exception:
+#                 pass
+
+#         page.on("response", handle_response)
+
+#         page.goto(url, wait_until="networkidle", timeout=timeout)
+
+#         browser.close()
+
+#     return resources
 
 #Estas dos para guardarlas en la carpeta, que si no esta creada, se crea
 

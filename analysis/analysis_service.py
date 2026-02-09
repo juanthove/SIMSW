@@ -393,22 +393,24 @@ def ejecutar_analisis_alteraciones(sitio_web_id, url):
         ow = OW("Owasp zap", "2.17.0")
         ow.start_zap()
         urls = ow.obtener_urls_zap(url)
+        # recursos = ow.obtener_recursos_zap(url)
 
-        lista = []
-        for u in urls:
-            print(f"La url es: {u}")
-            final = fetch_site_resources(u)
-            lista.append(final)
+        # for u, html in recursos.items():
+        #     print(u, len(html))
 
-        if len(lista) == 0:
+        
+        urls_html = [u for u in urls if es_pagina_html(u)]
+
+        if len(urls_html) == 0:
             return {
                 "ok": False,
                 "datos": [],
                 "mensaje": "No se pudieron obtener recursos"
             }
 
-        for list in lista:
-            save_resources_to_folder(list, tmp_dir, url)
+        for u in urls_html:
+            recursos = fetch_site_resources(u)
+            save_resources_to_folder(recursos, tmp_dir, url)
 
 
         exts = {".js", ".html"}
@@ -416,6 +418,11 @@ def ejecutar_analisis_alteraciones(sitio_web_id, url):
         old_map = indexar_carpeta(base_dir, exts)
         new_map = indexar_carpeta(tmp_dir, exts)
 
+        print(f"Lo que tiene el indexar de old: {old_map}")
+        print("\n\n================")
+        print(f"Lo que tiene el indexar de old: {new_map}")
+
+        time.sleep(20)
         res = detectar_parecidos(old_map,new_map)
 
         for r in res:
@@ -425,7 +432,14 @@ def ejecutar_analisis_alteraciones(sitio_web_id, url):
             print("OLD:", old_full)
             print("NEW:", new_full)
 
-            diff = compare_html_files(old_full, new_full)
+            #Verifico extencion
+            ext = Path(new_full).suffix.lower()
+            print(f"ext es: {ext}")
+            time.sleep(5)
+            if ext == ".html":            
+                diff = compare_html_files(old_full, new_full)
+            elif(ext == ".js"):
+                diff = compare_js_files(old_full, new_full)
 
             print(f"El valor de diff fue: {diff}\n")
             time.sleep(10)
