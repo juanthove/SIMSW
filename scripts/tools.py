@@ -1,6 +1,3 @@
-#from selenium import webdriver
-#from selenium.webdriver.chrome.service import Service
-#from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup, Comment
 from urllib.parse import urljoin
 import hashlib
@@ -8,8 +5,6 @@ from pathlib import Path
 import difflib
 
 
-
-#from pprint import pprint
 import requests
 
 #Para lo de guardado
@@ -21,10 +16,13 @@ import re
 from urllib.parse import urljoin, urlparse
 from collections import deque
 
+import subprocess
+import json
+from typing import List, Dict, Tuple
 
 
 from playwright.sync_api import sync_playwright
-def crawl_light(start_url: str, timeout: int = 5, maximo = 1):
+def crawl_light(start_url: str, timeout: int = 5, maximo = 20):
     """
     Crawling liviano SIN profundidad:
     - Recorre todo el dominio
@@ -386,12 +384,6 @@ def guardar_scripts_internos_sin_formato(nombre, codigo, carpeta_destino):
 
 def separar_codigo(codigo, tamano=2000):
     return [codigo[i:i+tamano] for i in range(0, len(codigo), tamano)]
-
-
-import os
-import subprocess
-import json
-from typing import List, Dict, Tuple
 
 
 def extract_code_from_file(path: str, start: int, end: int) -> str:
@@ -767,6 +759,8 @@ def compare_html_files(file_old: str, file_new: str):
                 "new_content": "\n".join(new_html.splitlines()[j1:j2]).strip()
             })
 
+    print("Comparacion 2 html", cambios)
+
     return cambios
 
 
@@ -825,6 +819,9 @@ def compare_text_files(file_old: str, file_new: str):
         })
 
     return changes
+
+
+
 
 
 #Aca para traer archivs desde url

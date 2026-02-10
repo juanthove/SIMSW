@@ -58,6 +58,11 @@
   color: #000000;
   cursor: pointer;
   text-decoration: none;
+  width: fit-content; 
+  display: inline-block; 
+  grid-column: -1 / -1; 
+  justify-self: end; /*Para que quede a la derecha del todo*/
+  align-self: center;
 }
 
 #btnHistorico:hover {
@@ -169,6 +174,30 @@ td[data-vuln="1"] {
 }
 
 
+
+.btn-limpiar {
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  background-color: #ffffff;
+  color: #555555;
+  cursor: pointer;
+}
+
+.btn-limpiar:hover {
+  background-color: #f9f9f9;
+  border-color: #b0b0b0;
+}
+
+.btn-limpiar:focus {
+  outline: none;
+  border-color: #999999;
+}
+
+
+
+
 /*analysis-list*/
 .infoGrid{
   margin-bottom: 1.3em;
@@ -191,6 +220,67 @@ td[data-vuln="1"] {
     color: #999;
     cursor: not-allowed;
 }
+
+
+
+
+
+
+
+/*Realizar analisis*/
+
+/* Icono ⓘ */
+.info-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 6px;
+  font-size: 13px;
+  color: #666666;
+  cursor: help;
+  position: relative;
+  user-select: none;
+}
+
+/* Tooltip */
+.info-icon::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 125%;
+  right: 0;
+  background-color: #111;
+  color: #ffffff;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(4px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 100;
+}
+
+/* Flecha */
+.info-icon::before {
+  content: "";
+  position: absolute;
+  bottom: 115%;
+  right: 6px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #111 transparent transparent transparent;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+/* Hover */
+.info-icon:hover::after,
+.info-icon:hover::before {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 
 
 

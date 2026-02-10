@@ -402,6 +402,7 @@ def ejecutar_analisis_alteraciones(sitio_web_id, url):
         urls_html = [u for u in urls if es_pagina_html(u)]  
         #print(urls_html)
         if len(urls_html) == 0:
+
             return {
                 "ok": False,
                 "datos": [],
@@ -501,6 +502,7 @@ def prompt_alteraciones(diffs_lista):
       scripts sospechosos, trackers no autorizados, etc.
     - Ignorar cambios legítimos
     - Devolver SOLO alteraciones con impacto en seguridad
+    - Ten en cuenta que el proyecto puede ser ASP.NET
 
     Devuelve EXCLUSIVAMENTE un JSON válido con esta estructura EXACTA:
 

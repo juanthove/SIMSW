@@ -23,6 +23,7 @@ const inputEmail = document.getElementById("email");
 const radioTodos = document.querySelector('input[value="todos"]');
 const radioPersonalizado = document.querySelector('input[value="personalizado"]');
 const listaSitiosContainer = document.getElementById("listaSitiosContainer");
+const listaCheckbox = document.querySelector("#listaSitiosContainer .listaCheckbox");
 
 /* =========================
    CARGA INICIAL
@@ -72,7 +73,7 @@ function cargarSelectorGmail() {
 }
 
 function renderListaSitios() {
-  listaSitiosContainer.innerHTML = "";
+  listaCheckbox.innerHTML = "";
 
   listaSitios.forEach(sitio => {
     const label = document.createElement("label");
@@ -83,9 +84,15 @@ function renderListaSitios() {
     checkbox.value = sitio.id;
 
     label.appendChild(checkbox);
+
+    const span = document.createElement("span");
+    span.classList.add("checkmark");
+
+    label.appendChild(span);
+    
     label.append(` ${sitio.nombre}`);
 
-    listaSitiosContainer.appendChild(label);
+    listaCheckbox.appendChild(label);
   });
 }
 
