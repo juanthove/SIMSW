@@ -105,11 +105,11 @@ def ejecutar_analisis_estatico(sitio_web_id):
 
 
     #Buscar sitio en carpeta
-    #ruta_base = os.path.join(current_app.config["UPLOADS_DIR"], "sitios", str(sitio_web_id))
+    ruta_base = os.path.join(current_app.config["UPLOADS_DIR"], "sitios", str(sitio_web_id))
 
     try:
-        print(sitio_web_id)
-        vulberta_data = run_semgrep_analysis(sitio_web_id)
+        print(ruta_base)
+        vulberta_data = run_semgrep_analysis(ruta_base)
         if not vulberta_data:
             return {
                 "mensaje": "No se generaron fragmentos para análisis",
@@ -382,7 +382,6 @@ def ejecutar_analisis_alteraciones(sitio_web_id, url):
 
     BASE_UPLOADS = current_app.config["UPLOADS_DIR"]
 
-    # 📁 Carpetas
     base_dir = Path(BASE_UPLOADS) / "sitios" / str(sitio_web_id)
     tmp_dir = Path(BASE_UPLOADS) / "alteraciones_tmp" / f"{sitio_web_id}_{int(time.time())}"
 
@@ -393,14 +392,9 @@ def ejecutar_analisis_alteraciones(sitio_web_id, url):
         ow = OW("Owasp zap", "2.17.0")
         ow.start_zap()
         urls = ow.obtener_urls_zap(url)
-        # recursos = ow.obtener_recursos_zap(url)
-
-        # for u, html in recursos.items():
-        #     print(u, len(html))
 
         
         urls_html = [u for u in urls if es_pagina_html(u)]  
-        #print(urls_html)
         if len(urls_html) == 0:
 
             return {
@@ -408,7 +402,6 @@ def ejecutar_analisis_alteraciones(sitio_web_id, url):
                 "datos": [],
                 "mensaje": "No se pudieron obtener recursos"
             }
-        print("Entro")
         for u in urls_html:
             recursos = fetch_site_resources(u)
             save_resources_to_folder(recursos, tmp_dir, url)
@@ -429,33 +422,19 @@ def ejecutar_analisis_alteraciones(sitio_web_id, url):
             old_full = old_map[r["old"]]["path"]
             new_full = new_map[r["new"]]["path"]
 
-            print("OLD:", old_full)
-            print("NEW:", new_full)
-
             #Verifico extencion
             ext = Path(new_full).suffix.lower()
 
-            print(f"ext es: {ext}")
-            time.sleep(3)
             if ext == ".html":            
                 diff = compare_html_files(old_full, new_full)
                 if len(diff) != 0:
-                    print("Lo agrego")
                     diff_list.append(diff)
-                    print(f"El valor de diff fue: {diff}\n")
-                else:
-                    print(f"El valor de diff fue: {diff}\n")
 
             elif(ext == ".js"):
                 diff = compare_js_files(old_full, new_full)
                 if len(diff) != 0:
-                    print("Lo agrego")
                     diff_list.append(diff)
-                    print(f"El valor de diff fue: {diff}\n")
-                else:
-                    print(f"El valor de diff fue: {diff}\n")
 
-            time.sleep(10)
     
         prompt = prompt_alteraciones(diff_list)
 

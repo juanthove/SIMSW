@@ -1193,7 +1193,6 @@ def detectar_parecidos(old_map, new_map):
 
             new_name = Path(new_rel).name
 
-            # 🔥 MATCH ESTRICTO
             if old_name != new_name:
                 continue
 
