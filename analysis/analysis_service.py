@@ -382,7 +382,6 @@ def ejecutar_analisis_alteraciones(sitio_web_id, url):
 
     BASE_UPLOADS = current_app.config["UPLOADS_DIR"]
 
-    # 📁 Carpetas
     base_dir = Path(BASE_UPLOADS) / "sitios" / str(sitio_web_id)
     tmp_dir = Path(BASE_UPLOADS) / "alteraciones_tmp" / f"{sitio_web_id}_{int(time.time())}"
 
@@ -393,14 +392,9 @@ def ejecutar_analisis_alteraciones(sitio_web_id, url):
         ow = OW("Owasp zap", "2.17.0")
         ow.start_zap()
         urls = ow.obtener_urls_zap(url)
-        # recursos = ow.obtener_recursos_zap(url)
-
-        # for u, html in recursos.items():
-        #     print(u, len(html))
 
         
-        urls_html = [u for u in urls if es_pagina_html(u)]
-
+        urls_html = [u for u in urls if es_pagina_html(u)]  
         if len(urls_html) == 0:
 
             return {
@@ -408,8 +402,6 @@ def ejecutar_analisis_alteraciones(sitio_web_id, url):
                 "datos": [],
                 "mensaje": "No se pudieron obtener recursos"
             }
-        
-
         for u in urls_html:
             recursos = fetch_site_resources(u)
             save_resources_to_folder(recursos, tmp_dir, url)
@@ -420,37 +412,34 @@ def ejecutar_analisis_alteraciones(sitio_web_id, url):
         old_map = indexar_carpeta(base_dir, exts)
         new_map = indexar_carpeta(tmp_dir, exts)
 
-        print(f"Lo que tiene el indexar de old: {old_map}")
-        print("\n\n================")
-        print(f"Lo que tiene el indexar de old: {new_map}")
+        # print(f"Lo que tiene el indexar de old: {old_map}")
+        # print("\n\n================")
+        # print(f"Lo que tiene el indexar de old: {new_map}")
 
-        time.sleep(20)
         res = detectar_parecidos(old_map,new_map)
-
+        diff_list = []
         for r in res:
             old_full = old_map[r["old"]]["path"]
             new_full = new_map[r["new"]]["path"]
 
-            print("OLD:", old_full)
-            print("NEW:", new_full)
-
             #Verifico extencion
             ext = Path(new_full).suffix.lower()
-            print(f"ext es: {ext}")
-            time.sleep(5)
+
             if ext == ".html":            
                 diff = compare_html_files(old_full, new_full)
+                if len(diff) != 0:
+                    diff_list.append(diff)
+
             elif(ext == ".js"):
                 diff = compare_js_files(old_full, new_full)
+                if len(diff) != 0:
+                    diff_list.append(diff)
 
-            print(f"El valor de diff fue: {diff}\n")
-            time.sleep(10)
     
-        prompt = prompt_alteraciones(diff)
+        prompt = prompt_alteraciones(diff_list)
 
         informe = Informe()
         respuesta = informe.preguntar(prompt)
-
         texto_ia = (
             respuesta.content
             if hasattr(respuesta, "content")
@@ -478,7 +467,7 @@ def ejecutar_analisis_alteraciones(sitio_web_id, url):
 
 
 
-def prompt_alteraciones(diffs):
+def prompt_alteraciones(diffs_lista):
     prompt = """
     Actúas como un analista de seguridad senior especializado en
     detección de alteraciones maliciosas en código web.
@@ -512,18 +501,19 @@ def prompt_alteraciones(diffs):
     Si no hay alteraciones de seguridad, devuelve [].
     """
 
-    for d in diffs:
-        prompt += f"""
-        ---
-        Archivo: {d.get("archivo")}
-        Tipo de cambio: {d.get("type", "unknown")}
-        Categoría: {d.get("category", "unknown")}
+    for diffs in diffs_lista: 
+        for d in diffs:
+            prompt += f"""
+            ---
+            Archivo: {d.get("archivo")}
+            Tipo de cambio: {d.get("type", "unknown")}
+            Categoría: {d.get("category", "unknown")}
 
-        Código anterior:
-        {d.get("old_content", "")}
+            Código anterior:
+            {d.get("old_content", "")}
 
-        Código actual:
-        {d.get("new_content", "")}
-        """
+            Código actual:
+            {d.get("new_content", "")}
+            """
 
     return prompt

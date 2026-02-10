@@ -423,6 +423,21 @@ def run_semgrep_analysis(
     ]
 
 
+#     cmd = [
+#     "semgrep",
+
+#     "--config", "p/javascript",
+#     "--config", "p/xss",
+
+#     "--include", "*.js",
+
+#     "--no-git-ignore",
+#     "--json",
+
+#     target_dir
+# ]
+
+
     result = subprocess.run(
         cmd,
         capture_output=True,
@@ -1121,35 +1136,76 @@ def similar(a, b):
     return difflib.SequenceMatcher(None, a, b).ratio()
 
 
-def detectar_parecidos(old_map, new_map, threshold=0.7):
+
+#Sugerencia para evitar que matcheen erroneamente
+
+# def detectar_parecidos(old_map, new_map, threshold=0.7):
+#     matches = []
+#     usados = set()
+
+#     for old_rel, old_info in old_map.items():
+
+#         mejor_score = 0
+#         mejor_match = None
+
+#         for new_rel, new_info in new_map.items():
+
+#             if new_rel in usados:
+#                 continue
+
+#             old_name = old_rel.split("/")[-1]
+#             new_name = new_rel.split("/")[-1]
+
+#             score_name = similar(old_name, new_name)
+#             score_path = similar(old_rel, new_rel)
+
+#             score = score_name * 0.7 + score_path * 0.3
+
+#             if score > mejor_score:
+#                 mejor_score = score
+#                 mejor_match = new_rel
+
+#         if mejor_score >= threshold:
+#             usados.add(mejor_match)
+
+#             matches.append({
+#                 "old": old_rel,
+#                 "new": mejor_match,
+#                 "score": mejor_score,
+#                 "hash_equal": old_map[old_rel]["hash"] == new_map[mejor_match]["hash"]
+#             })
+
+#     return matches
+
+
+def detectar_parecidos(old_map, new_map):
     matches = []
     usados = set()
 
     for old_rel, old_info in old_map.items():
 
-        mejor_score = 0
-        mejor_match = None
+        old_name = Path(old_rel).name
 
         for new_rel, new_info in new_map.items():
 
             if new_rel in usados:
                 continue
 
-            score = similar(old_rel.split("/")[-1], new_rel.split("/")[-1])
+            new_name = Path(new_rel).name
 
-            if score > mejor_score:
-                mejor_score = score
-                mejor_match = new_rel
+            if old_name != new_name:
+                continue
 
-        if mejor_score >= threshold:
-            usados.add(mejor_match)
+            usados.add(new_rel)
 
             matches.append({
                 "old": old_rel,
-                "new": mejor_match,
-                "score": mejor_score,
-                "hash_equal": old_map[old_rel]["hash"] == new_map[mejor_match]["hash"]
+                "new": new_rel,
+                "score": 1.0,
+                "hash_equal": old_info["hash"] == new_info["hash"]
             })
+
+            break
 
     return matches
 
