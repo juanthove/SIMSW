@@ -431,6 +431,21 @@ def run_semgrep_analysis(
     ]
 
 
+#     cmd = [
+#     "semgrep",
+
+#     "--config", "p/javascript",
+#     "--config", "p/xss",
+
+#     "--include", "*.js",
+
+#     "--no-git-ignore",
+#     "--json",
+
+#     target_dir
+# ]
+
+
     result = subprocess.run(
         cmd,
         capture_output=True,

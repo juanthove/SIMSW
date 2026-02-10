@@ -105,11 +105,11 @@ def ejecutar_analisis_estatico(sitio_web_id):
 
 
     #Buscar sitio en carpeta
-    ruta_base = os.path.join(current_app.config["UPLOADS_DIR"], "sitios", str(sitio_web_id))
+    #ruta_base = os.path.join(current_app.config["UPLOADS_DIR"], "sitios", str(sitio_web_id))
 
     try:
-        print(ruta_base)
-        vulberta_data = run_semgrep_analysis(ruta_base)
+        print(sitio_web_id)
+        vulberta_data = run_semgrep_analysis(sitio_web_id)
         if not vulberta_data:
             return {
                 "mensaje": "No se generaron fragmentos para análisis",
