@@ -4,7 +4,7 @@ import json
 import re
 from scripts.Informe import Informe
 from scripts.AST import *
-from scripts.vulberta_api import Vulberta as Vulberta
+from scripts.Vulberta import *
 from scripts.Owaspzap import OwaspZap as OW
 import time
 from flask import current_app
@@ -12,7 +12,8 @@ import os
 from pathlib import Path
 import shutil
 import time
-
+from scripts.my_semgrep import scan_directory,findings_to_dicts
+from scripts.promptVulberta import crear_prompts_lote_vulberta
 
 #Extensiones para analizarlas
 EXTENSIONES_ANALIZABLES = {
@@ -109,7 +110,8 @@ def ejecutar_analisis_estatico(sitio_web_id):
 
     try:
         print(ruta_base)
-        vulberta_data = run_semgrep_analysis(ruta_base)
+        findings = scan_directory(str(ruta_base))
+        vulberta_data = findings_to_dicts(findings)
         if not vulberta_data:
             return {
                 "mensaje": "No se generaron fragmentos para análisis",
@@ -117,59 +119,56 @@ def ejecutar_analisis_estatico(sitio_web_id):
             }
 
         # 🔥 Llamada directa a VulBERTa, sin SitioWeb ni Analisis
+        # 🔥 Llamada directa a VulBERTa, sin SitioWeb ni Analisis
         herramienta = Vulberta(
             nombre="VulBERTa",
             version="1.0",
         )
         
-        archivos = []
-        for data in vulberta_data:
-            archivos.append(data["code_context"])
+        resultados: list[dict] = []
+        i = 0
+        for hallazgo in vulberta_data:
+            code_fragment = hallazgo.get("code_fragment", "")
+            if not isinstance(code_fragment, str) or not code_fragment.strip():
+                continue
 
-        resultado = herramienta.analizar_sitio(list(set(archivos)))
-        
+            salida_vulberta = herramienta.analizar_code_fragment(code_fragment)
+            
+            #Verifico que sea label = Vulnerable
+            if(salida_vulberta["label"] == "Vulnerable"):
+                print(f"{i}: Es Vulnerable")
+                resultados.append(
+                    {
+                        "file_name": hallazgo.get("file_name"),
+                        "keyword": hallazgo.get("keyword"),
+                        "vulberta": salida_vulberta,
+                    }
+                )
+            else:
+                print(f"{i}:No es Vulnerable")
+            i += 1  
 
-        if not resultado:
+        if not resultados:
             return {
                 "mensaje": "No se detectaron vulnerabilidades",
                 "vulnerabilidades": []
             }
+        prompts = crear_prompts_lote_vulberta(resultados)
 
-
-        lista_mayores = []
-
-        for item in resultado:
-            if item.get_label() == "Vulnerable":
-                lista_mayores.append({
-                        "id": item.get_id(),
-                        "code_fragment": item.get_code_fragment()
-                    })
-        
         resultados_finales = []
-        chunk_size = 15
+        
         informe = Informe()
-        for bloque in dividir_en_chunks(vulberta_data, chunk_size):
-            prompt = promt_default(lista_mayores)
-            for f in bloque:
-                prompt += f"""
-                Archivo: {f['path']}
-                CWE: {f['cwe']}
-                OWASP: {f['owasp']}
-                Check ID: {f['check_id']}
+        
+        #Hacer llamado a LLM para cada promp
 
-                Codigo sin contexto:
-                {f['code']}
-                Código con contexto:
-                {f['code_context']}
-                """
-            respuesta = informe.preguntar(prompt)
+        for p in prompts:
+            respuesta = informe.preguntar(p)
 
             texto_ia = (
                 respuesta.content
                 if hasattr(respuesta, "content")
                 else respuesta
             )
-
 
             # 4️⃣ Parsear JSON
             try:
@@ -192,6 +191,8 @@ def ejecutar_analisis_estatico(sitio_web_id):
             "vulnerabilidades": [],
             "error_tecnico": str(e)
         }
+
+
 
 
 

@@ -16,3 +16,6 @@ probarAnalisis.py
 
 uploads/sitios/*
 !uploads/sitios/.gitkeep
+
+base_guardar
+baseline_sitio_41
