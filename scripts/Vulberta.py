@@ -55,14 +55,20 @@ class Vulberta(Herramienta):
 
     def _configurar_libclang(self) -> None:
         """
-        Configura explicitamente la ruta de libclang.dll en Windows.
-        Evita el error:
-        clang.cindex.LibclangError: Could not find module 'libclang.dll'
+        Configura explicitamente la ruta de libclang.dll. Esto es necesario para correr en Windows.
         """
         try:
-            import clang  # type: ignore
-            from clang.cindex import Config  # type: ignore
+            import clang
+            from clang.cindex import Config
         except Exception:
+            return
+
+        """
+        Cambio minimo y seguro:
+        Si libclang ya fue cargado en una peticion anterior, no volver a ejecutar
+        Config.set_library_file(...), porque falla en la segunda ejecucion.
+        """
+        if Config.loaded:
             return
 
         dll_path = Path(clang.__file__).resolve().parent / "native" / "libclang.dll"
