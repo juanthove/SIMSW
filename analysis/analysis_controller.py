@@ -21,7 +21,7 @@ def analizar_estatico(url, sitio_web_id):
     db = SessionLocal()
 
     try:
-        # 1️⃣ Crear análisis EN PROGRESO
+        #Crear análisis En Progreso
         analisis = Analisis(
             nombre=f"Análisis Estático - {url}",
             fecha=datetime.now(timezone.utc),
@@ -33,9 +33,9 @@ def analizar_estatico(url, sitio_web_id):
         )
 
         db.add(analisis)
-        db.flush()  # Para obtener analisis.id sin commit
+        db.flush()  #Obtener analisis.id sin commit
 
-        # 2️⃣ Ejecutar análisis (Playwright + IA)
+        #Ejecutar análisis
         resultado = ejecutar_analisis_estatico(sitio_web_id)
 
         vulnerabilidades = []
@@ -44,9 +44,8 @@ def analizar_estatico(url, sitio_web_id):
         resultado_global = 0
         hubo_datos = True
 
-        print("[DEBUG] RESULTADO", resultado)
 
-        # 3️⃣ Normalización del resultado
+        #Normalización del resultado
         if isinstance(resultado, list) and len(resultado) == 0:
             estado_final = "Sin Datos"
             hubo_datos = False
@@ -67,7 +66,7 @@ def analizar_estatico(url, sitio_web_id):
             estado_final = "Error"
             hubo_datos = False
 
-        # 4️⃣ Procesamiento SOLO si hubo datos analizables
+        #Procesamiento solo si hubo datos analizables
         if hubo_datos:
             CAMPOS_OBLIGATORIOS = {
                 "titulo",
@@ -84,14 +83,14 @@ def analizar_estatico(url, sitio_web_id):
                 if isinstance(v, dict) and CAMPOS_OBLIGATORIOS.issubset(v.keys()):
                     vulnerabilidades.append(v)
 
-            # 🔹 Resultado global calculado SOLO con vulnerabilidades válidas
+            #Resultado global calculado solo con vulnerabilidades válidas
             resultado_global = calcular_resultado_global(vulnerabilidades)
 
-        # 5️⃣ Actualizar análisis con estado final
+        #Actualizar análisis con estado final
         analisis.estado = estado_final
         analisis.resultado_global = resultado_global
 
-        # 6️⃣ Crear informes SOLO si hay vulnerabilidades
+        #Crear informes solo si hay vulnerabilidades
         if hubo_datos:
             for v in vulnerabilidades:
                 informe = Informe(
@@ -101,13 +100,13 @@ def analizar_estatico(url, sitio_web_id):
                     impacto=v["impacto"],
                     recomendacion=v["recomendacion"],
                     evidencia=v["evidencia"],
-                    severidad=v["severidad"],  # 1, 2 o 3 (Baja, Media, Alta en frontend)
+                    severidad=v["severidad"],
                     codigo=v["codigo"],
                     analisis_id=analisis.id
                 )
                 db.add(informe)
 
-        # 7️⃣ Guardar todo
+        #Guardar todo
 
         #Actualizar fecha último monitoreo del sitio (UTC)
         sitio = db.query(SitioWeb).filter(SitioWeb.id == sitio_web_id).first()
@@ -129,7 +128,7 @@ def analizar_estatico(url, sitio_web_id):
     except Exception as e:
         db.rollback()
 
-        # 🟥 Si ocurre un error, marcar análisis como ERROR
+        #Si ocurre un error, marcar análisis como Error
         analisis.estado = "Error"
         analisis.resultado_global = 0
         db.commit()
@@ -145,15 +144,12 @@ def analizar_estatico(url, sitio_web_id):
 
 
 
-
-
-
-
 PESOS = {
-    1: 1,   # Baja
-    2: 3,   # Media
-    3: 6    # Alta
+    1: 1,   #Baja
+    2: 3,   #Media
+    3: 6    #Alta
 }
+
 
 def calcular_resultado_global(vulnerabilidades):
     if not vulnerabilidades:
@@ -176,17 +172,13 @@ def calcular_resultado_global(vulnerabilidades):
 
 
 
-
-
 #Realiza el analisis dinamico y guarda en la base de datos
 def analizar_dinamico(url, sitio_web_id):
     db = SessionLocal()
     analisis = None
 
     try:
-        # ===============================
-        # CREAR ANÁLISIS
-        # ===============================
+        #Crear Analisis En Progreso
         analisis = Analisis(
             nombre=f"Análisis Dinámico - {url}",
             fecha=datetime.now(timezone.utc),
@@ -199,25 +191,19 @@ def analizar_dinamico(url, sitio_web_id):
         db.add(analisis)
         db.flush()
 
-        # ===============================
-        # EJECUTAR DAST
-        # ===============================
+        #Ejecutar analisis
         resultado = ejecutar_analisis_dinamico(url)
 
         vulnerabilidades = resultado.get("resultado_json", [])
 
-        # ===============================
-        # VALIDAR RESULTADO IA
-        # ===============================
+        #Validar resultados
         vulnerabilidades_validas = []
 
         for v in vulnerabilidades:
             if isinstance(v, dict):
                 vulnerabilidades_validas.append(v)
 
-        # ===============================
-        # GUARDAR INFORMES + DETALLE OZ (1 a 1)
-        # ===============================
+        #Guardar Informe y DetalleOZ
         for v in vulnerabilidades_validas:
             informe = Informe(
                 titulo=v.get("titulo"),
@@ -227,11 +213,11 @@ def analizar_dinamico(url, sitio_web_id):
                 recomendacion=v.get("recomendacion"),
                 evidencia=v.get("evidencia"),
                 severidad=v.get("severidad"),
-                codigo=None,  # explícito
+                codigo=None,
                 analisis_id=analisis.id
             )
             db.add(informe)
-            db.flush()  # para obtener informe.id
+            db.flush() 
 
             detalle = DetalleOZ(
                 informe_id=informe.id,
@@ -243,9 +229,7 @@ def analizar_dinamico(url, sitio_web_id):
 
             db.add(detalle)
 
-        # ===============================
-        # FINALIZAR ANÁLISIS
-        # ===============================
+        #Finalizar analisis
         analisis.estado = "Finalizado"
         analisis.resultado_global = calcular_resultado_global(vulnerabilidades_validas)
 
@@ -293,9 +277,7 @@ def analizar_alteraciones(url, sitio_web_id, metodo):
     analisis = None
 
     try:
-        # ===============================
-        # 1️⃣ Crear análisis EN PROGRESO
-        # ===============================
+        #Crear Analisis En Progreso
         print("[DEBUG] Se crea analisis")
         analisis = Analisis(
             nombre=f"Análisis de Alteraciones - {url}",
@@ -308,11 +290,9 @@ def analizar_alteraciones(url, sitio_web_id, metodo):
         )
 
         db.add(analisis)
-        db.flush()  # obtener analisis.id
+        db.flush()
 
-        # ===============================
-        # 2️⃣ Ejecutar análisis (SERVICE)
-        # ===============================
+        #Ejecutar analisis
         resultado = ejecutar_analisis_alteraciones(sitio_web_id, url)
         estado_final = "Error"
         hubo_datos = False
@@ -340,9 +320,7 @@ def analizar_alteraciones(url, sitio_web_id, metodo):
             estado_final = "Error"
             hubo_datos = False
 
-        # ===============================
-        # 3️⃣ Guardar informes
-        # ===============================
+        #Guardar Informe
         vulnerabilidades_validas = []
 
         CAMPOS_OBLIGATORIOS = {
@@ -376,13 +354,11 @@ def analizar_alteraciones(url, sitio_web_id, metodo):
 
                     resultado_global = calcular_resultado_global(vulnerabilidades_validas)
 
-        # ===============================
-        # 4️⃣ Finalizar análisis
-        # ===============================
+        #Finalizar analisis
         analisis.estado = estado_final
         analisis.resultado_global = resultado_global
 
-        # Actualizar último monitoreo
+        #Actualizar último monitoreo
         sitio = db.query(SitioWeb).filter(SitioWeb.id == sitio_web_id).first()
         if sitio:
             if metodo == "Automatico":
@@ -392,9 +368,7 @@ def analizar_alteraciones(url, sitio_web_id, metodo):
 
         db.commit()
 
-        # ===============================
-        # 5️⃣ Alertas críticas
-        # ===============================
+        #Enviar alertas
         if hubo_datos:
             enviar_alertas_criticas(sitio_web_id, vulnerabilidades_validas, url, "alteracion")
 
@@ -434,7 +408,7 @@ def enviar_alertas_criticas(sitio_web_id, vulnerabilidades, url, tipo_analisis):
     si existen vulnerabilidades de severidad 3
     """
 
-    # 🔴 Filtrar vulnerabilidades críticas
+    #Filtrar vulnerabilidades críticas
     vulnerabilidades_criticas = [
         v for v in vulnerabilidades
         if isinstance(v, dict) and v.get("severidad") == 3
@@ -453,11 +427,11 @@ def enviar_alertas_criticas(sitio_web_id, vulnerabilidades, url, tipo_analisis):
     db = SessionLocal()
 
     try:
-        # 🏷️ Obtener nombre del sitio
+        #Obtener nombre del sitio
         sitio = db.query(SitioWeb).filter(SitioWeb.id == sitio_web_id).first()
         nombre_sitio = sitio.nombre if sitio else "Sitio desconocido"
 
-        # 📬 Obtener mails relacionados al sitio
+        #Obtener mails relacionados al sitio
         mails = (
             db.query(Mail)
             .join(SitioMail, SitioMail.mail_id == Mail.id)

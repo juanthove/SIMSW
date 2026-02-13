@@ -24,7 +24,7 @@ from database.routes.detalleOZ_routes import detalleOZ_bp
 from database.routes.mail_routes import mail_bp
 
 
-# registrar blueprints
+#Registrar blueprints
 app.register_blueprint(analysis_bp)
 app.register_blueprint(auth_bp)
 
@@ -91,9 +91,7 @@ scheduler = BackgroundScheduler()
 scheduler.add_job(func=ejecutar_analisis_automaticos, trigger="interval", minutes=15, next_run_time=datetime.now(timezone.utc), args=[app], max_instances=1, coalesce=True, misfire_grace_time=500)
 
 scheduler.start()
-#if not app.debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-#    scheduler.start()
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
