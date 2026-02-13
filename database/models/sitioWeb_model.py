@@ -23,6 +23,11 @@ class SitioWeb(Base):
 
     archivos_base = Column(Boolean, nullable=False, default=False)
 
+    fecha_ultimo_automatico = Column(
+        DateTime(timezone=True),
+        nullable=True
+    )
+
     def to_dict(self):
         return {
             "id": self.id,
@@ -32,5 +37,6 @@ class SitioWeb(Base):
             "fecha_registro": self.fecha_registro,
             "fecha_ultimo_monitoreo": self.fecha_ultimo_monitoreo,
             "frecuencia_monitoreo_minutos": self.frecuencia_monitoreo_minutos,
-            "archivos_base": self.archivos_base
+            "archivos_base": self.archivos_base,
+            "fecha_ultimo_automatico": self.fecha_ultimo_automatico
         }

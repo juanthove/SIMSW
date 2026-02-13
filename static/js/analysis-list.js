@@ -10,6 +10,10 @@ let sitio = null;
 let listaAnalisis = [];
 let listaFiltrada = [];
 
+// 🔹 Variables para mantener el orden actual
+let ordenActual = null;      // columna actual
+let ordenAscendente = true;  // dirección actual
+
 
 async function cargarAnalisis() {
     try {
@@ -42,7 +46,6 @@ cargarAnalisis()
 
 
 
-
 //Obtengo la tabla
 const tablaAnalisis = document.querySelector("#tablaAnalisis tbody");
 
@@ -55,6 +58,7 @@ function mostrarListado(lista) {
         tr.innerHTML = `
         <td>${item.tipo}</td>
         <td>${item.estado}</td>
+        <td>${item.metodo}</td>
         <td>${item.resultado_global}</td>
         <td>${item.cantidad_informes}</td>
         <td>${formatearFecha(item.fecha)}</td>
@@ -71,128 +75,156 @@ function mostrarListado(lista) {
 }
 
 
+// 🔹 Función reutilizable para aplicar el orden actual
+function aplicarOrden() {
+    if (!ordenActual) return;
+
+    listaFiltrada.sort((a, b) => {
+        let A, B;
+
+        switch (ordenActual) {
+            case "fecha":
+                A = new Date(a.fecha);
+                B = new Date(b.fecha);
+                break;
+
+            case "resultado":
+                A = Number(a.resultado_global);
+                B = Number(b.resultado_global);
+                break;
+
+            case "vulnerabilidades":
+                A = Number(a.cantidad_informes);
+                B = Number(b.cantidad_informes);
+                break;
+
+            case "tipo":
+                A = a.tipo?.toLowerCase();
+                B = b.tipo?.toLowerCase();
+                break;
+
+            case "estado":
+                A = a.estado?.toLowerCase();
+                B = b.estado?.toLowerCase();
+                break;
+
+            case "metodo":
+                A = a.metodo?.toLowerCase();
+                B = b.metodo?.toLowerCase();
+                break;
+
+            default:
+                return 0;
+        }
+
+        // 1️⃣ criterio principal
+        if (A < B) return ordenAscendente ? -1 : 1;
+        if (A > B) return ordenAscendente ? 1 : -1;
+
+        // 2️⃣ desempate SIEMPRE por fecha DESC
+        const fechaA = new Date(a.fecha);
+        const fechaB = new Date(b.fecha);
+
+        return fechaB - fechaA;
+    });
+}
+
 
 const encabezados = document.querySelectorAll("#tablaAnalisis th.sortable");
 
 encabezados.forEach(th => {
-  th.addEventListener("click", () => {
-    const columna = th.dataset.column;
-    const asc = !th.classList.contains("asc");
+    th.addEventListener("click", () => {
+        const columna = th.dataset.column;
 
-    // Resetear flechas
-    encabezados.forEach(h => h.classList.remove("asc", "desc"));
-    th.classList.add(asc ? "asc" : "desc");
+        // 🔹 Determinar nueva dirección
+        const asc = !th.classList.contains("asc");
 
-    listaFiltrada.sort((a, b) => {
-      let A, B;
+        // 🔹 Guardar estado global
+        ordenActual = columna;
+        ordenAscendente = asc;
 
-      switch (columna) {
-        case "fecha":
-          A = new Date(a.fecha);
-          B = new Date(b.fecha);
-          break;
+        // Resetear flechas
+        encabezados.forEach(h => h.classList.remove("asc", "desc"));
+        th.classList.add(asc ? "asc" : "desc");
 
-        case "resultado":
-          A = Number(a.resultado_global);
-          B = Number(b.resultado_global);
-          break;
-
-        case "vulnerabilidades":
-          A = Number(a.cantidad_informes);
-          B = Number(b.cantidad_informes);
-          break;
-
-        case "tipo":
-          A = a.tipo?.toLowerCase();
-          B = b.tipo?.toLowerCase();
-          break;
-
-        case "estado":
-          A = a.estado?.toLowerCase();
-          B = b.estado?.toLowerCase();
-          break;
-
-        default:
-          return 0;
-      }
-
-      // 1️⃣ criterio principal
-      if (A < B) return asc ? -1 : 1;
-      if (A > B) return asc ? 1 : -1;
-
-      // 2️⃣ desempate SIEMPRE por fecha DESC
-      const fechaA = new Date(a.fecha);
-      const fechaB = new Date(b.fecha);
-
-      return fechaB - fechaA;
+        aplicarOrden();
+        mostrarListado(listaFiltrada);
     });
-
-    mostrarListado(listaFiltrada);
-  });
 });
-
 
 
 //Filtros
 const filtroTipo = document.getElementById("filtroTipo");
 const filtroEstado = document.getElementById("filtroEstado");
+const filtroMetodo = document.getElementById("filtroMetodo");
 const filtroDesde = document.getElementById("filtroDesde");
 const filtroHasta = document.getElementById("filtroHasta");
 
 function aplicarFiltros() {
-  const tipo = filtroTipo.value.toLowerCase().trim();
-  const estado = filtroEstado.value.toLowerCase().trim();
-  const desde = filtroDesde.value ? new Date(filtroDesde.value) : null;
-  const hasta = filtroHasta.value ? new Date(filtroHasta.value) : null;
+    const tipo = filtroTipo.value.toLowerCase().trim();
+    const estado = filtroEstado.value.toLowerCase().trim();
+    const metodo = filtroMetodo.value.toLowerCase().trim();
+    const desde = filtroDesde.value ? new Date(filtroDesde.value) : null;
+    const hasta = filtroHasta.value ? new Date(filtroHasta.value) : null;
 
-  // Ajuste: incluir todo el día "hasta"
-  if (hasta) {
-    hasta.setHours(23, 59, 59, 999);
-  }
+    // Ajuste: incluir todo el día "hasta"
+    if (hasta) {
+        hasta.setHours(23, 59, 59, 999);
+    }
 
-  listaFiltrada = listaAnalisis.filter(item => {
-    const coincideTipo =
-      !tipo || item.tipo?.toLowerCase().trim() === tipo;
+    listaFiltrada = listaAnalisis.filter(item => {
+        const coincideTipo =
+            !tipo || item.tipo?.toLowerCase().trim() === tipo;
 
-    const coincideEstado =
-      !estado || item.estado?.toLowerCase().trim() === estado;
+        const coincideEstado =
+            !estado || item.estado?.toLowerCase().trim() === estado;
 
-    const fechaItem = new Date(item.fecha);
+        const coincideMetodo =
+            !metodo || item.metodo?.toLowerCase().trim() === metodo;
 
-    const coincideDesde =
-      !desde || fechaItem >= desde;
+        const fechaItem = new Date(item.fecha);
 
-    const coincideHasta =
-      !hasta || fechaItem <= hasta;
+        const coincideDesde =
+            !desde || fechaItem >= desde;
 
-    return coincideTipo && coincideEstado && coincideDesde && coincideHasta;
-  });
+        const coincideHasta =
+            !hasta || fechaItem <= hasta;
 
-  mostrarListado(listaFiltrada);
+        return coincideTipo && coincideEstado && coincideMetodo && coincideDesde && coincideHasta;
+    });
+
+    // 🔹 IMPORTANTE: reaplicar orden después del filtro
+    aplicarOrden();
+    mostrarListado(listaFiltrada);
 }
 
 // Eventos
 filtroTipo.addEventListener("change", aplicarFiltros);
 filtroEstado.addEventListener("change", aplicarFiltros);
+filtroMetodo.addEventListener("change", aplicarFiltros);
 filtroDesde.addEventListener("change", aplicarFiltros);
 filtroHasta.addEventListener("change", aplicarFiltros);
 
 
 //Limpiar filtros
 document.getElementById("btnLimpiarFiltros").addEventListener("click", () => {
-  filtroTipo.value = "";
-  filtroEstado.value = "";
-  filtroDesde.value = "";
-  filtroHasta.value = "";
+    filtroTipo.value = "";
+    filtroEstado.value = "";
+    filtroMetodo.value = "";
+    filtroDesde.value = "";
+    filtroHasta.value = "";
 
-  resetearOrden(); 
+    resetearOrden();
 
-  listaFiltrada = [...listaAnalisis];
-  mostrarListado(listaFiltrada);
+    listaFiltrada = [...listaAnalisis];
+
+    aplicarOrden(); // 🔹 mantener orden actual si existía
+    mostrarListado(listaFiltrada);
 });
 
 function resetearOrden() {
-  encabezados.forEach(th => th.classList.remove("asc", "desc"));
+    encabezados.forEach(th => th.classList.remove("asc", "desc"));
+    ordenActual = null;
 }
 
 

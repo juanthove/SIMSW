@@ -126,7 +126,8 @@ async function ejecutarAnalisis({ url, sitioWebId, tipo, boton }) {
       method: "POST",
       body: JSON.stringify({
         url,
-        sitio_web_id: sitioWebId
+        sitio_web_id: sitioWebId,
+        metodo: "Manual"
       })
     });
 

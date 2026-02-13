@@ -440,6 +440,7 @@ def ejecutar_analisis_alteraciones(sitio_web_id, url):
 
         informe = Informe()
         respuesta = informe.preguntar(prompt)
+        
         texto_ia = (
             respuesta.content
             if hasattr(respuesta, "content")

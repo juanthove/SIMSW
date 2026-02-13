@@ -26,6 +26,7 @@ def analizar_estatico(url, sitio_web_id):
             nombre=f"Análisis Estático - {url}",
             fecha=datetime.now(timezone.utc),
             tipo="estatico",
+            metodo="Manual",
             estado="En Progreso",
             resultado_global=0,
             sitio_web_id=sitio_web_id
@@ -190,6 +191,7 @@ def analizar_dinamico(url, sitio_web_id):
             nombre=f"Análisis Dinámico - {url}",
             fecha=datetime.now(timezone.utc),
             tipo="dinamico",
+            metodo="Manual",
             estado="En Progreso",
             resultado_global=0,
             sitio_web_id=sitio_web_id
@@ -285,7 +287,8 @@ def analizar_dinamico(url, sitio_web_id):
 
 
 #Analizar cambios entre los archivos base y la url
-def analizar_alteraciones(url, sitio_web_id):
+def analizar_alteraciones(url, sitio_web_id, metodo):
+    print("[DEBUG] Se llama a analizar alteraciones")
     db = SessionLocal()
     analisis = None
 
@@ -293,10 +296,12 @@ def analizar_alteraciones(url, sitio_web_id):
         # ===============================
         # 1️⃣ Crear análisis EN PROGRESO
         # ===============================
+        print("[DEBUG] Se crea analisis")
         analisis = Analisis(
             nombre=f"Análisis de Alteraciones - {url}",
             fecha=datetime.now(timezone.utc),
             tipo="alteracion",
+            metodo=metodo,
             estado="En Progreso",
             resultado_global=0,
             sitio_web_id=sitio_web_id
@@ -380,7 +385,10 @@ def analizar_alteraciones(url, sitio_web_id):
         # Actualizar último monitoreo
         sitio = db.query(SitioWeb).filter(SitioWeb.id == sitio_web_id).first()
         if sitio:
-            sitio.fecha_ultimo_monitoreo = datetime.now(timezone.utc)
+            if metodo == "Automatico":
+                sitio.fecha_ultimo_automatico = datetime.now(timezone.utc)
+            else:
+                sitio.fecha_ultimo_monitoreo = datetime.now(timezone.utc)
 
         db.commit()
 
@@ -398,6 +406,7 @@ def analizar_alteraciones(url, sitio_web_id):
         }
 
     except Exception as e:
+        print("ERROR EN ANALIZAR ALTERACIONES:", e)
         db.rollback()
 
         if analisis:

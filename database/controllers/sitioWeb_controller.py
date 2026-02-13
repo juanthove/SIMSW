@@ -169,6 +169,7 @@ def obtener_sitios_con_resumen():
                 SitioWeb.nombre,
                 SitioWeb.url,
                 SitioWeb.fecha_ultimo_monitoreo,
+                SitioWeb.fecha_ultimo_automatico,
                 func.count(Analisis.id).label("cantAnalisis"),
             )
             .outerjoin(
@@ -178,7 +179,8 @@ def obtener_sitios_con_resumen():
                 SitioWeb.id,
                 SitioWeb.nombre,
                 SitioWeb.url,
-                SitioWeb.fecha_ultimo_monitoreo
+                SitioWeb.fecha_ultimo_monitoreo,
+                SitioWeb.fecha_ultimo_automatico
             )
             .all()
         )
@@ -190,9 +192,13 @@ def obtener_sitios_con_resumen():
                 "nombre": r.nombre,
                 "url": r.url,
                 "cantAnalisis": r.cantAnalisis,
-                "ultimoAnalisis": (
+                "ultimoAnalisisManual": (
                     r.fecha_ultimo_monitoreo.replace(tzinfo=timezone.utc).isoformat()
                     if r.fecha_ultimo_monitoreo else None
+                ),
+                "ultimoAnalisisAutomatico": (
+                    r.fecha_ultimo_automatico.replace(tzinfo=timezone.utc).isoformat()
+                    if r.fecha_ultimo_automatico else None
                 )
             }
             for r in resultados
@@ -232,6 +238,7 @@ def obtener_detalle_sitio(sitio_id):
                 "nombre": a.nombre,
                 "estado": a.estado,
                 "tipo": a.tipo,
+                "metodo": a.metodo,
                 "resultado_global": a.resultado_global,
                 "fecha": a.fecha.replace(tzinfo=timezone.utc).isoformat(),
                 "cantidad_informes": cantidad_informes
