@@ -25,7 +25,7 @@ class Vulberta(Herramienta):
     def __init__(
         self,
         nombre: str = "Vulberta", 
-        version: int = 1,
+        version: str = "1",
         model_path: str = "vulberta/models",
         chunk_size: int = 512,
         vulnerable_class_id: int = 1,

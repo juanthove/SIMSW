@@ -97,6 +97,7 @@ def _merge_keywords(*groups: Iterable[str]) -> list[str]:
 def _compile_patterns(keywords: Iterable[str]) -> list[tuple[str, re.Pattern[str]]]:
     return [(kw, _keyword_to_regex(kw)) for kw in _merge_keywords(keywords)]
 
+#Keywards relevantes
 
 COMMON_KEYWORDS: list[str] = [
     "eval",
