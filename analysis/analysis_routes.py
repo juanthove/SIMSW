@@ -68,8 +68,9 @@ def analizar_alteraciones_endpoint():
 
     url = data.get("url")
     sitio_web_id = data.get("sitio_web_id")
+    metodo = data.get("metodo")
 
-    if not url or sitio_web_id is None:
+    if not url or sitio_web_id is None or not metodo:
         return jsonify({"error": "Faltan datos"}), 400
 
     try:
@@ -78,7 +79,7 @@ def analizar_alteraciones_endpoint():
         return jsonify({"error": "sitio_web_id inválido"}), 400
 
     try:
-        resultado = analizar_alteraciones(url, sitio_web_id)
+        resultado = analizar_alteraciones(url, sitio_web_id, metodo)
         return jsonify(resultado), 200
 
     except Exception as e:

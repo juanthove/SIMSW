@@ -43,7 +43,8 @@ function mostrarSitios(lista) {
       <td>${item.nombre}</td>
       <td>${item.url}</td>
       <td>${item.cantAnalisis}</td>
-      <td>${formatearFecha(item.ultimoAnalisis) ?? "Sin análisis"}</td>
+      <td>${formatearFecha(item.ultimoAnalisisManual) ?? "Sin análisis"}</td>
+      <td>${formatearFecha(item.ultimoAnalisisAutomatico) ?? "Sin análisis"}</td>
     `;
 
 

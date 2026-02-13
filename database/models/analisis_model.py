@@ -8,11 +8,14 @@ class Analisis(Base):
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String(255), nullable=False)
 
-    # Usa CURRENT_TIMESTAMP de la BD
+    #Usa CURRENT_TIMESTAMP de la BD
     fecha = Column(DateTime(timezone=True), server_default=func.current_timestamp())
 
-    # ESTATICO o DINAMICO
+    #Estatico o Dinamico
     tipo = Column(String(20), nullable=False)
+
+    #Manual o Automatico
+    metodo = Column(String(20), nullable=False)
 
     estado = Column(String(50), nullable=False)
 
@@ -26,6 +29,7 @@ class Analisis(Base):
             "nombre": self.nombre,
             "fecha": self.fecha.isoformat() if self.fecha else None,
             "tipo": self.tipo,
+            "metodo": self.metodo,
             "estado": self.estado,
             "resultado_global": self.resultado_global,
             "sitio_web_id": self.sitio_web_id

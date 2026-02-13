@@ -8,6 +8,11 @@ CORS(app)
 from dotenv import load_dotenv
 load_dotenv()
 
+from apscheduler.schedulers.background import BackgroundScheduler
+from scheduler.analisis_automatico import ejecutar_analisis_automaticos
+from datetime import datetime, timezone
+
+
 from analysis.analysis_routes import analysis_bp
 from auth.auth_routes import auth_bp
 
@@ -81,13 +86,13 @@ os.makedirs(UPLOADS_DIR, exist_ok=True)
 app.config["UPLOADS_DIR"] = UPLOADS_DIR
 
 
-#app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024  #50 MB
+#Analisis automatico cada 15 minutos
+scheduler = BackgroundScheduler()
+scheduler.add_job(func=ejecutar_analisis_automaticos, trigger="interval", minutes=15, next_run_time=datetime.now(timezone.utc), args=[app], max_instances=1, coalesce=True, misfire_grace_time=500)
 
-#@app.errorhandler(413)
-#def request_entity_too_large(error):
-#    return jsonify({
-#        "error": "Los archivos superan el tamaño máximo permitido (50 MB)"
-#    }), 413
+scheduler.start()
+#if not app.debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+#    scheduler.start()
 
 
 if __name__ == "__main__":
