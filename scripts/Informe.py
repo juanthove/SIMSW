@@ -69,8 +69,12 @@ class Informe():
             )
             
             print("Accediendo")
+
+            print("[DEBUG] PROMPT", promptCausa)
             
             response = llm_geminiAI.invoke(promptCausa)
+
+            print("[DEBUG] RESPUESTA IA", response)
 
             print("Salgo...")
 
