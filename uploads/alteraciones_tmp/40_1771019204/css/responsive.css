@@ -1,0 +1,60 @@
+/*Pantallas chicas*/
+@media (max-width: 768px){
+    #botonEncabezado{
+        display: none;
+    }
+
+    #botonEncabezado.show{
+        display: flex;
+        flex-direction: column;
+        gap: 1em;
+
+        position: absolute;
+        top: 100%;
+        right: 0;
+
+        background-color: rgba(0, 0, 0, 0.836);
+        padding: 1em 1.7em;
+        
+        min-width: 10em;   
+        border-radius: 1em; 
+        z-index: 1000;
+        align-items: center;
+    }
+
+    #anclas{
+        flex-direction: column;
+    }
+
+    #idiomas{
+        flex-direction: column;
+        padding-left: 0;
+    }
+
+    #botonMenu{
+        display:block;
+    }
+
+
+    /*Sobre Mi*/
+    .presentacion {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    #yo {
+        width: 8em;
+    }
+
+    .texto {
+        font-size: clamp(0.9rem, 2.5vw, 1rem);
+        max-width: 100%; /*Que el texto ocupe todo el espacio que necesito*/
+    }
+
+    #sectionSobreMi{
+        gap: 1em;
+    }
+
+}
+
