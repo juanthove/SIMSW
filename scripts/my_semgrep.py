@@ -55,7 +55,6 @@ SKIP_FOLDERS: set[str] = {
 
 CONTEXT_SIZE = 400
 MAX_FILE_SIZE_BYTES = 2_000_000
-MAX_CORPUS_FILES = 500
 
 
 @dataclass(slots=True)
@@ -97,7 +96,6 @@ def _merge_keywords(*groups: Iterable[str]) -> list[str]:
 def _compile_patterns(keywords: Iterable[str]) -> list[tuple[str, re.Pattern[str]]]:
     return [(kw, _keyword_to_regex(kw)) for kw in _merge_keywords(keywords)]
 
-#Keywards relevantes
 
 COMMON_KEYWORDS: list[str] = [
     "eval",
@@ -126,6 +124,29 @@ COMMON_KEYWORDS: list[str] = [
     "insertAdjacentHTML",
     "dangerouslySetInnerHTML",
     "v-html",
+    "api_secret_key",
+    "secret_key",
+    "ssn",
+    "dob",
+    "passphrase",
+    "base64_decode",
+    "phpinfo",
+    "include",
+    "include_once",
+    "require_once",
+    "file_get_contents",
+    "file_put_contents",
+    "create_function",
+    "popen",
+    "proc_open",
+    "pcntl_exec",
+    "preg_replace",
+    "parse_str",
+    "putenv",
+    "ini_set",
+    "move_uploaded_file",
+    "$_GET",
+    "shell=True",
     "select",
     "insert",
     "update",
@@ -177,7 +198,11 @@ PYTHON_KEYWORDS: list[str] = [
     "cursor.execute",
     "raw",
     "mark_safe",
-    "(debug=True)"
+    "(debug=True)",
+    "Debug=True",
+    "evalex=True",
+    "DebuggedApplication",
+    "shell=True",
 ]
 
 JAVASCRIPT_KEYWORDS: list[str] = [
@@ -192,6 +217,15 @@ JAVASCRIPT_KEYWORDS: list[str] = [
     "document.write",
     "insertAdjacentHTML",
     "dangerouslySetInnerHTML",
+    "[innerHTML]",
+    "bypassSecurityTrustHtml",
+    "bypassSecurityTrustScript",
+    "bypassSecurityTrustStyle",
+    "bypassSecurityTrustUrl",
+    "bypassSecurityTrustResourceUrl",
+    "trustAsHtml",
+    "$eval",
+    "$evalAsync",
     "srcdoc",
     "localStorage",
     "sessionStorage",
@@ -220,6 +254,7 @@ JAVASCRIPT_KEYWORDS: list[str] = [
     "res.send",
     "res.write",
     "require",
+    "Math.random",
 ]
 
 DOTNET_KEYWORDS: list[str] = [
@@ -272,6 +307,7 @@ DOTNET_KEYWORDS: list[str] = [
 
 MARKUP_KEYWORDS: list[str] = [
     "<script",
+    "[innerHTML]",
     "onerror",
     "onclick",
     "onload",
@@ -284,6 +320,9 @@ MARKUP_KEYWORDS: list[str] = [
 
 SQL_KEYWORDS: list[str] = [
     "select",
+    "mysqli",
+    "pdo",
+    "mysql_query",
     "insert",
     "update",
     "delete",
@@ -304,138 +343,99 @@ SHELL_KEYWORDS: list[str] = [
     "sh -c",
     "chmod 777",
     "sudo",
+    "popen",
+    "proc_open",
+    "pcntl_exec",
     "eval",
     "exec",
 ]
 
-CORPUS_DOTNET_DIRS = [Path("PC#")]
-CORPUS_JS_DIRS = [Path("uruBotH"), Path("urubotAIH")]
+DOTNET_EXTRA_KEYWORDS: list[str] = [
+    "<script",
+    "app.Environment.IsDevelopment",
+    "HttpContext.SignInAsync",
+    "HttpContext.SignOutAsync",
+    "Microsoft.AspNetCore.Authentication",
+    "Microsoft.AspNetCore.Authentication.Cookies",
+    "Microsoft.AspNetCore.Authorization",
+    "model.Password",
+    "Model.RequestId",
+    "Model.ShowRequestId",
+    "Repository.AddResponse",
+    "Repository.Responses.Where",
+]
 
-CORPUS_SKIP_DIRS = {
-    "bin",
-    "obj",
-    "node_modules",
-    "wwwroot/lib",
-    "_next/static",
-    "hts-cache",
-    "images.prismic.io",
-    "assets.zyrosite.com",
+JAVASCRIPT_EXTRA_KEYWORDS: list[str] = [
+    "<script",
+    "localStorage.getItem",
+    "r.innerHTML",
+    "this.querySelectorAll",
+    "window.location.replace",
+]
+
+SQL_OPERATOR_KEYWORDS: set[str] = {
+    "select",
+    "insert",
+    "update",
+    "delete",
+    "drop",
+    "union",
+    "where",
+    "order by",
+    "group by",
 }
 
-CORPUS_HINTS = {
-    "auth",
-    "token",
-    "password",
-    "secret",
-    "cookie",
-    "session",
-    "request",
-    "response",
-    "sql",
-    "query",
-    "form",
-    "command",
-    "exec",
-    "deserialize",
-    "serialize",
-    "hash",
-    "redirect",
-    "header",
-    "signin",
-    "signout",
-    "antiforgery",
-    "html",
-    "script",
-    "storage",
-    "location",
-    "message",
-    "fetch",
-    "http",
-    "api",
-    "key",
-    "file",
-    "process",
-    "environment",
-}
+SQL_CONTEXT_RE = re.compile(
+    r"\b(select\s+.+\s+from|insert\s+into|update\s+\w+\s+set|delete\s+from|drop\s+table|union\s+select|cursor\.execute|execute(sql|query)?|fromsqlraw|sqlcommand|mysqli|mysql_query|pdo)\b",
+    re.IGNORECASE,
+)
+USER_INPUT_RE = re.compile(
+    r"\b(request\.(args|form|values|get_json|data|cookies|headers)|\$_(GET|POST|REQUEST)|location\.(search|hash|href)|document\.cookie|postMessage)\b",
+    re.IGNORECASE,
+)
+STRING_BUILD_RE = re.compile(r"(\+|%|\.format\(|f\"|f'|`)")
+SCRIPT_TAG_WITH_SRC_RE = re.compile(r"<script\b[^>]*\bsrc\s*=", re.IGNORECASE)
+SCRIPT_TAG_INLINE_RE = re.compile(r"<script\b(?![^>]*\bsrc\s*=)", re.IGNORECASE)
+HTML_EVENT_RE = re.compile(r"\bon[a-z]{3,}\s*=", re.IGNORECASE)
+JS_URI_RE = re.compile(r"javascript\s*:", re.IGNORECASE)
 
 
-def _is_in_corpus_skip(path: Path) -> bool:
-    path_str = str(path).replace("\\", "/").lower()
-    return any(skip in path_str for skip in CORPUS_SKIP_DIRS)
+def _has_suspicious_sql_context(fragment: str) -> bool:
+    """Return True when SQL terms appear with patterns that suggest executable query logic."""
+    lowered = fragment.lower()
+    has_sql_shape = bool(SQL_CONTEXT_RE.search(fragment))
+    has_input = bool(USER_INPUT_RE.search(fragment))
+    has_string_build = bool(STRING_BUILD_RE.search(fragment))
+    has_query_vars = any(token in lowered for token in ("query", "sql", "execute(", "executenonquery"))
+    return has_sql_shape and (has_input or has_string_build or has_query_vars)
 
 
-def _collect_corpus_keywords(dirs: Iterable[Path], suffixes: set[str]) -> list[str]:
-    candidates: set[str] = set()
-    processed = 0
+def _is_signal_match(keyword: str, fragment: str, extension: str) -> bool:
+    """Filter low-signal matches so only contextually meaningful findings are returned."""
+    normalized_keyword = keyword.strip().lower()
+    normalized_ext = extension.lower()
 
-    call_chain_re = re.compile(r"\b[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)+\b")
-    attr_re = re.compile(r"\[\s*([A-Za-z_][A-Za-z0-9_]*)")
-    html_event_re = re.compile(r"\bon[a-z]{3,}\s*=", re.IGNORECASE)
+    if normalized_keyword in SQL_OPERATOR_KEYWORDS and normalized_ext != ".sql":
+        return _has_suspicious_sql_context(fragment)
 
-    for base_dir in dirs:
-        if not base_dir.exists() or not base_dir.is_dir():
-            continue
-        for current_root, subdirs, files in os.walk(base_dir, topdown=True):
-            current_root_path = Path(current_root)
-            if _is_in_corpus_skip(current_root_path):
-                subdirs[:] = []
-                continue
+    if normalized_keyword == "<script" and normalized_ext in {".html", ".htm", ".cshtml", ".razor"}:
+        # Keep inline script tags and script tags with risky inline event/javascript URI context.
+        if SCRIPT_TAG_INLINE_RE.search(fragment):
+            return True
+        if HTML_EVENT_RE.search(fragment) or JS_URI_RE.search(fragment):
+            return True
+        return not SCRIPT_TAG_WITH_SRC_RE.search(fragment)
 
-            subdirs[:] = [d for d in subdirs if not _is_in_corpus_skip(current_root_path / d)]
-
-            for file_name in files:
-                path = current_root_path / file_name
-                if path.suffix.lower() not in suffixes:
-                    continue
-                if _is_in_corpus_skip(path):
-                    continue
-                try:
-                    if path.stat().st_size > MAX_FILE_SIZE_BYTES:
-                        continue
-                    content = path.read_text(encoding="utf-8", errors="ignore")
-                except OSError:
-                    continue
-
-                for match in call_chain_re.finditer(content):
-                    candidates.add(match.group(0))
-                for match in attr_re.finditer(content):
-                    candidates.add(match.group(1))
-                if "<script" in content.lower():
-                    candidates.add("<script")
-                for match in html_event_re.finditer(content):
-                    candidates.add(match.group(0).rstrip("=").strip())
-
-                processed += 1
-                if processed >= MAX_CORPUS_FILES:
-                    break
-            if processed >= MAX_CORPUS_FILES:
-                break
-        if processed >= MAX_CORPUS_FILES:
-            break
-
-    filtered: list[str] = []
-    for token in sorted(candidates, key=str.lower):
-        lowered = token.lower()
-        if len(token) < 3 or len(token) > 80:
-            continue
-        if not any(ch.isalpha() for ch in token):
-            continue
-        if any(hint in lowered for hint in CORPUS_HINTS):
-            filtered.append(token)
-
-    return filtered
+    return True
 
 
 def _build_patterns() -> dict[str, list[tuple[str, re.Pattern[str]]]]:
-    extra_dotnet = _collect_corpus_keywords(CORPUS_DOTNET_DIRS, {".cs", ".cshtml", ".razor"})
-    extra_js = _collect_corpus_keywords(CORPUS_JS_DIRS, {".js", ".jsx", ".ts", ".tsx", ".html", ".htm"})
-
     return {
         "generic": _compile_patterns(COMMON_KEYWORDS),
         "python": _compile_patterns(_merge_keywords(PYTHON_KEYWORDS, COMMON_KEYWORDS)),
-        "javascript": _compile_patterns(_merge_keywords(JAVASCRIPT_KEYWORDS, COMMON_KEYWORDS, extra_js)),
-        "dotnet": _compile_patterns(_merge_keywords(DOTNET_KEYWORDS, COMMON_KEYWORDS, extra_dotnet)),
-        "markup": _compile_patterns(_merge_keywords(MARKUP_KEYWORDS, COMMON_KEYWORDS, extra_js)),
+        "javascript": _compile_patterns(_merge_keywords(JAVASCRIPT_KEYWORDS, COMMON_KEYWORDS, JAVASCRIPT_EXTRA_KEYWORDS)),
+        "dotnet": _compile_patterns(_merge_keywords(DOTNET_KEYWORDS, COMMON_KEYWORDS, DOTNET_EXTRA_KEYWORDS)),
+        "markup": _compile_patterns(_merge_keywords(MARKUP_KEYWORDS, COMMON_KEYWORDS, JAVASCRIPT_EXTRA_KEYWORDS)),
         "sql": _compile_patterns(_merge_keywords(SQL_KEYWORDS, COMMON_KEYWORDS)),
         "shell": _compile_patterns(_merge_keywords(SHELL_KEYWORDS, COMMON_KEYWORDS)),
     }
@@ -461,6 +461,7 @@ def _scan_content_with_patterns(
     file_path: Path,
     patterns: list[tuple[str, re.Pattern[str]]],
 ) -> list[PotentialFragment]:
+    """Scan content with compiled patterns and keep only findings with enough security signal."""
     findings: list[PotentialFragment] = []
     all_matches: list[tuple[int, int, str]] = []
 
@@ -476,6 +477,8 @@ def _scan_content_with_patterns(
             continue
 
         fragment, start, end = _context_window(content, match_start, match_end)
+        if not _is_signal_match(keyword, fragment, file_path.suffix.lower()):
+            continue
         findings.append(
             PotentialFragment(
                 file_name=str(file_path),
@@ -584,3 +587,5 @@ def scan_multiple_directories(
 
 def findings_to_dicts(findings: Iterable[PotentialFragment]) -> list[dict]:
     return [finding.to_dict() for finding in findings]
+
+
