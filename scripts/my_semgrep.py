@@ -426,7 +426,6 @@ def _is_signal_match(keyword: str, fragment: str, extension: str) -> bool:
         return _has_suspicious_sql_context(fragment)
 
     if normalized_keyword == "<script" and normalized_ext in {".html", ".htm", ".cshtml", ".razor"}:
-        # Keep inline script tags and script tags with risky inline event/javascript URI context.
         if SCRIPT_TAG_INLINE_RE.search(fragment):
             return True
         if HTML_EVENT_RE.search(fragment) or JS_URI_RE.search(fragment):
