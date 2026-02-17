@@ -67,10 +67,12 @@ class PotentialFragment:
     extension: str
 
     def to_dict(self) -> dict:
+        """Convierte la instancia de PotentialFragment a un diccionario serializable"""
         return asdict(self)
 
 
 def _keyword_to_regex(keyword: str) -> re.Pattern[str]:
+    """Compila una expresion regular para buscar una palabra clave con sensibilidad reducida a mayusculas y minusculas."""
     escaped = re.escape(keyword)
     if re.fullmatch(r"[A-Za-z0-9_. ]+", keyword):
         return re.compile(r"(?<!\w)" + escaped + r"(?!\w)", re.IGNORECASE)
@@ -78,6 +80,7 @@ def _keyword_to_regex(keyword: str) -> re.Pattern[str]:
 
 
 def _merge_keywords(*groups: Iterable[str]) -> list[str]:
+    """Une grupos de palabras clave, elimina vacios y evita duplicados conservando el orden de aparicion."""
     seen: set[str] = set()
     merged: list[str] = []
     for group in groups:
@@ -94,6 +97,7 @@ def _merge_keywords(*groups: Iterable[str]) -> list[str]:
 
 
 def _compile_patterns(keywords: Iterable[str]) -> list[tuple[str, re.Pattern[str]]]:
+    """Genera una lista de pares (keyword, patron compilado) para reutilizar en los escaneos."""
     return [(kw, _keyword_to_regex(kw)) for kw in _merge_keywords(keywords)]
 
 
@@ -401,7 +405,9 @@ JS_URI_RE = re.compile(r"javascript\s*:", re.IGNORECASE)
 
 
 def _has_suspicious_sql_context(fragment: str) -> bool:
-    """Return True when SQL terms appear with patterns that suggest executable query logic."""
+    """Evalua si un fragmento parece una consulta SQL potencialmente peligrosa por contexto de entrada o construccion dinamica.
+    retornando True en caso afirmativo"""
+    
     lowered = fragment.lower()
     has_sql_shape = bool(SQL_CONTEXT_RE.search(fragment))
     has_input = bool(USER_INPUT_RE.search(fragment))
@@ -411,7 +417,8 @@ def _has_suspicious_sql_context(fragment: str) -> bool:
 
 
 def _is_signal_match(keyword: str, fragment: str, extension: str) -> bool:
-    """Filter low-signal matches so only contextually meaningful findings are returned."""
+    """Filtra coincidencias de bajo valor y conserva solo las que tienen contexto relevante para seguridad."""
+    
     normalized_keyword = keyword.strip().lower()
     normalized_ext = extension.lower()
 
@@ -430,6 +437,7 @@ def _is_signal_match(keyword: str, fragment: str, extension: str) -> bool:
 
 
 def _build_patterns() -> dict[str, list[tuple[str, re.Pattern[str]]]]:
+    """Construye el mapa de patrones compilados por categoria de lenguaje o tecnologia."""
     return {
         "generic": _compile_patterns(COMMON_KEYWORDS),
         "python": _compile_patterns(_merge_keywords(PYTHON_KEYWORDS, COMMON_KEYWORDS)),
@@ -450,6 +458,7 @@ def _context_window(
     match_end: int,
     window_size: int = CONTEXT_SIZE,
 ) -> tuple[str, int, int]:
+    """Extrae una ventana de contexto alrededor de una coincidencia y devuelve tambien posiciones de inicio y fin."""
     half = window_size // 2
     start = max(0, match_start - half)
     end = min(len(content), match_end + half)
@@ -461,7 +470,9 @@ def _scan_content_with_patterns(
     file_path: Path,
     patterns: list[tuple[str, re.Pattern[str]]],
 ) -> list[PotentialFragment]:
-    """Scan content with compiled patterns and keep only findings with enough security signal."""
+    """Recorre el contenido con patrones compilados, evita duplicados continuando solo con suficiente 
+    señal de seguridad"""
+
     findings: list[PotentialFragment] = []
     all_matches: list[tuple[int, int, str]] = []
 
@@ -489,9 +500,6 @@ def _scan_content_with_patterns(
                 extension=file_path.suffix.lower(),
             )
         )
-
-        # Continue scanning from the end of the current context to avoid
-        # duplicate matches (e.g. SELECT + WHERE + FROM inside one block).
         next_search_from = end
 
     findings.sort(key=lambda item: (item.file_name, item.start_pos, item.keyword.lower()))
@@ -499,34 +507,42 @@ def _scan_content_with_patterns(
 
 
 def scan_python_file(content: str, file_path: Path) -> list[PotentialFragment]:
+    """Escanea contenido Python usando patrones especificos del ecosistema Python."""
     return _scan_content_with_patterns(content, file_path, PATTERNS["python"])
 
 
 def scan_javascript_file(content: str, file_path: Path) -> list[PotentialFragment]:
+    """Escanea contenido JavaScript o TypeScript usando patrones de frontend y backend JavaScript."""
     return _scan_content_with_patterns(content, file_path, PATTERNS["javascript"])
 
 
 def scan_dotnet_file(content: str, file_path: Path) -> list[PotentialFragment]:
+    """Escanea contenido .NET con patrones comunes de seguridad para C# y ASP.NET."""
     return _scan_content_with_patterns(content, file_path, PATTERNS["dotnet"])
 
 
 def scan_markup_file(content: str, file_path: Path) -> list[PotentialFragment]:
+    """Escanea archivos de marcado y plantillas para detectar patrones de XSS y script inline riesgosos."""
     return _scan_content_with_patterns(content, file_path, PATTERNS["markup"])
 
 
 def scan_sql_file(content: str, file_path: Path) -> list[PotentialFragment]:
+    """Escanea archivos SQL para detectar operaciones y construcciones sensibles."""
     return _scan_content_with_patterns(content, file_path, PATTERNS["sql"])
 
 
 def scan_shell_file(content: str, file_path: Path) -> list[PotentialFragment]:
+    """Escanea scripts de shell buscando comandos y patrones potencialmente peligrosos."""
     return _scan_content_with_patterns(content, file_path, PATTERNS["shell"])
 
 
 def scan_generic_file(content: str, file_path: Path) -> list[PotentialFragment]:
+    """Escanea archivos no especializados con un conjunto generico de patrones."""
     return _scan_content_with_patterns(content, file_path, PATTERNS["generic"])
 
 
 def analyze_file(file_path: Path) -> list[PotentialFragment]:
+    """Lee un archivo, valida tamano y delega el escaneo segun su extension."""
     try:
         if file_path.stat().st_size > MAX_FILE_SIZE_BYTES:
             return []
@@ -552,6 +568,7 @@ def analyze_file(file_path: Path) -> list[PotentialFragment]:
 
 
 def iter_supported_files(root: Path, extensions: set[str] | None = None) -> Iterable[Path]:
+    """Itera archivos con extensiones soportadas dentro de un arbol, excluyendo carpetas ignoradas."""
     selected = {ext.lower() for ext in (extensions or SUPPORTED_EXTENSIONS)}
 
     for current_root, dirs, files in os.walk(root, topdown=True):
@@ -563,6 +580,7 @@ def iter_supported_files(root: Path, extensions: set[str] | None = None) -> Iter
 
 
 def scan_directory(directory_path: str, extensions: set[str] | None = None) -> list[PotentialFragment]:
+    """Analiza un directorio completo y acumula los hallazgos de cada archivo compatible."""
     root = Path(directory_path)
     if not root.exists():
         raise FileNotFoundError(f"Directory does not exist: {directory_path}")
@@ -579,6 +597,7 @@ def scan_multiple_directories(
     directory_paths: Iterable[str],
     extensions: set[str] | None = None,
 ) -> list[PotentialFragment]:
+    """Analiza multiples directorios y combina todos los resultados en una sola lista."""
     all_results: list[PotentialFragment] = []
     for directory_path in directory_paths:
         all_results.extend(scan_directory(directory_path, extensions=extensions))
@@ -586,6 +605,5 @@ def scan_multiple_directories(
 
 
 def findings_to_dicts(findings: Iterable[PotentialFragment]) -> list[dict]:
+    """Convierte una coleccion de hallazgos a diccionarios listos para serializacion."""
     return [finding.to_dict() for finding in findings]
-
-
