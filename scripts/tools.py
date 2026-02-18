@@ -3,6 +3,7 @@ from urllib.parse import urljoin
 import hashlib
 from pathlib import Path
 import difflib
+from urllib.parse import urldefrag
 
 
 import requests
@@ -304,7 +305,6 @@ def analizar_urls_con_playwright(
         context = browser.new_context()
 
         for url in urls:
-            print(f"[+] Análisis profundo: {url}")
             page = context.new_page()
 
             try:
@@ -312,23 +312,15 @@ def analizar_urls_con_playwright(
                 page.wait_for_timeout(2000)   
 
                 datos, soup = extraer_scripts_con_playwright2(page, url)
-                print(f"[DEBUG] Scripts internos: {list(datos['internos'].keys())}")
-                print(f"[DEBUG] Scripts externos: {list(datos['externos'].keys())}")
-                print(f"[DEBUG] Eventos inline: {list(datos['eventos_inline'].keys())}")
-                print(f"[DEBUG] Workers: {list(datos['workers'].keys())}")
-                print(f"[DEBUG] Blobs: {list(datos['blobs'].keys())}")
-
 
                 # 🔹 Éxito real → dict con datos
                 if datos and isinstance(datos, dict):
                     resultados[url] = datos
                 else:
-                    print(f"[!] Datos vacíos para {url}")
                     resultados[url] = None
 
             except Exception as e:
-                print(f"[!] Error en {url}: {e}")
-                resultados[url] = None  # 🔥 CLAVE
+                resultados[url] = None
 
             finally:
                 page.close()
@@ -430,12 +422,6 @@ def run_semgrep_analysis(
     )
 
     if result.returncode not in (0, 1):
-        print("=== SEMGREP ERROR ===")
-        print("Return code:", result.returncode)
-        print("STDOUT:")
-        print(result.stdout[:2000])
-        print("STDERR:")
-        print(result.stderr[:2000])
         raise RuntimeError("Semgrep failed")
 
 
@@ -738,8 +724,6 @@ def compare_html_files(file_old: str, file_new: str):
                 "new_content": "\n".join(new_html.splitlines()[j1:j2]).strip()
             })
 
-    print("Comparacion 2 html", cambios)
-
     return cambios
 
 
@@ -810,13 +794,7 @@ def save_resources_to_folder(resources: dict, base_folder: Path, site_url: str):
     site_base = get_site_base_path(site_url)
 
     for url, content in resources.items():
-        print("\n--- GUARDANDO RECURSO ---")
-        print("URL ORIGINAL:", url)
-
         rel_path = relative_path_from_url(url, site_base)
-
-        print("RELATIVE PATH:", rel_path)
-        print("-------------------------\n")
 
         #Si no tiene path se ignora
         if not rel_path:
@@ -861,8 +839,6 @@ def fetch_site_resources(url: str, timeout: int = 15000):
 
         def handle_response(response):
             try:
-                print("RESPONSE URL:", response.url)
-
                 headers = response.headers
                 ct = headers.get("content-type", "")
 
@@ -876,7 +852,6 @@ def fetch_site_resources(url: str, timeout: int = 15000):
                 body = response.text()
                 if body:
                     resources[response.url] = body
-                    print("  → GUARDADO:", response.url)
 
             except:
                 pass
@@ -884,6 +859,7 @@ def fetch_site_resources(url: str, timeout: int = 15000):
         page.on("response", handle_response)
 
         page.goto(url, wait_until="networkidle", timeout=timeout)
+        page.wait_for_timeout(5000) 
         browser.close()
 
     return resources

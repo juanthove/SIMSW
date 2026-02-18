@@ -12,6 +12,7 @@ import os
 from pathlib import Path
 import shutil
 import time
+import hashlib
 from scripts.my_semgrep import scan_directory,findings_to_dicts
 from scripts.promptVulberta import crear_prompts_lote_vulberta
 
@@ -110,7 +111,6 @@ def ejecutar_analisis_estatico(sitio_web_id):
     ruta_base = os.path.join(current_app.config["UPLOADS_DIR"], "sitios", str(sitio_web_id))
 
     try:
-        print(ruta_base)
         findings = scan_directory(str(ruta_base))
         vulberta_data = findings_to_dicts(findings)
         if not vulberta_data:
@@ -137,7 +137,6 @@ def ejecutar_analisis_estatico(sitio_web_id):
             
             #Verifico que sea label = Vulnerable
             if(salida_vulberta["label"] == "Vulnerable"):
-                print(f"{i}: Es Vulnerable")
                 resultados.append(
                     {
                         "file_name": hallazgo.get("file_name"),
@@ -145,8 +144,6 @@ def ejecutar_analisis_estatico(sitio_web_id):
                         "vulberta": salida_vulberta,
                     }
                 )
-            else:
-                print(f"{i}:No es Vulnerable")
             i += 1  
 
         if not resultados:
@@ -186,7 +183,6 @@ def ejecutar_analisis_estatico(sitio_web_id):
         return resultados_finales
     
     except Exception as e:
-        print(f"[!] Error inesperado en análisis estático: {e}")
         return {
             "mensaje": "Error inesperado durante el análisis estático",
             "vulnerabilidades": [],
@@ -341,7 +337,6 @@ def ejecutar_analisis_dinamico(url):
         }
 
     except Exception as e:
-        print(f"[!] Error inesperado en análisis dinámico: {e}")
         return {
             "mensaje": "Error inesperado durante el análisis dinámico",
             "resultado_json": [],
@@ -378,6 +373,8 @@ def deduplicar_alertas(alertas):
     return resultado
 
 
+
+
 #Analizar cambios entre los archivos base y la url
 def ejecutar_analisis_alteraciones(sitio_web_id, url):
 
@@ -394,18 +391,7 @@ def ejecutar_analisis_alteraciones(sitio_web_id, url):
         ow.start_zap()
         urls = ow.obtener_urls_zap(url)
 
-        print("\n===== URLS DEVUELTAS POR ZAP =====")
-        for u in urls:
-            print(u)
-        print("==================================\n")
-
-        
         urls_html = [u for u in urls if es_pagina_html(u)] 
-
-        print("\n===== URLS HTML FILTRADAS =====")
-        for u in urls_html:
-            print(u)
-        print("================================\n")
 
         if len(urls_html) == 0:
 
@@ -423,10 +409,6 @@ def ejecutar_analisis_alteraciones(sitio_web_id, url):
 
         old_map = indexar_carpeta(base_dir, exts)
         new_map = indexar_carpeta(tmp_dir, exts)
-
-        # print(f"Lo que tiene el indexar de old: {old_map}")
-        # print("\n\n================")
-        # print(f"Lo que tiene el indexar de old: {new_map}")
 
         res = detectar_parecidos(old_map,new_map)
         diff_list = []
@@ -473,9 +455,9 @@ def ejecutar_analisis_alteraciones(sitio_web_id, url):
 
     finally:
         #Eliminar carpeta descargada
-        #try:
-         #   shutil.rmtree(tmp_dir)
-        #except Exception:
+        try:
+            shutil.rmtree(tmp_dir)
+        except Exception:
             pass
 
 
@@ -530,3 +512,17 @@ def prompt_alteraciones(diffs_lista):
             """
 
     return prompt
+
+
+#Generar un hash para saber si es la misma vulnerabilidad
+def generar_hash_alteracion(d):
+    datos_relevantes = {
+        "archivo": d.get("archivo"),
+        "type": d.get("type"),
+        "category": d.get("category"),
+        "old_content": d.get("old_content"),
+        "new_content": d.get("new_content"),
+    }
+
+    contenido = json.dumps(datos_relevantes, sort_keys=True)
+    return hashlib.sha256(contenido.encode()).hexdigest()
