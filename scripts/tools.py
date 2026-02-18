@@ -379,9 +379,6 @@ def guardar_scripts_internos_sin_formato(nombre, codigo, carpeta_destino):
     return ruta_archivo
 
 
-
-    
-
 def separar_codigo(codigo, tamano=2000):
     return [codigo[i:i+tamano] for i in range(0, len(codigo), tamano)]
 
@@ -421,21 +418,6 @@ def run_semgrep_analysis(
 
         target_dir
     ]
-
-
-#     cmd = [
-#     "semgrep",
-
-#     "--config", "p/javascript",
-#     "--config", "p/xss",
-
-#     "--include", "*.js",
-
-#     "--no-git-ignore",
-#     "--json",
-
-#     target_dir
-# ]
 
 
     result = subprocess.run(
@@ -538,9 +520,6 @@ def extract_code_with_context(
             "original_end": end,
             "code": ""
         }
-    
-
-
 
 
 
@@ -821,77 +800,6 @@ def compare_text_files(file_old: str, file_new: str):
     return changes
 
 
-
-
-
-#Aca para traer archivs desde url
-
-# def fetch_site_resources(url: str, timeout: int = 15000) -> dict:
-#     """
-#     Abre la URL con un navegador headless y captura
-#     todos los recursos reales cargados (html, js, css).
-
-#     Retorna:
-#         {
-#             url_recurso: contenido_texto
-#         }
-#     """
-#     resources = {}
-
-#     with sync_playwright() as p:
-#         browser = p.chromium.launch(headless=True)
-#         page = browser.new_page()
-
-#         def handle_response(response):
-#             try:
-#                 rtype = response.request.resource_type
-
-#                 # solo lo que te interesa para integridad
-#                 if rtype in ["document", "script", "stylesheet"]:
-#                     body = response.text()
-#                     if body:
-#                         resources[response.url] = body
-
-#             except Exception:
-#                 pass
-
-#         page.on("response", handle_response)
-
-#         page.goto(url, wait_until="networkidle", timeout=timeout)
-
-#         browser.close()
-
-#     return resources
-
-#Estas dos para guardarlas en la carpeta, que si no esta creada, se crea
-
-# def relative_path_from_url(resource_url: str, site_base: Path) -> Path:
-#     parsed = urlparse(resource_url)
-#     path = Path(parsed.path.lstrip("/"))
-
-#     # 🚫 si no tiene extensión, NO se guarda
-#     if "." not in Path(path).name:
-#         return
-
-#     # quitar prefijo del sitio (ej: proyecto_DW_grupo3)
-#     try:
-#         path = path.relative_to(site_base)
-#     except ValueError:
-#         pass  # el recurso no estaba bajo el prefijo
-
-#     if not path.name:
-#         path = path / "index.html"
-
-#     # sanitizar
-#     parts = [
-#         re.sub(r"[^a-zA-Z0-9._-]", "", p)
-#         for p in path.parts
-#     ]
-
-#     return Path(*parts)
-
-
-
 def save_resources_to_folder(resources: dict, base_folder: Path, site_url: str):
     """
     Guarda los recursos en:
@@ -902,7 +810,13 @@ def save_resources_to_folder(resources: dict, base_folder: Path, site_url: str):
     site_base = get_site_base_path(site_url)
 
     for url, content in resources.items():
+        print("\n--- GUARDANDO RECURSO ---")
+        print("URL ORIGINAL:", url)
+
         rel_path = relative_path_from_url(url, site_base)
+
+        print("RELATIVE PATH:", rel_path)
+        print("-------------------------\n")
 
         #Si no tiene path se ignora
         if not rel_path:
@@ -919,44 +833,22 @@ def save_resources_to_folder(resources: dict, base_folder: Path, site_url: str):
 
 def get_site_base_path(url: str) -> Path:
     parsed = urlparse(url)
+    domain = parsed.netloc.lower()
     path = parsed.path.strip("/")
 
+    # 🔹 Caso especial: GitHub Pages
+    if domain.endswith("github.io") and path:
+        # ignorar el primer segmento (nombre del repo)
+        first_segment = path.split("/")[0]
+        return Path(first_segment)
+
+    # 🔹 Caso normal
     if not path:
-        return Path()  # raíz
+        return Path()
 
     return Path(path)
 
 
-#Aca para traer archivs desde url
-# def fetch_site_resources(url: str, timeout: int = 15000) -> dict:
-#     resources = {}
-
-#     with sync_playwright() as p:
-#         browser = p.chromium.launch(headless=True)
-#         page = browser.new_page()
-
-#         def handle_response(response):
-#             try:
-#                 rtype = response.request.resource_type
-
-#                 if rtype in ["script", "stylesheet"]:
-#                     body = response.text()
-#                     if body:
-#                         resources[response.url] = body
-
-#             except Exception:
-#                 pass
-
-#         page.on("response", handle_response)
-
-#         page.goto(url, wait_until="networkidle", timeout=timeout)
-
-#         # ✅ guardar con la URL REAL
-#         resources[url] = page.content()
-
-#         browser.close()
-
-#     return resources
 
 
 
@@ -969,6 +861,8 @@ def fetch_site_resources(url: str, timeout: int = 15000):
 
         def handle_response(response):
             try:
+                print("RESPONSE URL:", response.url)
+
                 headers = response.headers
                 ct = headers.get("content-type", "")
 
@@ -982,6 +876,7 @@ def fetch_site_resources(url: str, timeout: int = 15000):
                 body = response.text()
                 if body:
                     resources[response.url] = body
+                    print("  → GUARDADO:", response.url)
 
             except:
                 pass
@@ -1002,124 +897,36 @@ def es_pagina_html(url):
 
     return path.endswith(".html")
 
-#ESte es el que venia usando
-# def fetch_site_resources(url: str, timeout: int = 15000) -> dict:
-#     """
-#     Abre la URL con un navegador headless y captura
-#     todos los recursos reales cargados (html, js, css).
-
-#     Retorna:
-#         {
-#             url_recurso: contenido_texto
-#         }
-#     """
-#     resources = {}
-
-#     with sync_playwright() as p:
-#         browser = p.chromium.launch(headless=True)
-#         page = browser.new_page()
-
-#         def handle_response(response):
-#             try:
-#                 rtype = response.request.resource_type
-
-#                 # solo lo que te interesa para integridad
-#                 if rtype in ["document", "script", "stylesheet"]:
-#                     body = response.text()
-#                     if body:
-#                         resources[response.url] = body
-
-#             except Exception:
-#                 pass
-
-#         page.on("response", handle_response)
-
-#         page.goto(url, wait_until="networkidle", timeout=timeout)
-
-#         browser.close()
-
-#     return resources
-
-#Estas dos para guardarlas en la carpeta, que si no esta creada, se crea
-
-# def relative_path_from_url(resource_url: str, site_base: Path) -> Path:
-#     parsed = urlparse(resource_url)
-
-#     path = Path(parsed.path.lstrip("/"))
-
-#     # 🌱 raíz
-#     if not path or path == Path(""):
-#         path = Path("index.html")
-
-#     # 🌐 vista MVC/SPA
-#     elif "." not in path.name:
-#         path = path / "index.html"   # 👈 MUCHO MEJOR QUE .with_suffix
-
-#     try:
-#         path = path.relative_to(site_base)
-#     except ValueError:
-#         pass
-
-#     parts = [
-#         re.sub(r"[^a-zA-Z0-9._-]", "", p).lower()
-#         for p in path.parts
-#     ]
-
-#     return Path(*parts)
 
 #probar esta sino
 def relative_path_from_url(resource_url: str, site_base: Path) -> Path:
     parsed = urlparse(resource_url)
-    path = Path(parsed.path.lstrip("/"))
+    raw_path = parsed.path
 
-    # raíz del sitio
-    if not path or path == Path(""):
-        path = Path("Index.html")
+    # 🔹 Si termina en "/" → es carpeta → Index.html
+    if raw_path.endswith("/"):
+        path = Path(raw_path.lstrip("/")) / "index.html"
 
-    # 👉 si NO tiene extensión => es vista MVC/SPA
-    elif "." not in path.name:
-        path = path.with_suffix(".html")
+    else:
+        path = Path(raw_path.lstrip("/"))
 
+        # 🔹 Si no tiene extensión → es ruta tipo MVC
+        if "." not in path.name:
+            path = path.with_suffix(".html")
+
+    # 🔹 Hacer relativo al sitio base
     try:
         path = path.relative_to(site_base)
     except ValueError:
         pass
 
+    # 🔹 Sanitizar nombre
     parts = [
         re.sub(r"[^a-zA-Z0-9._-]", "", p)
         for p in path.parts
     ]
 
     return Path(*parts)
-
-
-#Viejo
-
-
-# def relative_path_from_url(resource_url: str, site_base: Path) -> Path:
-#     parsed = urlparse(resource_url)
-#     path = Path(parsed.path.lstrip("/"))
-
-#     # 🚫 si no tiene extensión, NO se guarda
-#     if "." not in Path(path).name:
-#         return
-
-#     # quitar prefijo del sitio (ej: proyecto_DW_grupo3)
-#     try:
-#         path = path.relative_to(site_base)
-#     except ValueError:
-#         pass  # el recurso no estaba bajo el prefijo
-
-#     if not path.name:
-#         path = path / "index.html"
-
-#     # sanitizar
-#     parts = [
-#         re.sub(r"[^a-zA-Z0-9._-]", "", p)
-#         for p in path.parts
-#     ]
-
-#     return Path(*parts)
 
 
 
@@ -1135,47 +942,6 @@ import difflib
 def similar(a, b):
     return difflib.SequenceMatcher(None, a, b).ratio()
 
-
-
-#Sugerencia para evitar que matcheen erroneamente
-
-# def detectar_parecidos(old_map, new_map, threshold=0.7):
-#     matches = []
-#     usados = set()
-
-#     for old_rel, old_info in old_map.items():
-
-#         mejor_score = 0
-#         mejor_match = None
-
-#         for new_rel, new_info in new_map.items():
-
-#             if new_rel in usados:
-#                 continue
-
-#             old_name = old_rel.split("/")[-1]
-#             new_name = new_rel.split("/")[-1]
-
-#             score_name = similar(old_name, new_name)
-#             score_path = similar(old_rel, new_rel)
-
-#             score = score_name * 0.7 + score_path * 0.3
-
-#             if score > mejor_score:
-#                 mejor_score = score
-#                 mejor_match = new_rel
-
-#         if mejor_score >= threshold:
-#             usados.add(mejor_match)
-
-#             matches.append({
-#                 "old": old_rel,
-#                 "new": mejor_match,
-#                 "score": mejor_score,
-#                 "hash_equal": old_map[old_rel]["hash"] == new_map[mejor_match]["hash"]
-#             })
-
-#     return matches
 
 
 def detectar_parecidos(old_map, new_map):

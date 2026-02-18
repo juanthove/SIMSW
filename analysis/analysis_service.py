@@ -394,8 +394,19 @@ def ejecutar_analisis_alteraciones(sitio_web_id, url):
         ow.start_zap()
         urls = ow.obtener_urls_zap(url)
 
+        print("\n===== URLS DEVUELTAS POR ZAP =====")
+        for u in urls:
+            print(u)
+        print("==================================\n")
+
         
-        urls_html = [u for u in urls if es_pagina_html(u)]  
+        urls_html = [u for u in urls if es_pagina_html(u)] 
+
+        print("\n===== URLS HTML FILTRADAS =====")
+        for u in urls_html:
+            print(u)
+        print("================================\n")
+
         if len(urls_html) == 0:
 
             return {
@@ -462,9 +473,9 @@ def ejecutar_analisis_alteraciones(sitio_web_id, url):
 
     finally:
         #Eliminar carpeta descargada
-        try:
-            shutil.rmtree(tmp_dir)
-        except Exception:
+        #try:
+         #   shutil.rmtree(tmp_dir)
+        #except Exception:
             pass
 
 
