@@ -11,7 +11,7 @@ class Analisis(Base):
     #Usa CURRENT_TIMESTAMP de la BD
     fecha = Column(DateTime(timezone=True), server_default=func.current_timestamp())
 
-    #Estatico o Dinamico
+    #Estatico, Dinamico o Alteracion
     tipo = Column(String(20), nullable=False)
 
     #Manual o Automatico

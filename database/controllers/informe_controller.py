@@ -43,6 +43,7 @@ def obtener_informe_por_id(informe_id):
             "evidencia": informe.evidencia,
             "severidad": informe.severidad,
             "codigo": informe.codigo,
+            "alteracion_hash": informe.alteracion_hash,
 
             # ===== CONTEXTO DEL ANÁLISIS =====
             "analisisId": analisis.id,
@@ -99,6 +100,7 @@ def crear_informe(data):
             evidencia=data.get("evidencia"),
             severidad=data.get("severidad"),
             codigo=data.get("codigo"),
+            alteracion_hash=data.get("alteracion_hash"),
             analisis_id=data.get("analisis_id")
         )
 
@@ -131,6 +133,8 @@ def actualizar_informe(informe_id, data):
         informe.evidencia = data.get("evidencia", informe.evidencia)
         informe.severidad = data.get("severidad", informe.severidad)
         informe.codigo = data.get("codigo", informe.codigo)
+        informe.alteracion_hash = data.get("alteracion_hash", informe.alteracion_hash)
+        
 
         db.commit()
         db.refresh(informe)

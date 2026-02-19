@@ -331,6 +331,7 @@ def analizar_alteraciones(url, sitio_web_id, metodo):
             "recomendacion",
             "evidencia",
             "severidad",
+            "alteracion_hash",
             "codigo"
         }
 
@@ -348,6 +349,7 @@ def analizar_alteraciones(url, sitio_web_id, metodo):
                         evidencia=v["evidencia"],
                         severidad=v["severidad"],
                         codigo=v["codigo"],
+                        alteracion_hash=v["alteracion_hash"],
                         analisis_id=analisis.id
                     )
                     db.add(informe)

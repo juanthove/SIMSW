@@ -10,6 +10,7 @@ import os
 import shutil
 from werkzeug.utils import secure_filename
 from flask import current_app
+from collections import defaultdict
 
 EXTENSIONES_PERMITIDAS = {"py", "js", "ts", "java", "php", "json", "yml", "yaml", "xml", "html", "css", "sh", "env", "md", "cs", "cshtml"}
 
@@ -257,7 +258,7 @@ def obtener_detalle_sitio(sitio_id):
 
 
 
-#Obtener todos los informes de un sitio
+#Obtener todos los informes de un sitio que no sean Alteraciones
 def obtener_informes_por_sitio(site_id):
     db = SessionLocal()
     try:
@@ -269,7 +270,10 @@ def obtener_informes_por_sitio(site_id):
                 Analisis.fecha.label("fecha_analisis")
             )
             .join(Analisis, Informe.analisis_id == Analisis.id)
-            .filter(Analisis.sitio_web_id == site_id)
+            .filter(
+                Analisis.sitio_web_id == site_id,
+                Analisis.tipo != "Alteracion"
+            )
             .all()
         )
 
@@ -278,13 +282,65 @@ def obtener_informes_por_sitio(site_id):
                 "id": r.id,
                 "titulo": r.titulo,
                 "severidad": r.severidad,
-                "fecha": r.fecha_analisis.replace(tzinfo=timezone.utc).isoformat() if r.fecha_analisis else None
+                "fecha": (
+                    r.fecha_analisis.replace(tzinfo=timezone.utc).isoformat()
+                    if r.fecha_analisis else None
+                )
             }
             for r in resultados
         ]
 
     finally:
         db.close()
+
+
+
+#Obtener todos los informes de tipo Alteracion de un sitio
+def obtener_alteraciones_por_sitio(sitio_id: int):
+    db = SessionLocal()
+    try:
+        # Verificar que el sitio exista
+        sitio = db.query(SitioWeb).filter(SitioWeb.id == sitio_id).first()
+        if not sitio:
+            return None
+
+        resultados = (
+            db.query(
+                Informe.id,
+                Informe.titulo,
+                Informe.descripcion_humana,
+                Informe.severidad,
+                Informe.alteracion_hash,
+                Analisis.fecha.label("fecha_analisis")
+            )
+            .join(Analisis, Informe.analisis_id == Analisis.id)
+            .filter(
+                Analisis.sitio_web_id == sitio_id,
+                Analisis.tipo == "Alteracion"
+            )
+            .order_by(Analisis.fecha.asc())
+            .all()
+        )
+
+        return [
+            {
+                "id": r.id,
+                "titulo": r.titulo,
+                "descripcion_humana": r.descripcion_humana,
+                "severidad": r.severidad,
+                "alteracion_hash": r.alteracion_hash,
+                "fecha": r.fecha_analisis.replace(tzinfo=timezone.utc).isoformat()
+                if r.fecha_analisis else None
+            }
+            for r in resultados
+        ]
+
+    finally:
+        db.close()
+
+
+
+
 
 def subir_un_archivo_base_sitio(sitio_id, archivo, ruta_relativa):
     db = SessionLocal()

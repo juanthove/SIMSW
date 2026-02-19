@@ -11,33 +11,83 @@ if (!siteId) {
     console.error("No se recibió el ID del sitio");
 }
 
-async function cargarDetalle() {
-    try {
-        const response = await apiFetch(`/api/sitios/${siteId}/informes`);
+async function cargarDatos() {
+  try {
 
-        if (!response.ok) {
-            throw new Error("Error al obtener informes del analisis");
-        }
+    //Buscar datos
+    const [respInformes, respAlteraciones] = await Promise.all([
+      apiFetch(`/api/sitios/${siteId}/informes`),
+      apiFetch(`/api/sitios/${siteId}/alteraciones`)
+    ]);
 
-        const historico = await response.json();
-        //Formatear fecha sacando la hora
-        const informesNormalizados = historico.map(i => ({
-          ...i,
-          fechaLocal: formatearFechaDia(i.fecha)
-        }));
-
-        //Insertar las graficas
-        crearTimelineSeveridad(informesNormalizados);
-        crearRiesgoAcumulado(informesNormalizados);
-        crearDistribucionSeveridad(informesNormalizados);
-
-    } catch (error) {
-        console.error(error);
+    if (!respInformes.ok) {
+      throw new Error("Error al obtener informes");
     }
+
+    if (!respAlteraciones.ok) {
+      throw new Error("Error al obtener alteraciones");
+    }
+
+    const informes = await respInformes.json();
+    const alteraciones = await respAlteraciones.json();
+
+    //Formatear fechas sacando la hora
+    const informesNormalizados = informes.map(i => ({...i, fechaLocal: formatearFechaDia(i.fecha)}));
+
+    const alteracionesNormalizadas = alteraciones.map(a => ({...a, fechaLocal: formatearFechaDia(a.fecha)}));
+
+    const alteracionesDeduplicadas = deduplicarAlteracionesPorDia(alteracionesNormalizadas);
+
+    console.log("[DEBUG] Deduplicadas: ", alteracionesDeduplicadas);
+
+    //Unir las dos listas
+    const todosLosInformes = [...informesNormalizados, ...alteracionesDeduplicadas];
+
+    //Gráficas generales
+    crearTimelineSeveridad(todosLosInformes);
+    crearRiesgoAcumulado(todosLosInformes);
+    crearDistribucionSeveridad(todosLosInformes);
+
+    //Gráfica exclusiva de alteraciones
+    crearAlteracionesEnElTiempo(alteracionesDeduplicadas);
+
+  } catch (error) {
+    console.error(error);
+  }
 }
 
+
+function deduplicarAlteracionesPorDia(alteraciones) {
+
+  const agrupadas = {};
+
+  alteraciones.forEach(a => {
+    if (!a.fechaLocal || !a.alteracion_hash) return;
+
+    const fecha = a.fechaLocal;
+
+    if (!agrupadas[fecha]) {
+      agrupadas[fecha] = {};
+    }
+
+    // Si ese hash no existe todavía en ese día, lo guardamos
+    if (!agrupadas[fecha][a.alteracion_hash]) {
+      agrupadas[fecha][a.alteracion_hash] = a;
+    }
+  });
+
+  // Convertimos nuevamente a array plano
+  return Object.values(agrupadas)
+    .flatMap(hashes => Object.values(hashes));
+}
+
+
+
+
 //Cargar los sitios al entrar
-cargarDetalle()
+cargarDatos()
+
+
 
 //Colores dependiendo el nivel de severidad
 const coloresSeveridad = {
@@ -168,6 +218,52 @@ function crearDistribucionSeveridad(informes) {
     }
   });
 }
+
+
+function crearAlteracionesEnElTiempo(informes) {
+
+  console.log("[DEBUG] Informes: ", informes);
+
+  const conteoPorFecha = {};
+
+  informes.forEach(i => {
+    if (!conteoPorFecha[i.fechaLocal]) {
+      conteoPorFecha[i.fechaLocal] = 0;
+    }
+    conteoPorFecha[i.fechaLocal]++;
+  });
+
+  const fechas = Object.keys(conteoPorFecha).sort();
+  const cantidadPorFecha = fechas.map(f => conteoPorFecha[f]);
+
+  new Chart(document.getElementById("changeTimelineChart"), {
+    type: "bar",
+    data: {
+      labels: fechas,
+      datasets: [{
+        label: "Cantidad de alteraciones",
+        data: cantidadPorFecha,
+        backgroundColor: "#8e44ad"
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            stepSize: 1,
+            precision: 0
+          }
+        }
+      }
+    }
+  });
+}
+
+
+
 
 //Volver a analysis-list
 document.getElementById("btnVolver").addEventListener("click", (e) => {

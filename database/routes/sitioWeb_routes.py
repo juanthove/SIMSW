@@ -10,6 +10,7 @@ from database.controllers.sitioWeb_controller import (
     obtener_sitios_con_resumen,
     obtener_detalle_sitio,
     obtener_informes_por_sitio,
+    obtener_alteraciones_por_sitio,
     subir_un_archivo_base_sitio
 )
 
@@ -143,7 +144,7 @@ def get_detalle_sitio(sitio_id):
     return jsonify(detalle), 200
 
 
-#Obtener todos los informes del sitio
+#Obtener todos los informes del sitio que no sean Alteraciones
 @sitioWeb_bp.route("/<int:site_id>/informes", methods=["GET"])
 def listar_informes_por_sitio(site_id):
     informes = obtener_informes_por_sitio(site_id)
@@ -152,3 +153,14 @@ def listar_informes_por_sitio(site_id):
         return jsonify({"error": "Sitio no encontrado"}), 404
 
     return jsonify(informes), 200
+
+
+#Obtener todas las alteraciones
+@sitioWeb_bp.route("/<int:site_id>/alteraciones", methods=["GET"])
+def listar_alteraciones_por_sitio(site_id):
+    alteraciones = obtener_alteraciones_por_sitio(site_id)
+
+    if alteraciones is None:
+        return jsonify({"error": "Sitio no encontrado"}), 404
+
+    return jsonify(alteraciones), 200

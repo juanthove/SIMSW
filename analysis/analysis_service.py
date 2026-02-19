@@ -489,7 +489,8 @@ def prompt_alteraciones(diffs_lista):
         "recomendacion": "...",
         "evidencia": "...",
         "severidad": 1|2|3,
-        "codigo": "fragmento alterado"
+        "codigo": "fragmento alterado",
+        "alteracion_hash": "el mismo que te paso yo"
       }
     ]
 
@@ -509,17 +510,22 @@ def prompt_alteraciones(diffs_lista):
 
             Código actual:
             {d.get("new_content", "")}
+
+            alteracion_hash: {generar_hash_alteracion(d)}
             """
+
+
+            print("[DEBUG] DIFFS", generar_hash_alteracion(d))
 
     return prompt
 
 
-#Generar un hash para saber si es la misma vulnerabilidad
+#Generar un hash para saber si es la misma alteracion
 def generar_hash_alteracion(d):
     datos_relevantes = {
         "archivo": d.get("archivo"),
-        "type": d.get("type"),
-        "category": d.get("category"),
+        "type": d.get("type", "unknow"),
+        "category": d.get("category", "unknow"),
         "old_content": d.get("old_content"),
         "new_content": d.get("new_content"),
     }

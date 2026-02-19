@@ -17,6 +17,8 @@ class Informe(Base):
     severidad = Column(Integer, nullable=False)
     codigo = Column(Text, nullable=True)
 
+    alteracion_hash = Column(String(64), nullable=True, index=True)
+
     analisis_id = Column(Integer, ForeignKey("analisis.id"), nullable=False)
 
     def to_dict(self):
