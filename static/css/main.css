@@ -1,6 +1,6 @@
 #resultado {
-  white-space: pre;       /* Mantiene los espacios y saltos de línea como están */
-  overflow-x: auto;       /* Permite scroll horizontal si el contenido excede el ancho */
+  white-space: pre;       /*Mantiene los espacios y saltos de línea como están*/
+  overflow-x: auto;       /*Permite scroll horizontal si el contenido excede el ancho*/
 }
 
 body{
@@ -149,13 +149,13 @@ body{
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
-/* visible */
+/*Visible*/
 .toast.show {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
 
-/* tipos */
+/*Tipos*/
 .toast.success { background-color: #2e7d32; }
 .toast.error   { background-color: #c62828; }
 .toast.info    { background-color: #1565c0; }

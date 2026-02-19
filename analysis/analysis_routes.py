@@ -24,7 +24,6 @@ def analizar_estatico_endpoint():
         return jsonify(resultado), 200
 
     except Exception as e:
-        # HTTP error, pero el estado ya quedó guardado
         return jsonify({
             "estado": "ERROR",
             "mensaje": "Falló el análisis estático",
@@ -52,7 +51,6 @@ def analizar_dinamico_endpoint():
         return jsonify(resultado), 200
 
     except Exception as e:
-        # HTTP error, pero el estado ya quedó guardado
         return jsonify({
             "estado": "ERROR",
             "mensaje": "Falló el análisis dinámico",
@@ -83,7 +81,6 @@ def analizar_alteraciones_endpoint():
         return jsonify(resultado), 200
 
     except Exception as e:
-        # El estado interno ya debería quedar persistido
         return jsonify({
             "estado": "ERROR",
             "mensaje": "Falló el análisis de alteraciones",

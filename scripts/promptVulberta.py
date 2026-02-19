@@ -1,7 +1,6 @@
 import json
-import sys
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Iterable
 
 PROMPT_TEMPLATE = """
 Actuas como un analista de seguridad de aplicaciones senior.
@@ -42,10 +41,7 @@ Si no hay vulnerabilidades reales, devuelve [].
 
 
 
-def crear_prompts_lote_vulberta(
-    resultados_vulberta: Iterable[dict] | dict,
-    llm_char_limit: int = 12_000,
-) -> list[str]:
+def crear_prompts_lote_vulberta(resultados_vulberta: Iterable[dict] | dict, llm_char_limit: int = 12_000) -> list[str]:
     """
     Crea prompts por lotes desde resultados de VulBERTa y respeta el limite de caracteres por llamada.
     Si un fragmento excede el limite, recorta su codigo para que entre.
@@ -156,11 +152,6 @@ def _normalizar_resultados_vulberta(resultados: Iterable[dict] | dict) -> list[d
     if isinstance(resultados, dict):
         return [resultados]
     return [item for item in resultados if isinstance(item, dict)]
-
-
-def _serializar_payload(payload: list[dict]) -> str:
-    """Serializa un payload en JSON legible para estimar tamano de entrada."""
-    return json.dumps(payload, indent=2, ensure_ascii=False)
 
 
 def _armar_payload_vulberta(resultados_vulberta: Iterable[dict] | dict) -> list[dict]:

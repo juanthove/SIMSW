@@ -67,7 +67,7 @@ async function cargarDetalleOZ(informeId) {
         const response = await apiFetch(`/api/detalle-oz/informe/${informeId}`);
 
         if (!response.ok) {
-            return; // No hay detalle OZ → no mostramos nada
+            return; //Si no hay detalle oz no se muestra nada
         }
 
         const oz = await response.json();
@@ -90,7 +90,7 @@ function mostrarDetalleOZ(oz) {
     hayContenido |= setOZField("oz-parametro", oz.parametro);
     hayContenido |= setOZField("oz-payload", oz.payload);
 
-    // Mostrar el bloque solo si hay al menos un dato técnico
+    //Mostrar el bloque solo si hay al menos un dato técnico
     bloque.hidden = !hayContenido;
 }
 

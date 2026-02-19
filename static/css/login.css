@@ -1,4 +1,4 @@
-/* Base igual al resto del sitio */
+/*Base igual al resto del sitio*/
 body {
   font-family: Arial, Helvetica, sans-serif;
   background-color: #f7f7f7;
@@ -10,7 +10,7 @@ body {
   justify-content: center;
 }
 
-/* Contenedor tipo card */
+/*Contenedor tipo card*/
 .login-card {
   background-color: #ffffff;
   padding: 32px 28px;
@@ -21,7 +21,7 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-/* Título */
+/*Título*/
 .login-card h2 {
   margin-top: 0;
   margin-bottom: 20px;
@@ -29,7 +29,7 @@ body {
   font-weight: 600;
 }
 
-/* Inputs */
+/*Inputs*/
 .login-card input {
   width: 100%;
   padding: 10px 12px;
@@ -46,7 +46,7 @@ body {
   border-color: #999999;
 }
 
-/* Botón */
+/*Botón*/
 .login-card button {
   width: 100%;
   padding: 10px 12px;
@@ -65,7 +65,7 @@ body {
   border-color: #b0b0b0;
 }
 
-/* Mensaje de error opcional */
+/*Mensaje de error*/
 .login-error {
   margin-top: 10px;
   color: #c62828;

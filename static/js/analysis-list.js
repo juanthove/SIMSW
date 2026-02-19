@@ -10,9 +10,9 @@ let sitio = null;
 let listaAnalisis = [];
 let listaFiltrada = [];
 
-// 🔹 Variables para mantener el orden actual
-let ordenActual = null;      // columna actual
-let ordenAscendente = true;  // dirección actual
+//Variables para mantener el orden actual
+let ordenActual = null;      //Columna actual
+let ordenAscendente = true;  //Dirección actual
 
 
 async function cargarAnalisis() {
@@ -75,7 +75,7 @@ function mostrarListado(lista) {
 }
 
 
-// 🔹 Función reutilizable para aplicar el orden actual
+//Función reutilizable para aplicar el orden actual
 function aplicarOrden() {
     if (!ordenActual) return;
 
@@ -117,11 +117,11 @@ function aplicarOrden() {
                 return 0;
         }
 
-        // 1️⃣ criterio principal
+        //Criterio principal
         if (A < B) return ordenAscendente ? -1 : 1;
         if (A > B) return ordenAscendente ? 1 : -1;
 
-        // 2️⃣ desempate SIEMPRE por fecha DESC
+        //Desempate SIEMPRE por fecha DESC
         const fechaA = new Date(a.fecha);
         const fechaB = new Date(b.fecha);
 
@@ -136,14 +136,14 @@ encabezados.forEach(th => {
     th.addEventListener("click", () => {
         const columna = th.dataset.column;
 
-        // 🔹 Determinar nueva dirección
+        //Determinar nueva dirección
         const asc = !th.classList.contains("asc");
 
-        // 🔹 Guardar estado global
+        //Guardar estado global
         ordenActual = columna;
         ordenAscendente = asc;
 
-        // Resetear flechas
+        //Resetear flechas
         encabezados.forEach(h => h.classList.remove("asc", "desc"));
         th.classList.add(asc ? "asc" : "desc");
 
@@ -167,7 +167,7 @@ function aplicarFiltros() {
     const desde = filtroDesde.value ? new Date(filtroDesde.value) : null;
     const hasta = filtroHasta.value ? new Date(filtroHasta.value) : null;
 
-    // Ajuste: incluir todo el día "hasta"
+    //Incluir todo el día "hasta"
     if (hasta) {
         hasta.setHours(23, 59, 59, 999);
     }
@@ -193,12 +193,12 @@ function aplicarFiltros() {
         return coincideTipo && coincideEstado && coincideMetodo && coincideDesde && coincideHasta;
     });
 
-    // 🔹 IMPORTANTE: reaplicar orden después del filtro
+    //Reaplicar orden después del filtro
     aplicarOrden();
     mostrarListado(listaFiltrada);
 }
 
-// Eventos
+//Eventos
 filtroTipo.addEventListener("change", aplicarFiltros);
 filtroEstado.addEventListener("change", aplicarFiltros);
 filtroMetodo.addEventListener("change", aplicarFiltros);
@@ -218,7 +218,7 @@ document.getElementById("btnLimpiarFiltros").addEventListener("click", () => {
 
     listaFiltrada = [...listaAnalisis];
 
-    aplicarOrden(); // 🔹 mantener orden actual si existía
+    aplicarOrden(); //Mantener orden actual si existía
     mostrarListado(listaFiltrada);
 });
 

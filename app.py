@@ -1,6 +1,7 @@
 from flask import Flask, render_template, jsonify
 from flask_cors import CORS
 import os
+import logging
 
 app = Flask(__name__)
 CORS(app)
@@ -84,6 +85,10 @@ UPLOADS_DIR = os.path.join(BASE_DIR, "uploads")
 os.makedirs(UPLOADS_DIR, exist_ok=True)
 
 app.config["UPLOADS_DIR"] = UPLOADS_DIR
+
+
+#Configurar loggin
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(name)s - %(message)s")
 
 
 #Analisis automatico cada 15 minutos

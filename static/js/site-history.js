@@ -70,13 +70,13 @@ function deduplicarAlteracionesPorDia(alteraciones) {
       agrupadas[fecha] = {};
     }
 
-    // Si ese hash no existe todavía en ese día, lo guardamos
+    //Si ese hash no existe todavía en ese día se guarda
     if (!agrupadas[fecha][a.alteracion_hash]) {
       agrupadas[fecha][a.alteracion_hash] = a;
     }
   });
 
-  // Convertimos nuevamente a array plano
+  //Convertimos nuevamente a array plano
   return Object.values(agrupadas)
     .flatMap(hashes => Object.values(hashes));
 }

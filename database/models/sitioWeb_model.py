@@ -10,23 +10,15 @@ class SitioWeb(Base):
     url = Column(String(2048), nullable=False, unique=True)
     propietario = Column(String(50), nullable=False)
 
-    fecha_registro = Column(
-        DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc)
-    )
-    fecha_ultimo_monitoreo = Column(
-        DateTime(timezone=True),
-        nullable=True
-    )
+    fecha_registro = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+    fecha_ultimo_monitoreo = Column(DateTime(timezone=True), nullable=True)
 
     frecuencia_monitoreo_minutos = Column(Integer, default=120)
 
     archivos_base = Column(Boolean, nullable=False, default=False)
 
-    fecha_ultimo_automatico = Column(
-        DateTime(timezone=True),
-        nullable=True
-    )
+    fecha_ultimo_automatico = Column(DateTime(timezone=True), nullable=True)
 
     def to_dict(self):
         return {

@@ -64,7 +64,6 @@ class Vulberta(Herramienta):
             return
 
         """
-        Cambio minimo y seguro:
         Si libclang ya fue cargado en una peticion anterior, no volver a ejecutar
         Config.set_library_file(...), porque falla en la segunda ejecucion.
         """
@@ -146,12 +145,7 @@ class Vulberta(Herramienta):
             scores=scores,
         )
 
-    def analizar_texto(
-        self,
-        texto: str,
-        chunk_size: Optional[int] = None,
-        solo_vulnerables: bool = False,
-    ) -> List[dict]:
+    def analizar_texto(self, texto: str, chunk_size: Optional[int] = None,solo_vulnerables: bool = False) -> List[dict]:
         self._validar_texto(texto)
 
         effective_chunk_size = chunk_size or self.chunk_size
@@ -192,13 +186,11 @@ class Vulberta(Herramienta):
             resumen_label = "Vulnerable"
             resumen_conf = mejor["confidence"]
             resumen_class_id = mejor["class_id"]
-            is_vuln = True
         else:
             mejor = max(chunks, key=lambda x: x["confidence"])
             resumen_label = "No vulnerable"
             resumen_conf = mejor["confidence"]
             resumen_class_id = mejor["class_id"]
-            is_vuln = False
 
         return {
             "label": resumen_label,

@@ -21,7 +21,7 @@ def analizar_texto(texto, chunk_size=512):
 
     resultados = []
 
-    # Tokenizamos el código fuente completo → tensor de IDs numéricos
+    #Tokenizamos el código fuente completo → tensor de IDs numéricos
     tokens = tokenizer(
         texto,
         truncation=False,
@@ -31,7 +31,7 @@ def analizar_texto(texto, chunk_size=512):
 
     num_tokens = tokens.shape[0]
 
-    # Analizamos en bloques de 512 tokens
+    #Analizamos en bloques de 512 tokens
     for i in range(0, num_tokens, chunk_size):
         # Selecciona el fragmento actual y le agrega dimensión batch
         chunk = tokens[i:i + chunk_size].unsqueeze(0)
@@ -44,14 +44,14 @@ def analizar_texto(texto, chunk_size=512):
             label = CLASES[pred_idx]
             confidence = round(max(probs), 3)
 
-            # Diccionario base con la información del fragmento
+            #Diccionario base con la información del fragmento
             resultado = {
                 "fragment": i // chunk_size + 1,
                 "label": label,
                 "confidence": confidence
             }
 
-            # mostrar su es vulnerable
+            #Mostrar si es vulnerable
             if label == "Vulnerable":
                 code_fragment = tokenizer.decode(
                     chunk[0],

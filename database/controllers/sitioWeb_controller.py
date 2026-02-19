@@ -10,7 +10,6 @@ import os
 import shutil
 from werkzeug.utils import secure_filename
 from flask import current_app
-from collections import defaultdict
 
 EXTENSIONES_PERMITIDAS = {"py", "js", "ts", "java", "php", "json", "yml", "yaml", "xml", "html", "css", "sh", "env", "md", "cs", "cshtml"}
 
@@ -24,7 +23,7 @@ def archivo_permitido(filename):
 
 MAX_FILE_SIZE = 50 * 1024 * 1024  # 50 MB
 
-# Obtener todos los sitios
+#Obtener todos los sitios
 def obtener_sitios():
     db = SessionLocal()
     try:
@@ -34,7 +33,7 @@ def obtener_sitios():
         db.close()
 
 
-# Obtener un sitio por ID
+#Obtener un sitio por ID
 def obtener_sitio_por_id(sitio_id):
     db = SessionLocal()
     try:
@@ -44,7 +43,7 @@ def obtener_sitio_por_id(sitio_id):
         db.close()
 
 
-# Crear sitio web
+#Crear sitio web
 def crear_sitio(data):
     db = SessionLocal()
     try:
@@ -97,7 +96,7 @@ def actualizar_sitio(sitio_id, data):
         if "frecuenciaAnalisis" in data:
             sitio.frecuencia_monitoreo_minutos = int(data.get("frecuenciaAnalisis"))
 
-        # Eliminar archivos base si viene el flag
+        #Eliminar archivos base si viene el bool
         eliminar_archivos = data.get("eliminarArchivos") == "true"
 
         if eliminar_archivos:
@@ -142,7 +141,7 @@ def eliminar_sitio(sitio_id):
         #Ruta de archivos del sitio
         ruta_sitio = os.path.join(current_app.config["UPLOADS_DIR"], "sitios", str(sitio.id))
 
-        #Eliminar carpeta de archivos (si existe)
+        #Eliminar carpeta de archivos si existe
         if os.path.exists(ruta_sitio):
             shutil.rmtree(ruta_sitio)
 
@@ -350,28 +349,23 @@ def subir_un_archivo_base_sitio(sitio_id, archivo, ruta_relativa):
         if sitio is None:
             raise ValueError("Sitio no encontrado")
 
-        # ===============================
-        # 🔒 Sanitizar ruta relativa
-        # ===============================
+        #Sanitizar ruta relativa
         ruta = Path(ruta_relativa)
 
-        # Evitar path traversal
+        #Evitar path traversal
         if ".." in ruta.parts or ruta.is_absolute():
             raise ValueError("Ruta inválida")
 
-        # 📄 Nombre real del archivo (solo el nombre, no el path)
+        #Nombre real del archivo, solo el nombre, no el path
         filename = secure_filename(ruta.name)
 
         if not archivo_permitido(filename):
-            # ⛔ ignorar archivo sin romper el flujo
             return {
                 "archivo": str(ruta),
                 "estado": "ignorado"
             }
 
-        # ===============================
-        # 🔍 Verificar tamaño real
-        # ===============================
+        #Verificar tamaño real
         archivo.seek(0, os.SEEK_END)
         size = archivo.tell()
         archivo.seek(0)
@@ -379,27 +373,19 @@ def subir_un_archivo_base_sitio(sitio_id, archivo, ruta_relativa):
         if size > MAX_FILE_SIZE:
             raise ValueError(f"Archivo demasiado grande ({size} bytes)")
 
-        # ===============================
-        # 📂 Carpeta base del sitio
-        # ===============================
+        #Carpeta base del sitio
         base_sitio = Path(
             current_app.config["UPLOADS_DIR"]
         ) / "sitios" / str(sitio.id)
 
-        # ===============================
-        # 📂 Destino final respetando carpetas
-        # ===============================
+        #Destino final respetando carpetas
         destino_final = base_sitio / ruta.parent
         destino_final.mkdir(parents=True, exist_ok=True)
 
-        # ===============================
-        # 💾 Guardar archivo
-        # ===============================
+        #Guardar archivo
         archivo.save(destino_final / filename)
 
-        # ===============================
-        # ✅ Marcar sitio con archivos base
-        # ===============================
+        #Marcar sitio con archivos base
         if not sitio.archivos_base:
             sitio.archivos_base = True
             db.commit()

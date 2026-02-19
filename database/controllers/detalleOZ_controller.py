@@ -1,7 +1,6 @@
 from sqlalchemy.exc import IntegrityError
 from database.connection import SessionLocal
 from database.models.detalleOZ_model import DetalleOZ
-from database.models.informe_model import Informe
 
 def obtener_detalles_oz():
     db = SessionLocal()

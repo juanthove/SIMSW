@@ -53,8 +53,6 @@ def post_sitio():
         return jsonify({"error": "Error interno del servidor"}), 500
 
 
-
-
 @sitioWeb_bp.route("/<int:sitio_id>", methods=["PUT"])
 @jwt_required()
 def put_sitio(sitio_id):
@@ -103,8 +101,6 @@ def subir_archivo_base(sitio_id):
     except Exception as e:
         print(e)
         return jsonify({"error": "Error interno del servidor"}), 500
-
-
 
 
 

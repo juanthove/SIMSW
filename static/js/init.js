@@ -53,9 +53,9 @@ analysisContainer.addEventListener("mouseleave", () => {
 document.getElementById("logoutBtn").addEventListener("click", (e) => {
   e.preventDefault();
 
-  // Eliminar token
+  //Eliminar token
   localStorage.removeItem("token");
 
-  // Redirigir
+  //Redirigir
   window.location.href = "/login";
 });

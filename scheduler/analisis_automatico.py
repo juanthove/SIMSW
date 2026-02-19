@@ -2,6 +2,9 @@ from datetime import datetime, timezone, timedelta
 from database.connection import SessionLocal
 from database.models.sitioWeb_model import SitioWeb
 from analysis.analysis_controller import analizar_alteraciones
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def debe_ejecutarse(sitio):
@@ -20,24 +23,29 @@ def debe_ejecutarse(sitio):
 
 
 def ejecutar_analisis_automaticos(app):
-    print("Se llama a ejecutar automatico")
 
-    with app.app_context():   # 👈 CLAVE
+    with app.app_context():
         db = SessionLocal()
 
         try:
-            sitios = db.query(SitioWeb).all()
+            #Obtener sitios
+            try:
+                sitios = db.query(SitioWeb).all()
+            except Exception:
+                logger.exception("Error obteniendo sitios desde la base de datos")
+                return
 
+            #Procesar cada sitio de forma aislada
             for sitio in sitios:
-                print(f"[DEBUG] SITIO {sitio.url}, {sitio.nombre}")
-                print("[DEBUG] INFO SITIO", sitio.url, sitio.fecha_ultimo_automatico, sitio.fecha_ultimo_automatico.tzinfo if sitio.fecha_ultimo_automatico else None)
-                if debe_ejecutarse(sitio):
-                    print(f"Ejecutando análisis automático para {sitio.url}")
-
-                    analizar_alteraciones(url=sitio.url, sitio_web_id=sitio.id, metodo="Automatico")
-
-        except Exception as e:
-            print("Error en scheduler:", e)
+                try:
+                    if debe_ejecutarse(sitio):
+                        analizar_alteraciones(
+                            url=sitio.url,
+                            sitio_web_id=sitio.id,
+                            metodo="Automatico"
+                        )
+                except Exception:
+                    logger.exception(f"Error analizando sitio id={sitio.id}, url={sitio.url}")
 
         finally:
             db.close()

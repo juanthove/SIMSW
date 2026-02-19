@@ -3,7 +3,6 @@ from scripts.tools import *
 import json
 import re
 from scripts.Informe import Informe
-from scripts.AST import *
 from scripts.Vulberta import *
 from scripts.Owaspzap import OwaspZap as OW
 import time
@@ -32,7 +31,7 @@ def extraer_json(texto):
     #Elimina bloques ```json ``` o ```
     texto = re.sub(r"```json|```", "", texto).strip()
 
-    #Intenta extraer desde el primer [ hasta el último ]
+    #Intenta extraer desde el primer hasta el último
     inicio = texto.find("[")
     fin = texto.rfind("]")
 
@@ -119,8 +118,7 @@ def ejecutar_analisis_estatico(sitio_web_id):
                 "vulnerabilidades": []
             }
 
-        # 🔥 Llamada directa a VulBERTa, sin SitioWeb ni Analisis
-        # 🔥 Llamada directa a VulBERTa, sin SitioWeb ni Analisis
+        #Llamada directa a VulBERTa, sin SitioWeb ni Analisis
         herramienta = Vulberta(
             nombre="VulBERTa",
             version="1.0",
@@ -157,7 +155,7 @@ def ejecutar_analisis_estatico(sitio_web_id):
         
         informe = Informe()
         
-        #Hacer llamado a LLM para cada promp
+        #Hacer llamado a LLM para cada prompt
 
         for p in prompts:
             respuesta = informe.preguntar(p)
@@ -168,7 +166,7 @@ def ejecutar_analisis_estatico(sitio_web_id):
                 else respuesta
             )
 
-            # 4️⃣ Parsear JSON
+            #Parsear JSON
             try:
                 json_limpio = extraer_json(texto_ia)
                 resultado_chunk = json.loads(json_limpio)
@@ -205,18 +203,14 @@ def ejecutar_analisis_dinamico(url):
     """
 
     try:
-        # ===============================
-        # 1️⃣ Inicializar ZAP
-        # ===============================
+        #Inicializar ZAP
         herramienta = OW(
             nombre="OWASP ZAP",
             version="2.17.0"
         )
         herramienta.start_zap()
 
-        # ===============================
-        # 2️⃣ Ejecutar escaneo activo
-        # ===============================
+        #Ejecutar escaneo activo
         alertas = herramienta.scan_activo(url)
 
         if not alertas or not isinstance(alertas, list):
@@ -224,10 +218,8 @@ def ejecutar_analisis_dinamico(url):
                 "mensaje": "ZAP no devolvió alertas",
                 "resultado_json": []
             }
-
-        # ===============================
-        # 3️⃣ Deduplicar alertas
-        # ===============================
+        
+        #Deduplicar alertas
         alertas = deduplicar_alertas(alertas)
 
         if not alertas:
@@ -237,9 +229,7 @@ def ejecutar_analisis_dinamico(url):
             }
 
 
-        # ===============================
-        # 4️⃣ Construir PROMPT (UNA VEZ)
-        # ===============================
+        #Construir PROMPT una vez
         prompt = """
         Eres un analista de seguridad especializado en pruebas DAST y OWASP.
 
@@ -298,9 +288,7 @@ def ejecutar_analisis_dinamico(url):
             Evidencia técnica: {json.dumps(alerta.get("evidencia"), ensure_ascii=False)}
             """
 
-        # ===============================
-        # 5️⃣ Llamada a IA (UNA SOLA VEZ)
-        # ===============================
+        #Llamada a IA
         informe = Informe()
         respuesta_ia = informe.preguntar(prompt)
 
@@ -310,9 +298,7 @@ def ejecutar_analisis_dinamico(url):
             else respuesta_ia
         )
 
-        # ===============================
-        # 6️⃣ Parsear JSON de IA
-        # ===============================
+        #Parsear JSON de IA
         try:
             json_limpio = extraer_json(texto_ia)
             resultado_json = json.loads(json_limpio)
@@ -329,9 +315,7 @@ def ejecutar_analisis_dinamico(url):
                 "resultado_json": []
             }
 
-        # ===============================
-        # 7️⃣ Resultado final (IGUAL AL ESTÁTICO)
-        # ===============================
+        #Resultado final
         return {
             "resultado_json": resultado_json
         }
@@ -355,19 +339,19 @@ def deduplicar_alertas(alertas):
 
     for a in alertas:
         key = (
-            a.get("alert"),                 # Nombre técnico
-            a.get("risk"),                  # Severidad
-            a.get("cweid") or a.get("cwe"), # CWE
-            a.get("param", "").lower()      # Header / parámetro
+            a.get("alert"),                 #Nombre técnico
+            a.get("risk"),                  #Severidad
+            a.get("cweid") or a.get("cwe"), #CWE
+            a.get("param", "").lower()      #Header parámetro
         )
 
         if key not in vistas:
-            # Clonar alerta base
+            #Clonar alerta base
             a["evidencias"] = [a.get("url")]
             vistas[key] = a
             resultado.append(a)
         else:
-            # Acumular endpoints como evidencia
+            #Acumular endpoints como evidencia
             vistas[key]["evidencias"].append(a.get("url"))
 
     return resultado
@@ -387,6 +371,7 @@ def ejecutar_analisis_alteraciones(sitio_web_id, url):
 
     try:
 
+        #Obtengo las url para descargar
         ow = OW("Owasp zap", "2.17.0")
         ow.start_zap()
         urls = ow.obtener_urls_zap(url)
@@ -400,10 +385,11 @@ def ejecutar_analisis_alteraciones(sitio_web_id, url):
                 "datos": [],
                 "mensaje": "No se pudieron obtener recursos"
             }
+        
+        #Descargo los archivos de las urls
         for u in urls_html:
             recursos = fetch_site_resources(u)
             save_resources_to_folder(recursos, tmp_dir, url)
-
 
         exts = {".js", ".html"}
 
@@ -449,7 +435,7 @@ def ejecutar_analisis_alteraciones(sitio_web_id, url):
 
         return {
             "ok": True,
-            "datos": resultado,  # lista de alteraciones
+            "datos": resultado,  #Lista de alteraciones
             "mensaje": None
         }
 
@@ -513,9 +499,6 @@ def prompt_alteraciones(diffs_lista):
 
             alteracion_hash: {generar_hash_alteracion(d)}
             """
-
-
-            print("[DEBUG] DIFFS", generar_hash_alteracion(d))
 
     return prompt
 

@@ -164,14 +164,14 @@ button:focus {
   cursor: pointer;
 }
 
-/* Texto de ayuda */
+/*Texto de ayuda*/
 .formHint {
   margin-top: 4px;
   font-size: 12px;
   color: #666666;
 }
 
-/* Deshabilitado */
+/*Deshabilitado*/
 .campoForm input[type="file"]:disabled {
   background-color: #f0f0f0;
   color: #999999;
@@ -200,14 +200,14 @@ button:focus {
   background-color: #eeeeee;
 }
 
-/* Info de archivos */
+/*Info de archivos*/
 .archivoInfo {
   margin-top: 6px;
   font-size: 12px;
   color: #555555;
 }
 
-/* Deshabilitado */
+/*Deshabilitado*/
 .fileButton.disabled {
   background-color: #f0f0f0;
   color: #999999;
@@ -227,14 +227,14 @@ button:focus {
   user-select: none;
 }
 
-/* ocultamos el checkbox real */
+/*Ocultar checkbox real*/
 .checkboxLabel input[type="checkbox"] {
   position: absolute;
   opacity: 0;
   pointer-events: none;
 }
 
-/* caja custom */
+/*Caja custom */
 .checkboxLabel .checkmark {
   width: 18px;
   height: 18px;
@@ -247,7 +247,7 @@ button:focus {
   background-color: #fff;
 }
 
-/* check */
+/*Checkbox*/
 .checkboxLabel .checkmark::after {
   content: "";
   width: 5px;
@@ -259,7 +259,7 @@ button:focus {
   transition: transform 0.15s ease;
 }
 
-/* checked */
+/*Checked*/
 .checkboxLabel input:checked + .checkmark {
   background-color: #1f2937;
   border-color: #1f2937;
@@ -269,12 +269,11 @@ button:focus {
   transform: rotate(45deg) translateY(-1px) scale(1);
 }
 
-/* hover */
 .checkboxLabel:hover .checkmark {
   border-color: #000000;
 }
 
-/* focus accesible (REDONDO) */
+/*Focus redondo*/
 .checkboxLabel input:focus-visible + .checkmark {
   box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.35);
 }
@@ -326,7 +325,7 @@ button:focus {
   border-color: #b0b0b0;
 }
 
-/* Input personalizado de minutos */
+/*Input personalizado de minutos*/
 .inputTiempo {
   margin-top: 6px;
   padding: 10px 12px;
@@ -337,7 +336,7 @@ button:focus {
 }
 
 
-/* Error de validación */
+/*Error de validación*/
 .formError {
   margin-top: 4px;
   font-size: 12px;

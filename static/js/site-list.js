@@ -55,7 +55,7 @@ function mostrarSitios(lista) {
           window.location.href = `/analysis-list?siteId=${item.id}`;
         });
     } else {
-        // 👉 Visualmente deshabilitado
+        //Deshabilitar
         tr.classList.add("site-disabled");
         tr.title = "Este sitio no tiene analisis";
     }

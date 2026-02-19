@@ -18,18 +18,18 @@
     <main class="contenedorForm">
         <h1 id="tituloForm">Configurar Gmail</h1>
 
-        <!-- Selector Gmail -->
+        <!--Selector Gmail-->
         <div class="campoForm">
             <label for="selectorGmail">Seleccionar Gmail</label>
             <select id="selectorGmail" class="selector">
                 <option value="">Nuevo Gmail</option>
-                <!-- gmail existentes -->
+                <!--Gmail existentes-->
             </select>
         </div>
 
         <form id="formGmail" class="formBase">
 
-            <!-- Nombre -->
+            <!--Nombre-->
             <div class="campoForm">
                 <label for="nombre">Nombre</label>
                 <input
@@ -41,13 +41,13 @@
                 >
             </div>
 
-            <!-- Gmail -->
+            <!--Gmail-->
             <div class="campoForm">
                 <label for="email">Dirección Gmail</label>
                 <input type="email" id="email" name="email" placeholder="ejemplo@gmail.com" required>
             </div>
 
-            <!-- Asociación de sitios -->
+            <!--Asociación de sitios-->
             <div class="campoForm">
                 <label>Asociar sitios web</label>
 
@@ -64,7 +64,7 @@
                 </div>
             </div>
 
-            <!-- Lista de sitios -->
+            <!--Lista de sitios-->
             <div id="listaSitiosContainer" class="campoForm" style="display:none;">
                 <div class="listaCheckbox">
                     <!--Gmails cargados dinamicamente-->
@@ -75,7 +75,7 @@
                 </small>
             </div>
 
-            <!-- Acciones -->
+            <!--Acciones-->
             <div class="accionesForm">
                 <button type="button" id="btnDelete" class="btn-delete" style="display:none;">Eliminar Gmail</button>
                 <button type="submit" class="btnPrincipal" id="btnPrincipal">Guardar Gmail</button>
@@ -84,10 +84,10 @@
         </form>
     </main>
 
-    <!-- Toast -->
+    <!--Toast-->
     <div id="toast" class="toast" aria-live="polite"></div>
 
-    <!-- Modal confirmación -->
+    <!--Modal confirmación-->
     <div id="confirmModal" class="modal-overlay hidden">
         <div class="modal">
             <h3>Confirmar eliminación</h3>

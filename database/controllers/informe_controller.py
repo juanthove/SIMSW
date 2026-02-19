@@ -6,7 +6,7 @@ from database.models.sitioWeb_model import SitioWeb
 from datetime import timezone
 
 
-# Obtener todos los informes
+#Obtener todos los informes
 def obtener_informes():
     db = SessionLocal()
     try:
@@ -16,7 +16,7 @@ def obtener_informes():
         db.close()
 
 
-# Obtener informe por ID
+#Obtener informe por ID
 def obtener_informe_por_id(informe_id):
     db = SessionLocal()
     try:
@@ -34,7 +34,7 @@ def obtener_informe_por_id(informe_id):
         informe, analisis, sitio = result
 
         return {
-            # ===== INFORME =====
+            #Datos del informe
             "id": informe.id,
             "titulo": informe.titulo,
             "descripcion": informe.descripcion,
@@ -45,14 +45,14 @@ def obtener_informe_por_id(informe_id):
             "codigo": informe.codigo,
             "alteracion_hash": informe.alteracion_hash,
 
-            # ===== CONTEXTO DEL ANÁLISIS =====
+            #Datos del analisis
             "analisisId": analisis.id,
             "tipoAnalisis": analisis.tipo,
             "estadoAnalisis": analisis.estado,
             "resultadoGlobal": analisis.resultado_global,
             "fechaAnalisis": analisis.fecha.replace(tzinfo=timezone.utc).isoformat() if analisis.fecha else None,
 
-            # ===== CONTEXTO DEL SITIO =====
+            #Datos del sitio
             "siteId": sitio.id,
             "url": sitio.url,
         }
@@ -62,11 +62,11 @@ def obtener_informe_por_id(informe_id):
 
 
 
-# Obtener informes por análisis
+#Obtener informes por analisis
 def obtener_informes_por_analisis(analisis_id):
     db = SessionLocal()
     try:
-        # Verifico que el análisis exista
+        #Verifico que el analisis exista
         analisis = db.query(Analisis).filter(
             Analisis.id == analisis_id
         ).first()
@@ -88,7 +88,7 @@ def obtener_informes_por_analisis(analisis_id):
 
 
 
-# Crear informe
+#Crear informe
 def crear_informe(data):
     db = SessionLocal()
     try:
@@ -117,7 +117,7 @@ def crear_informe(data):
         db.close()
 
 
-# Actualizar informe
+#Actualizar informe
 def actualizar_informe(informe_id, data):
     db = SessionLocal()
     try:
@@ -145,7 +145,7 @@ def actualizar_informe(informe_id, data):
         db.close()
 
 
-# Eliminar informe
+#Eliminar informe
 def eliminar_informe(informe_id):
     db = SessionLocal()
     try:

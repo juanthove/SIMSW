@@ -1,3 +1,4 @@
+//Formatear la fecha para obtener la fecha local
 export function formatearFecha(fechaISO) {
   if (!fechaISO) return "-";
 
