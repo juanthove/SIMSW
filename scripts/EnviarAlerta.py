@@ -3,6 +3,9 @@ from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
 import smtplib
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
@@ -19,16 +22,15 @@ class EnviarAlerta():
         mensaje["Subject"] = asunto
 
         #Agrego el contenido
-
         mensaje.attach(MIMEText(contenido, 'html'))
 
         try:
-            #Conectamos con el servidor en el puerto 587
+            #Se conecta con el servidor en el puerto 587
             server = smtplib.SMTP('smtp.gmail.com', 587)
             server.starttls()
             server.login(self.__remitente, self.__contrasena)
             server.sendmail(self.__remitente, destinatario, mensaje.as_string())
             server.quit()
-            print("Correo enviado")
         except Exception as e:
-            print(f"Error al enviar correo {e}")
+            logger.exception(f"Error enviando correo a {destinatario}")
+            raise 

@@ -5,7 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy import func
 from datetime import timezone
 
-# Obtener todos los análisis
+#Obtener todos los análisis
 def obtener_analisis():
     db = SessionLocal()
     try:
@@ -15,7 +15,7 @@ def obtener_analisis():
         db.close()
 
 
-# Obtener análisis por ID
+#Obtener análisis por ID
 def obtener_analisis_por_id(analisis_id):
     db = SessionLocal()
     try:
@@ -41,7 +41,7 @@ def obtener_analisis_por_sitio(sitio_web_id):
         db.close()
 
 
-# Crear análisis
+#Crear análisis
 def crear_analisis(data):
     db = SessionLocal()
     try:
@@ -67,7 +67,7 @@ def crear_analisis(data):
         db.close()
 
 
-# Actualizar análisis
+#Actualizar análisis
 def actualizar_analisis(analisis_id, data):
     db = SessionLocal()
     try:
@@ -94,7 +94,7 @@ def actualizar_analisis(analisis_id, data):
         db.close()
 
 
-# Eliminar análisis
+#Eliminar análisis
 def eliminar_analisis(analisis_id):
     db = SessionLocal()
     try:

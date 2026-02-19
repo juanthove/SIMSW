@@ -223,13 +223,9 @@ td[data-vuln="1"] {
 
 
 
-
-
-
-
 /*Realizar analisis*/
 
-/* Icono ⓘ */
+/*Icono ⓘ*/
 .info-icon {
   display: inline-flex;
   align-items: center;
@@ -242,7 +238,7 @@ td[data-vuln="1"] {
   user-select: none;
 }
 
-/* Tooltip */
+/*Tooltip*/
 .info-icon::after {
   content: attr(data-tooltip);
   position: absolute;
@@ -261,7 +257,7 @@ td[data-vuln="1"] {
   z-index: 100;
 }
 
-/* Flecha */
+/*Flecha*/
 .info-icon::before {
   content: "";
   position: absolute;
@@ -274,7 +270,7 @@ td[data-vuln="1"] {
   transition: opacity 0.2s ease;
 }
 
-/* Hover */
+/*Hover*/
 .info-icon:hover::after,
 .info-icon:hover::before {
   opacity: 1;
@@ -303,7 +299,7 @@ td[data-vuln="1"] {
     box-shadow 0.2s ease;
 }
 
-/* Hover general */
+/*Hover general*/
 .btn-estatico:hover,
 .btn-dinamico:hover,
 .btn-alteracion:hover {
@@ -311,7 +307,7 @@ td[data-vuln="1"] {
   border-color: #b0b0b0;
 }
 
-/* Focus (accesibilidad) */
+/*Focus*/
 .btn-estatico:focus,
 .btn-dinamico:focus,
 .btn-alteracion:focus {
@@ -320,11 +316,7 @@ td[data-vuln="1"] {
   box-shadow: 0 0 0 2px rgba(0,0,0,0.05);
 }
 
-/* =========================
-   Diferenciación sutil
-   ========================= */
-
-/* Estático → azul sobrio */
+/*Estático azul*/
 .btn-estatico {
   color: #1565c0;
 }
@@ -334,7 +326,7 @@ td[data-vuln="1"] {
   border-color: #90caf9;
 }
 
-/* Dinámico → verde sobrio */
+/*Dinámico verde*/
 .btn-dinamico {
   color: #2e7d32;
 }
@@ -344,7 +336,7 @@ td[data-vuln="1"] {
   border-color: #a5d6a7;
 }
 
-/* Alteración → azul sobrio */
+/*Alteración naranja*/
 .btn-alteracion {
   color: #f57c00;
 }
@@ -354,11 +346,8 @@ td[data-vuln="1"] {
   border-color: #ffcc80;
 }
 
-/* =========================
-   Estados
-   ========================= */
 
-/* Deshabilitado (cuando analiza) */
+/*Deshabilitado cuando analiza*/
 .btn-estatico:disabled,
 .btn-dinamico:disabled,
 .btn-alteracion:disabled {
@@ -369,7 +358,7 @@ td[data-vuln="1"] {
   box-shadow: none;
 }
 
-/* Completado */
+/*Completado*/
 .btn-estatico.completado,
 .btn-dinamico.completado,
 .btn-alteracion.completado {
@@ -379,7 +368,7 @@ td[data-vuln="1"] {
   cursor: default;
 }
 
-/* Error */
+/*Error*/
 .btn-estatico.error,
 .btn-dinamico.error,
 .btn-alteracion.error {

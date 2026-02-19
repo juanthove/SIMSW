@@ -5,9 +5,7 @@ from database.models.sitioMail_model import SitioMail
 from database.models.sitioWeb_model import SitioWeb
 
 
-# -----------------------------
-# OBTENER MAILS
-# -----------------------------
+#Obtener mails
 def obtener_mails():
     db = SessionLocal()
     try:
@@ -31,9 +29,7 @@ def obtener_mails():
         db.close()
 
 
-# -----------------------------
-# CREAR MAIL
-# -----------------------------
+#Crear mail
 def crear_mail(data):
     db = SessionLocal()
     try:
@@ -47,7 +43,7 @@ def crear_mail(data):
 
         sitios = data.get("sitios")
 
-        # 👉 TODOS los sitios
+        #Todos los sitios
         if sitios is None:
             sitios_db = db.query(SitioWeb.id).all()
             sitios = [s[0] for s in sitios_db]
@@ -74,9 +70,7 @@ def crear_mail(data):
         db.close()
 
 
-# -----------------------------
-# ACTUALIZAR MAIL
-# -----------------------------
+#Actualizar mail
 def actualizar_mail(mail_id, data):
     db = SessionLocal()
     try:
@@ -87,14 +81,14 @@ def actualizar_mail(mail_id, data):
         mail.nombre = data.get("nombre", mail.nombre)
         mail.correo = data.get("email", mail.correo)
 
-        # borrar relaciones actuales
+        #Borrar relaciones actuales
         db.query(SitioMail).filter(
             SitioMail.mail_id == mail_id
         ).delete()
 
         sitios = data.get("sitios")
 
-        # 👉 TODOS los sitios
+        #Todos los sitios
         if sitios is None:
             sitios_db = db.query(SitioWeb.id).all()
             sitios = [s[0] for s in sitios_db]
@@ -118,9 +112,7 @@ def actualizar_mail(mail_id, data):
         db.close()
 
 
-# -----------------------------
-# ELIMINAR MAIL
-# -----------------------------
+#Eliminar mail
 def eliminar_mail(mail_id):
     db = SessionLocal()
     try:
@@ -135,7 +127,7 @@ def eliminar_mail(mail_id):
         db.close()
 
 
-
+#Obtener los mails de un sitio
 def obtener_mails_por_sitio(sitio_id):
     db = SessionLocal()
     try:

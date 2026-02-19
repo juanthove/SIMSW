@@ -3,7 +3,6 @@ from scripts.tools import *
 import json
 import re
 from scripts.Informe import Informe
-from scripts.AST import *
 from scripts.Vulberta import *
 from scripts.Owaspzap import OwaspZap as OW
 import time
@@ -12,6 +11,7 @@ import os
 from pathlib import Path
 import shutil
 import time
+import hashlib
 from scripts.my_semgrep import scan_directory,findings_to_dicts
 from scripts.promptVulberta import crear_prompts_lote_vulberta
 
@@ -31,7 +31,7 @@ def extraer_json(texto):
     #Elimina bloques ```json ``` o ```
     texto = re.sub(r"```json|```", "", texto).strip()
 
-    #Intenta extraer desde el primer [ hasta el último ]
+    #Intenta extraer desde el primer hasta el último
     inicio = texto.find("[")
     fin = texto.rfind("]")
 
@@ -110,7 +110,6 @@ def ejecutar_analisis_estatico(sitio_web_id):
     ruta_base = os.path.join(current_app.config["UPLOADS_DIR"], "sitios", str(sitio_web_id))
 
     try:
-        print(ruta_base)
         findings = scan_directory(str(ruta_base))
         vulberta_data = findings_to_dicts(findings)
         if not vulberta_data:
@@ -119,8 +118,7 @@ def ejecutar_analisis_estatico(sitio_web_id):
                 "vulnerabilidades": []
             }
 
-        # 🔥 Llamada directa a VulBERTa, sin SitioWeb ni Analisis
-        # 🔥 Llamada directa a VulBERTa, sin SitioWeb ni Analisis
+        #Llamada directa a VulBERTa, sin SitioWeb ni Analisis
         herramienta = Vulberta(
             nombre="VulBERTa",
             version="1.0",
@@ -137,7 +135,6 @@ def ejecutar_analisis_estatico(sitio_web_id):
             
             #Verifico que sea label = Vulnerable
             if(salida_vulberta["label"] == "Vulnerable"):
-                print(f"{i}: Es Vulnerable")
                 resultados.append(
                     {
                         "file_name": hallazgo.get("file_name"),
@@ -145,8 +142,6 @@ def ejecutar_analisis_estatico(sitio_web_id):
                         "vulberta": salida_vulberta,
                     }
                 )
-            else:
-                print(f"{i}:No es Vulnerable")
             i += 1  
 
         if not resultados:
@@ -160,7 +155,7 @@ def ejecutar_analisis_estatico(sitio_web_id):
         
         informe = Informe()
         
-        #Hacer llamado a LLM para cada promp
+        #Hacer llamado a LLM para cada prompt
 
         for p in prompts:
             respuesta = informe.preguntar(p)
@@ -171,7 +166,7 @@ def ejecutar_analisis_estatico(sitio_web_id):
                 else respuesta
             )
 
-            # 4️⃣ Parsear JSON
+            #Parsear JSON
             try:
                 json_limpio = extraer_json(texto_ia)
                 resultado_chunk = json.loads(json_limpio)
@@ -186,7 +181,6 @@ def ejecutar_analisis_estatico(sitio_web_id):
         return resultados_finales
     
     except Exception as e:
-        print(f"[!] Error inesperado en análisis estático: {e}")
         return {
             "mensaje": "Error inesperado durante el análisis estático",
             "vulnerabilidades": [],
@@ -209,18 +203,14 @@ def ejecutar_analisis_dinamico(url):
     """
 
     try:
-        # ===============================
-        # 1️⃣ Inicializar ZAP
-        # ===============================
+        #Inicializar ZAP
         herramienta = OW(
             nombre="OWASP ZAP",
             version="2.17.0"
         )
         herramienta.start_zap()
 
-        # ===============================
-        # 2️⃣ Ejecutar escaneo activo
-        # ===============================
+        #Ejecutar escaneo activo
         alertas = herramienta.scan_activo(url)
 
         if not alertas or not isinstance(alertas, list):
@@ -228,10 +218,8 @@ def ejecutar_analisis_dinamico(url):
                 "mensaje": "ZAP no devolvió alertas",
                 "resultado_json": []
             }
-
-        # ===============================
-        # 3️⃣ Deduplicar alertas
-        # ===============================
+        
+        #Deduplicar alertas
         alertas = deduplicar_alertas(alertas)
 
         if not alertas:
@@ -241,9 +229,7 @@ def ejecutar_analisis_dinamico(url):
             }
 
 
-        # ===============================
-        # 4️⃣ Construir PROMPT (UNA VEZ)
-        # ===============================
+        #Construir PROMPT una vez
         prompt = """
         Eres un analista de seguridad especializado en pruebas DAST y OWASP.
 
@@ -302,9 +288,7 @@ def ejecutar_analisis_dinamico(url):
             Evidencia técnica: {json.dumps(alerta.get("evidencia"), ensure_ascii=False)}
             """
 
-        # ===============================
-        # 5️⃣ Llamada a IA (UNA SOLA VEZ)
-        # ===============================
+        #Llamada a IA
         informe = Informe()
         respuesta_ia = informe.preguntar(prompt)
 
@@ -314,9 +298,7 @@ def ejecutar_analisis_dinamico(url):
             else respuesta_ia
         )
 
-        # ===============================
-        # 6️⃣ Parsear JSON de IA
-        # ===============================
+        #Parsear JSON de IA
         try:
             json_limpio = extraer_json(texto_ia)
             resultado_json = json.loads(json_limpio)
@@ -333,15 +315,12 @@ def ejecutar_analisis_dinamico(url):
                 "resultado_json": []
             }
 
-        # ===============================
-        # 7️⃣ Resultado final (IGUAL AL ESTÁTICO)
-        # ===============================
+        #Resultado final
         return {
             "resultado_json": resultado_json
         }
 
     except Exception as e:
-        print(f"[!] Error inesperado en análisis dinámico: {e}")
         return {
             "mensaje": "Error inesperado durante el análisis dinámico",
             "resultado_json": [],
@@ -360,22 +339,24 @@ def deduplicar_alertas(alertas):
 
     for a in alertas:
         key = (
-            a.get("alert"),                 # Nombre técnico
-            a.get("risk"),                  # Severidad
-            a.get("cweid") or a.get("cwe"), # CWE
-            a.get("param", "").lower()      # Header / parámetro
+            a.get("alert"),                 #Nombre técnico
+            a.get("risk"),                  #Severidad
+            a.get("cweid") or a.get("cwe"), #CWE
+            a.get("param", "").lower()      #Header parámetro
         )
 
         if key not in vistas:
-            # Clonar alerta base
+            #Clonar alerta base
             a["evidencias"] = [a.get("url")]
             vistas[key] = a
             resultado.append(a)
         else:
-            # Acumular endpoints como evidencia
+            #Acumular endpoints como evidencia
             vistas[key]["evidencias"].append(a.get("url"))
 
     return resultado
+
+
 
 
 #Analizar cambios entre los archivos base y la url
@@ -390,12 +371,13 @@ def ejecutar_analisis_alteraciones(sitio_web_id, url):
 
     try:
 
+        #Obtengo las url para descargar
         ow = OW("Owasp zap", "2.17.0")
         ow.start_zap()
         urls = ow.obtener_urls_zap(url)
 
-        
-        urls_html = [u for u in urls if es_pagina_html(u)]  
+        urls_html = [u for u in urls if es_pagina_html(u)] 
+
         if len(urls_html) == 0:
 
             return {
@@ -403,19 +385,16 @@ def ejecutar_analisis_alteraciones(sitio_web_id, url):
                 "datos": [],
                 "mensaje": "No se pudieron obtener recursos"
             }
+        
+        #Descargo los archivos de las urls
         for u in urls_html:
             recursos = fetch_site_resources(u)
             save_resources_to_folder(recursos, tmp_dir, url)
-
 
         exts = {".js", ".html"}
 
         old_map = indexar_carpeta(base_dir, exts)
         new_map = indexar_carpeta(tmp_dir, exts)
-
-        # print(f"Lo que tiene el indexar de old: {old_map}")
-        # print("\n\n================")
-        # print(f"Lo que tiene el indexar de old: {new_map}")
 
         res = detectar_parecidos(old_map,new_map)
         diff_list = []
@@ -456,7 +435,7 @@ def ejecutar_analisis_alteraciones(sitio_web_id, url):
 
         return {
             "ok": True,
-            "datos": resultado,  # lista de alteraciones
+            "datos": resultado,  #Lista de alteraciones
             "mensaje": None
         }
 
@@ -496,7 +475,8 @@ def prompt_alteraciones(diffs_lista):
         "recomendacion": "...",
         "evidencia": "...",
         "severidad": 1|2|3,
-        "codigo": "fragmento alterado"
+        "codigo": "fragmento alterado",
+        "alteracion_hash": "el mismo que te paso yo"
       }
     ]
 
@@ -516,6 +496,22 @@ def prompt_alteraciones(diffs_lista):
 
             Código actual:
             {d.get("new_content", "")}
+
+            alteracion_hash: {generar_hash_alteracion(d)}
             """
 
     return prompt
+
+
+#Generar un hash para saber si es la misma alteracion
+def generar_hash_alteracion(d):
+    datos_relevantes = {
+        "archivo": d.get("archivo"),
+        "type": d.get("type", "unknow"),
+        "category": d.get("category", "unknow"),
+        "old_content": d.get("old_content"),
+        "new_content": d.get("new_content"),
+    }
+
+    contenido = json.dumps(datos_relevantes, sort_keys=True)
+    return hashlib.sha256(contenido.encode()).hexdigest()

@@ -1,9 +1,9 @@
-// static/js/api.js
+//Para hacer fetch a los endpoints utilizando el token
 export async function apiFetch(url, options = {}) {
   const token = localStorage.getItem("token");
 
   const headers = options.body instanceof FormData
-    ? { ...(options.headers || {}) }   // 🚨 NO Content-Type
+    ? { ...(options.headers || {}) }   //NO Content-Type
     : {
         "Content-Type": "application/json",
         ...(options.headers || {})
@@ -18,7 +18,7 @@ export async function apiFetch(url, options = {}) {
     headers
   });
 
-  // 🔐 Token inválido o expirado
+  //Token inválido o expirado
   if (response.status === 401 || response.status === 403) {
     localStorage.removeItem("token");
     window.location.href = "/login";

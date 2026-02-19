@@ -10,6 +10,7 @@ from database.controllers.sitioWeb_controller import (
     obtener_sitios_con_resumen,
     obtener_detalle_sitio,
     obtener_informes_por_sitio,
+    obtener_alteraciones_por_sitio,
     subir_un_archivo_base_sitio
 )
 
@@ -50,8 +51,6 @@ def post_sitio():
     except Exception as e:
         print(e)
         return jsonify({"error": "Error interno del servidor"}), 500
-
-
 
 
 @sitioWeb_bp.route("/<int:sitio_id>", methods=["PUT"])
@@ -105,8 +104,6 @@ def subir_archivo_base(sitio_id):
 
 
 
-
-
 @sitioWeb_bp.route("/<int:sitio_id>", methods=["DELETE"])
 @jwt_required()
 def delete_sitio(sitio_id):
@@ -143,7 +140,7 @@ def get_detalle_sitio(sitio_id):
     return jsonify(detalle), 200
 
 
-#Obtener todos los informes del sitio
+#Obtener todos los informes del sitio que no sean Alteraciones
 @sitioWeb_bp.route("/<int:site_id>/informes", methods=["GET"])
 def listar_informes_por_sitio(site_id):
     informes = obtener_informes_por_sitio(site_id)
@@ -152,3 +149,14 @@ def listar_informes_por_sitio(site_id):
         return jsonify({"error": "Sitio no encontrado"}), 404
 
     return jsonify(informes), 200
+
+
+#Obtener todas las alteraciones
+@sitioWeb_bp.route("/<int:site_id>/alteraciones", methods=["GET"])
+def listar_alteraciones_por_sitio(site_id):
+    alteraciones = obtener_alteraciones_por_sitio(site_id)
+
+    if alteraciones is None:
+        return jsonify({"error": "Sitio no encontrado"}), 404
+
+    return jsonify(alteraciones), 200

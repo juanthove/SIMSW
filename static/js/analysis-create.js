@@ -197,14 +197,14 @@ function enlazarBotonesAnalisis() {
 function mostrarToast(mensaje, tipo = "info") {
   const toast = document.getElementById("toast");
 
-  // limpiar clases previas
+  //Limpiar clases previas
   toast.className = "toast";
 
-  // setear mensaje y tipo
+  //Setear mensaje y tipo
   toast.textContent = mensaje;
   toast.classList.add(tipo, "show");
 
-  // ocultar luego
+  //Ocultar luego
   setTimeout(() => {
     toast.classList.remove("show");
   }, 3000);

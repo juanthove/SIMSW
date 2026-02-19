@@ -83,7 +83,7 @@ selector.addEventListener("change", () => {
   archivoInfo.textContent = "";
 
   if (!id) {
-    // Nuevo sitio
+    //Nuevo sitio
     sitioSeleccionadoId = null;
     form.reset();
     btnSubmit.textContent = "Registrar sitio";
@@ -118,19 +118,19 @@ selector.addEventListener("change", () => {
   const frecuencia = sitio.frecuencia_monitoreo_minutos;
 
   if (["0", "15", "30", "60", "360", "1440"].includes(String(frecuencia))) {
-    // Coincide con una opción predefinida
+    //Coincide con una opción predefinida
     frecuenciaSelect.value = String(frecuencia);
     customContainer.style.display = "none";
     frecuenciaError.style.display = "none";
     customInput.value = "";
   } else if (frecuencia && frecuencia > 0) {
-    // Personalizado
+    //Personalizado
     frecuenciaSelect.value = "custom";
     customContainer.style.display = "block";
     customInput.value = frecuencia;
     frecuenciaError.style.display = frecuencia < 15 ? "block" : "none";
   } else {
-    // fallback por las dudas
+    //Fallback por las dudas
     frecuenciaSelect.value = "0";
     customContainer.style.display = "none";
     customInput.value = "";
@@ -235,7 +235,7 @@ form.addEventListener("submit", async (e) => {
         );
 
         const partes = file.webkitRelativePath.split("/");
-        partes.shift(); // elimina la carpeta raíz
+        partes.shift(); //Eliminar la carpeta raíz
         let relativePath = partes.join("/");
         if (!relativePath) {
           relativePath = file.name;
@@ -254,7 +254,7 @@ form.addEventListener("submit", async (e) => {
             }
           );
 
-          // 🔴 SOLO archivos demasiado grandes
+          //Solo archivos demasiado grandes
           if (!resUpload.ok && resUpload.status === 413) {
             huboArchivoGrande = true;
 
@@ -268,11 +268,7 @@ form.addEventListener("submit", async (e) => {
             );
           }
 
-          // ❌ otros errores (extensión no permitida, ignorados, etc.)
-          // no hacen nada y NO muestran mensaje
-
         } catch (err) {
-          // error de red → lo tratamos como archivo grande fallido
           huboArchivoGrande = true;
 
           console.error(
@@ -288,7 +284,7 @@ form.addEventListener("submit", async (e) => {
       }
     }
 
-    // ⚠️ warning SOLO si hubo archivos grandes
+    //Warning solo si hubo archivos grandes
     if (huboArchivoGrande) {
       mostrarToast(
         "El sitio se guardó, pero uno o más archivos eran demasiado grandes",
@@ -344,7 +340,7 @@ inputArchivos.addEventListener("change", () => {
   }
 });
 
-// Integración con eliminar archivos
+//Integración con eliminar archivos
 eliminarArchivosCheckbox.addEventListener("change", () => {
 
   if (eliminarArchivosCheckbox.checked) {
@@ -378,7 +374,7 @@ btnDelete.addEventListener("click", async () => {
 
     mostrarToast("Sitio eliminado correctamente", "success");
 
-    // Reset UI
+    //Reset UI
     form.reset();
     selector.value = "";
     sitioSeleccionadoId = null;
@@ -391,7 +387,7 @@ btnDelete.addEventListener("click", async () => {
     archivoInfo.textContent = "";
     eliminarArchivosContainer.style.display = "none";
 
-    // Recargar lista
+    //Recargar lista
     await cargarSitios();
 
   } catch (err) {
@@ -403,14 +399,14 @@ btnDelete.addEventListener("click", async () => {
 function mostrarToast(mensaje, tipo = "info") {
   const toast = document.getElementById("toast");
 
-  // limpiar clases previas
+  //Limpiar clases previas
   toast.className = "toast";
 
-  // setear mensaje y tipo
+  //Setear mensaje y tipo
   toast.textContent = mensaje;
   toast.classList.add(tipo, "show");
 
-  // ocultar luego
+  //Ocultar luego
   setTimeout(() => {
     toast.classList.remove("show");
   }, 3000);

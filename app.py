@@ -1,6 +1,7 @@
 from flask import Flask, render_template, jsonify
 from flask_cors import CORS
 import os
+import logging
 
 app = Flask(__name__)
 CORS(app)
@@ -86,6 +87,10 @@ os.makedirs(UPLOADS_DIR, exist_ok=True)
 app.config["UPLOADS_DIR"] = UPLOADS_DIR
 
 
+#Configurar loggin
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(name)s - %(message)s")
+
+
 #Analisis automatico cada 15 minutos
 scheduler = BackgroundScheduler()
 scheduler.add_job(func=ejecutar_analisis_automaticos, trigger="interval", minutes=15, next_run_time=datetime.now(timezone.utc), args=[app], max_instances=1, coalesce=True, misfire_grace_time=500)
@@ -94,4 +99,4 @@ scheduler.start()
 
 
 if __name__ == "__main__":
-    app.run(debug=False)
+    app.run(debug=True)

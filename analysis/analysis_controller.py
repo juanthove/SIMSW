@@ -9,11 +9,11 @@ from database.models.sitioWeb_model import SitioWeb
 from database.models.sitioMail_model import SitioMail
 from database.models.mail_model import Mail
 from datetime import datetime, timezone
-from sqlalchemy.exc import SQLAlchemyError
-import json
-from database.controllers.mail_controller import obtener_mails_por_sitio
 from scripts.EnviarAlerta import EnviarAlerta
 from datetime import datetime
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 #Realiza el analisis estatico y guarda en la base de datos
@@ -331,6 +331,7 @@ def analizar_alteraciones(url, sitio_web_id, metodo):
             "recomendacion",
             "evidencia",
             "severidad",
+            "alteracion_hash",
             "codigo"
         }
 
@@ -348,6 +349,7 @@ def analizar_alteraciones(url, sitio_web_id, metodo):
                         evidencia=v["evidencia"],
                         severidad=v["severidad"],
                         codigo=v["codigo"],
+                        alteracion_hash=v["alteracion_hash"],
                         analisis_id=analisis.id
                     )
                     db.add(informe)
@@ -443,27 +445,34 @@ def enviar_alertas_criticas(sitio_web_id, vulnerabilidades, url, tipo_analisis):
             return 0
 
         alerta = EnviarAlerta()
+        enviados = 0
 
         for mail in mails:
-            fecha = datetime.now().strftime("%d/%m/%Y %H:%M")
-            alerta.enviar_alerta(
-                destinatario=mail.correo,
-                asunto = f"🚨 [{fecha}] {titulo_evento} - {nombre_sitio}",
-                contenido = f"""
-                <b>{descripcion_evento}</b><br><br>
+            try:
+                fecha = datetime.now().strftime("%d/%m/%Y %H:%M")
+                alerta.enviar_alerta(
+                    destinatario=mail.correo,
+                    asunto = f"🚨 [{fecha}] {titulo_evento} - {nombre_sitio}",
+                    contenido = f"""
+                    <b>{descripcion_evento}</b><br><br>
 
-                <b>Sitio:</b> {nombre_sitio}<br>
-                <b>URL:</b> <a href="{url}">{url}</a><br>
-                <b>Cantidad:</b> {len(vulnerabilidades_criticas)}<br><br>
+                    <b>Sitio:</b> {nombre_sitio}<br>
+                    <b>URL:</b> <a href="{url}">{url}</a><br>
+                    <b>Cantidad:</b> {len(vulnerabilidades_criticas)}<br><br>
 
-                Se recomienda tomar acciones inmediatas.
-                """
-            )
+                    Se recomienda tomar acciones inmediatas.
+                    """
+                )
 
-        return len(mails)
+                enviados += 1
+
+            except Exception:
+                logger.exception(f"Error enviando alerta a {mail.correo} "f"(sitio_id={sitio_web_id})")
+
+        return enviados
 
     except Exception as e:
-        #No rompe el análisis si falla el mail
+        logger.exception(f"Error general enviando alertas críticas "f"(sitio_id={sitio_web_id})")
         return 0
 
     finally:

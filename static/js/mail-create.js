@@ -1,16 +1,11 @@
 import { apiFetch } from "./api.js";
 
-/* =========================
-   VARIABLES GLOBALES
-========================= */
 let listaSitios = [];
 let listaMails = [];
 
 let mailSeleccionadoId = null;
 
-/* =========================
-   ELEMENTOS DOM
-========================= */
+
 const selectorGmail = document.getElementById("selectorGmail");
 const form = document.getElementById("formGmail");
 const btnSubmit = document.getElementById("btnPrincipal");
@@ -25,15 +20,11 @@ const radioPersonalizado = document.querySelector('input[value="personalizado"]'
 const listaSitiosContainer = document.getElementById("listaSitiosContainer");
 const listaCheckbox = document.querySelector("#listaSitiosContainer .listaCheckbox");
 
-/* =========================
-   CARGA INICIAL
-========================= */
+//Cargar datos
 cargarSitios();
 cargarMails();
 
-/* =========================
-   API
-========================= */
+
 async function cargarSitios() {
   try {
     const res = await apiFetch("/api/sitios/");
@@ -58,9 +49,7 @@ async function cargarMails() {
   }
 }
 
-/* =========================
-   UI
-========================= */
+
 function cargarSelectorGmail() {
   selectorGmail.innerHTML = `<option value="">Nuevo Gmail</option>`;
 
@@ -96,9 +85,7 @@ function renderListaSitios() {
   });
 }
 
-/* =========================
-   SELECTOR GMAIL
-========================= */
+
 selectorGmail.addEventListener("change", () => {
   const id = selectorGmail.value;
 
@@ -126,7 +113,7 @@ selectorGmail.addEventListener("change", () => {
   tituloForm.textContent = "Editar Gmail";
   btnDelete.style.display = "inline-block";
 
-  // asociaciones
+  //Asociaciones
   if (!mail.sitios || mail.sitios.length === 0) {
     radioTodos.checked = true;
     listaSitiosContainer.style.display = "none";
@@ -142,9 +129,7 @@ selectorGmail.addEventListener("change", () => {
   }
 });
 
-/* =========================
-   RADIOS
-========================= */
+
 radioTodos.addEventListener("change", () => {
   listaSitiosContainer.style.display = "none";
 });
@@ -153,9 +138,7 @@ radioPersonalizado.addEventListener("change", () => {
   listaSitiosContainer.style.display = "block";
 });
 
-/* =========================
-   SUBMIT
-========================= */
+
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -220,9 +203,7 @@ form.addEventListener("submit", async (e) => {
   }
 });
 
-/* =========================
-   ELIMINAR
-========================= */
+
 btnDelete.addEventListener("click", async () => {
   if (!mailSeleccionadoId) return;
 
@@ -252,9 +233,7 @@ btnDelete.addEventListener("click", async () => {
   }
 });
 
-/* =========================
-   HELPERS
-========================= */
+
 function mostrarToast(mensaje, tipo = "info") {
   const toast = document.getElementById("toast");
   toast.className = "toast";

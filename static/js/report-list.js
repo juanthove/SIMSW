@@ -118,7 +118,7 @@ const filtroNivel = document.getElementById("filtroNivel");
 
 function aplicarFiltros() {
   const texto = buscador.value.toLowerCase().trim();
-  const nivel = filtroNivel.value; // "Alta" | "Media" | "Baja" | ""
+  const nivel = filtroNivel.value; //"Alta", "Media", "Baja" o ""
 
   listaFiltrada = listaInformes.filter(item => {
     const coincideTexto =

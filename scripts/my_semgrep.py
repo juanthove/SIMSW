@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
-import json
 import os
 from pathlib import Path
 import re
@@ -451,12 +450,7 @@ def _build_patterns() -> dict[str, list[tuple[str, re.Pattern[str]]]]:
 PATTERNS = _build_patterns()
 
 
-def _context_window(
-    content: str,
-    match_start: int,
-    match_end: int,
-    window_size: int = CONTEXT_SIZE,
-) -> tuple[str, int, int]:
+def _context_window(content: str, match_start: int, match_end: int, window_size: int = CONTEXT_SIZE) -> tuple[str, int, int]:
     """Extrae una ventana de contexto alrededor de una coincidencia y devuelve tambien posiciones de inicio y fin."""
     half = window_size // 2
     start = max(0, match_start - half)
@@ -464,11 +458,7 @@ def _context_window(
     return content[start:end], start, end
 
 
-def _scan_content_with_patterns(
-    content: str,
-    file_path: Path,
-    patterns: list[tuple[str, re.Pattern[str]]],
-) -> list[PotentialFragment]:
+def _scan_content_with_patterns(content: str, file_path: Path,patterns: list[tuple[str, re.Pattern[str]]]) -> list[PotentialFragment]:
     """Recorre el contenido con patrones compilados, evita duplicados continuando solo con suficiente 
     señal de seguridad"""
 
@@ -592,10 +582,7 @@ def scan_directory(directory_path: str, extensions: set[str] | None = None) -> l
     return results
 
 
-def scan_multiple_directories(
-    directory_paths: Iterable[str],
-    extensions: set[str] | None = None,
-) -> list[PotentialFragment]:
+def scan_multiple_directories(directory_paths: Iterable[str], extensions: set[str] | None = None) -> list[PotentialFragment]:
     """Analiza multiples directorios y combina todos los resultados en una sola lista."""
     all_results: list[PotentialFragment] = []
     for directory_path in directory_paths:

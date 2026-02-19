@@ -1,6 +1,7 @@
 .history-chart {
-  max-width: 900px;      /* ancho máximo */
-  margin: 2rem auto;    /* centrado */
+  max-width: 900px;      /*Ancho máximo*/
+  margin: 2rem auto;
+  margin-bottom: 90px;
 }
 
 .history-chart.small {
@@ -8,5 +9,5 @@
 }
 
 .history-chart canvas {
-  max-height: 320px;    /* altura controlada */
+  max-height: 320px;    /*Altura controlada*/
 }

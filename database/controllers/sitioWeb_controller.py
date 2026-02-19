@@ -23,7 +23,7 @@ def archivo_permitido(filename):
 
 MAX_FILE_SIZE = 50 * 1024 * 1024  # 50 MB
 
-# Obtener todos los sitios
+#Obtener todos los sitios
 def obtener_sitios():
     db = SessionLocal()
     try:
@@ -33,7 +33,7 @@ def obtener_sitios():
         db.close()
 
 
-# Obtener un sitio por ID
+#Obtener un sitio por ID
 def obtener_sitio_por_id(sitio_id):
     db = SessionLocal()
     try:
@@ -43,7 +43,7 @@ def obtener_sitio_por_id(sitio_id):
         db.close()
 
 
-# Crear sitio web
+#Crear sitio web
 def crear_sitio(data):
     db = SessionLocal()
     try:
@@ -96,7 +96,7 @@ def actualizar_sitio(sitio_id, data):
         if "frecuenciaAnalisis" in data:
             sitio.frecuencia_monitoreo_minutos = int(data.get("frecuenciaAnalisis"))
 
-        # Eliminar archivos base si viene el flag
+        #Eliminar archivos base si viene el bool
         eliminar_archivos = data.get("eliminarArchivos") == "true"
 
         if eliminar_archivos:
@@ -141,7 +141,7 @@ def eliminar_sitio(sitio_id):
         #Ruta de archivos del sitio
         ruta_sitio = os.path.join(current_app.config["UPLOADS_DIR"], "sitios", str(sitio.id))
 
-        #Eliminar carpeta de archivos (si existe)
+        #Eliminar carpeta de archivos si existe
         if os.path.exists(ruta_sitio):
             shutil.rmtree(ruta_sitio)
 
@@ -257,7 +257,7 @@ def obtener_detalle_sitio(sitio_id):
 
 
 
-#Obtener todos los informes de un sitio
+#Obtener todos los informes de un sitio que no sean Alteraciones
 def obtener_informes_por_sitio(site_id):
     db = SessionLocal()
     try:
@@ -269,7 +269,10 @@ def obtener_informes_por_sitio(site_id):
                 Analisis.fecha.label("fecha_analisis")
             )
             .join(Analisis, Informe.analisis_id == Analisis.id)
-            .filter(Analisis.sitio_web_id == site_id)
+            .filter(
+                Analisis.sitio_web_id == site_id,
+                Analisis.tipo != "Alteracion"
+            )
             .all()
         )
 
@@ -278,13 +281,65 @@ def obtener_informes_por_sitio(site_id):
                 "id": r.id,
                 "titulo": r.titulo,
                 "severidad": r.severidad,
-                "fecha": r.fecha_analisis.replace(tzinfo=timezone.utc).isoformat() if r.fecha_analisis else None
+                "fecha": (
+                    r.fecha_analisis.replace(tzinfo=timezone.utc).isoformat()
+                    if r.fecha_analisis else None
+                )
             }
             for r in resultados
         ]
 
     finally:
         db.close()
+
+
+
+#Obtener todos los informes de tipo Alteracion de un sitio
+def obtener_alteraciones_por_sitio(sitio_id: int):
+    db = SessionLocal()
+    try:
+        # Verificar que el sitio exista
+        sitio = db.query(SitioWeb).filter(SitioWeb.id == sitio_id).first()
+        if not sitio:
+            return None
+
+        resultados = (
+            db.query(
+                Informe.id,
+                Informe.titulo,
+                Informe.descripcion_humana,
+                Informe.severidad,
+                Informe.alteracion_hash,
+                Analisis.fecha.label("fecha_analisis")
+            )
+            .join(Analisis, Informe.analisis_id == Analisis.id)
+            .filter(
+                Analisis.sitio_web_id == sitio_id,
+                Analisis.tipo == "Alteracion"
+            )
+            .order_by(Analisis.fecha.asc())
+            .all()
+        )
+
+        return [
+            {
+                "id": r.id,
+                "titulo": r.titulo,
+                "descripcion_humana": r.descripcion_humana,
+                "severidad": r.severidad,
+                "alteracion_hash": r.alteracion_hash,
+                "fecha": r.fecha_analisis.replace(tzinfo=timezone.utc).isoformat()
+                if r.fecha_analisis else None
+            }
+            for r in resultados
+        ]
+
+    finally:
+        db.close()
+
+
+
+
 
 def subir_un_archivo_base_sitio(sitio_id, archivo, ruta_relativa):
     db = SessionLocal()
@@ -294,28 +349,23 @@ def subir_un_archivo_base_sitio(sitio_id, archivo, ruta_relativa):
         if sitio is None:
             raise ValueError("Sitio no encontrado")
 
-        # ===============================
-        # 🔒 Sanitizar ruta relativa
-        # ===============================
+        #Sanitizar ruta relativa
         ruta = Path(ruta_relativa)
 
-        # Evitar path traversal
+        #Evitar path traversal
         if ".." in ruta.parts or ruta.is_absolute():
             raise ValueError("Ruta inválida")
 
-        # 📄 Nombre real del archivo (solo el nombre, no el path)
+        #Nombre real del archivo, solo el nombre, no el path
         filename = secure_filename(ruta.name)
 
         if not archivo_permitido(filename):
-            # ⛔ ignorar archivo sin romper el flujo
             return {
                 "archivo": str(ruta),
                 "estado": "ignorado"
             }
 
-        # ===============================
-        # 🔍 Verificar tamaño real
-        # ===============================
+        #Verificar tamaño real
         archivo.seek(0, os.SEEK_END)
         size = archivo.tell()
         archivo.seek(0)
@@ -323,27 +373,19 @@ def subir_un_archivo_base_sitio(sitio_id, archivo, ruta_relativa):
         if size > MAX_FILE_SIZE:
             raise ValueError(f"Archivo demasiado grande ({size} bytes)")
 
-        # ===============================
-        # 📂 Carpeta base del sitio
-        # ===============================
+        #Carpeta base del sitio
         base_sitio = Path(
             current_app.config["UPLOADS_DIR"]
         ) / "sitios" / str(sitio.id)
 
-        # ===============================
-        # 📂 Destino final respetando carpetas
-        # ===============================
+        #Destino final respetando carpetas
         destino_final = base_sitio / ruta.parent
         destino_final.mkdir(parents=True, exist_ok=True)
 
-        # ===============================
-        # 💾 Guardar archivo
-        # ===============================
+        #Guardar archivo
         archivo.save(destino_final / filename)
 
-        # ===============================
-        # ✅ Marcar sitio con archivos base
-        # ===============================
+        #Marcar sitio con archivos base
         if not sitio.archivos_base:
             sitio.archivos_base = True
             db.commit()

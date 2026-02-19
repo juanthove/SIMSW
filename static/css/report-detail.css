@@ -50,8 +50,8 @@ body {
 }
 
 #codigo {
-  white-space: pre-wrap;     /* mantiene saltos + indentación */
-  word-break: break-word;    /* evita desbordes horizontales */
+  white-space: pre-wrap;
+  word-break: break-word;    /*Evita desbordes horizontales*/
   overflow-x: auto;
   display: block;
   font-family: Consolas, Monaco, monospace;
@@ -110,13 +110,13 @@ pre {
 
 .oz-item pre {
   margin-top: 8px;
-  margin-left: 100px; /* alinea con los valores */
+  margin-left: 100px;
   background: #f4f4f4;
   padding: 12px;
   border-radius: 4px;
 }
 
-/* Ocultamos completamente el item si no hay contenido */
+/*Si no hay contenido se oculta*/
 .oz-item.hidden {
   display: none;
 }
