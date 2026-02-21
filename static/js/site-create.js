@@ -13,10 +13,9 @@ async function cargarSitios() {
         }
 
         listaSitios = await response.json();
-        listaFiltrada = [...listaSitios];   // ✅ ACÁ
-        console.log(listaSitios);
+        listaFiltrada = [...listaSitios];
 
-        cargarSelectorSitios();             // ✅ ACÁ
+        cargarSelectorSitios();
 
     } catch (error) {
         console.error(error);
@@ -229,10 +228,6 @@ form.addEventListener("submit", async (e) => {
         if (debeIgnorarse(file)) {
           continue;
         }
-        console.log(
-          file.name,
-          file.webkitRelativePath
-        );
 
         const partes = file.webkitRelativePath.split("/");
         partes.shift(); //Eliminar la carpeta raíz

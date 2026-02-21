@@ -33,7 +33,7 @@ body{
 
 #paginaPrincipal h2{
     font-size: 120%;
-    background: linear-gradient(to right, rgb(221, 34, 221), rgb(233, 93, 191), rgb(42, 204, 182), skyblue);
+    background: linear-gradient(to right, #ea580c, #fdba74);
     background-clip: text;
     -webkit-text-fill-color: transparent;
 }

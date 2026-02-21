@@ -6,6 +6,7 @@
     <title>SIMSW</title>
 
     <link href="../static/css/main.css" rel="stylesheet" type="text/css">
+    <link href="../static/css/index.css" rel="stylesheet" type="text/css">
     <link href="../static/css/responsive.css" rel="stylesheet" type="text/css">
     <script src="../static/js/init.js" defer></script>
 </head>
@@ -13,7 +14,39 @@
     <div id="navBarDiv"></div>
 
     <main>
-        <h1>Bienvenido a SIMSW</h1>
+        <div class="home-container">
+            <div class="home-card">
+
+                <h1>SIMSW</h1>
+                <p class="home-subtitle">Sistema Inteligente de Monitoreo de Seguridad Web</p>
+                <hr>
+
+                <section class="home-section">
+                    <h2>¿Qué es?</h2>
+                    <p>SIMSW es una aplicación desarrollada para la empresa Hitos, orientada a la detección automática de vulnerabilidades y alteraciones en sitios web.</p>
+                </section>
+
+                <section class="home-section">
+                    <h2>Funcionalidades</h2>
+                    <ul>
+                        <li>Análisis de vulnerabilidades.</li>
+                        <li>Detección de alteraciones en contenido web.</li>
+                        <li>Generación de informes detallados.</li>
+                        <li>Notificación de eventos críticos.</li>
+                    </ul>
+                </section>
+
+                <section class="home-section">
+                    <h2>Objetivo</h2>
+                    <p>Proveer una herramienta que permita mejorar la seguridad y el monitoreo continuo de activos digitales.</p>
+                </section>
+
+                <div class="home-empresa">
+                    <img src="{{ url_for('static', filename='images/hitos.jfif') }}" alt="Hitos">
+                </div>
+
+            </div>
+        </div>
 
 
     </main>

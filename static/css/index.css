@@ -1,0 +1,66 @@
+/*Contenedor principal centrado*/
+.home-container {
+  width: 100%;
+  padding: 40px 20px;
+  display: flex;
+  justify-content: center;
+}
+
+/*Card principal*/
+.home-card {
+  background-color: #ffffff;
+  max-width: 700px;
+  width: 100%;
+  padding: 32px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/*Título principal*/
+.home-card h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+.home-subtitle {
+  margin-top: 6px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: #555555;
+}
+
+/*Secciones*/
+.home-section {
+  margin-top: 24px;
+}
+
+.home-section h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.home-section p,
+.home-section li {
+  font-size: 14px;
+  color: #333333;
+  line-height: 1.6;
+}
+
+/*Lista*/
+.home-section ul {
+  padding-left: 18px;
+  margin: 0;
+}
+
+/*Empresa*/
+.home-empresa {
+  margin-top: 28px;
+  text-align: center;
+}
+
+.home-empresa img {
+  max-width: 160px;
+  opacity: 0.9;
+}
