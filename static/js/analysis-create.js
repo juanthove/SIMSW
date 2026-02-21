@@ -15,7 +15,6 @@ async function cargarSitios() {
 
         listaSitios = await response.json();
         listaFiltrada = [...listaSitios];   // ✅ ACÁ
-        console.log(listaSitios);
         mostrarListado(listaFiltrada);
 
     } catch (error) {
@@ -134,7 +133,7 @@ async function ejecutarAnalisis({ url, sitioWebId, tipo, boton }) {
     const data = await res.json();
 
     if (!res.ok) {
-      mostrarToast(data.error || "No autorizado", "error");
+      mostrarToast(data?.error || data?.mensaje || "Ocurrió un error", "error");
       boton.classList.add("error");
       boton.textContent = "❌ Error";
       boton.disabled = false;

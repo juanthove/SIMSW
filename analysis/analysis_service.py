@@ -105,9 +105,11 @@ def ejecutar_analisis_estatico(sitio_web_id):
     """Analiza el sitio de forma estatica"""
 
 
-
     #Buscar sitio en carpeta
     ruta_base = os.path.join(current_app.config["UPLOADS_DIR"], "sitios", str(sitio_web_id))
+
+    if not os.path.exists(ruta_base):
+        raise FileNotFoundError(f"No existe la carpeta del sitio con id {sitio_web_id}")
 
     try:
         findings = scan_directory(str(ruta_base))
@@ -272,6 +274,7 @@ def ejecutar_analisis_dinamico(url):
         - Si una alerta es meramente informativa, duplicada o falso positivo,
         NO la incluyas en el resultado final.
         - Cada objeto del array representa UNA vulnerabilidad real.
+        - Devuelve el texto en español.
 
         Alertas detectadas por OWASP ZAP:
         """

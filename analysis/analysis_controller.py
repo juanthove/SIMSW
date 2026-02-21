@@ -129,15 +129,14 @@ def analizar_estatico(url, sitio_web_id):
         db.rollback()
 
         #Si ocurre un error, marcar análisis como Error
-        analisis.estado = "Error"
-        analisis.resultado_global = 0
-        db.commit()
 
-        return {
-            "analisis_id": analisis.id,
-            "estado": "Error",
-            "mensaje": "Ocurrió un error durante el análisis"
-        }
+        if 'analisis' in locals():
+            analisis.estado = "Error"
+            analisis.resultado_global = 0
+            db.commit()
+
+        #Relanzar la excepcion
+        raise
 
     finally:
         db.close()
@@ -272,13 +271,11 @@ def analizar_dinamico(url, sitio_web_id):
 
 #Analizar cambios entre los archivos base y la url
 def analizar_alteraciones(url, sitio_web_id, metodo):
-    print("[DEBUG] Se llama a analizar alteraciones")
     db = SessionLocal()
     analisis = None
 
     try:
         #Crear Analisis En Progreso
-        print("[DEBUG] Se crea analisis")
         analisis = Analisis(
             nombre=f"Análisis de Alteraciones - {url}",
             fecha=datetime.now(timezone.utc),

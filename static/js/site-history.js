@@ -38,8 +38,6 @@ async function cargarDatos() {
 
     const alteracionesDeduplicadas = deduplicarAlteracionesPorDia(alteracionesNormalizadas);
 
-    console.log("[DEBUG] Deduplicadas: ", alteracionesDeduplicadas);
-
     //Unir las dos listas
     const todosLosInformes = [...informesNormalizados, ...alteracionesDeduplicadas];
 
@@ -221,8 +219,6 @@ function crearDistribucionSeveridad(informes) {
 
 
 function crearAlteracionesEnElTiempo(informes) {
-
-  console.log("[DEBUG] Informes: ", informes);
 
   const conteoPorFecha = {};
 
