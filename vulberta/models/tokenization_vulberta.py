@@ -8,18 +8,32 @@ try:
     from clang import cindex
 except ModuleNotFoundError as e:
     raise ModuleNotFoundError(
-        "VulBERTa Clang tokenizer requires `libclang`. Please install it via `pip install libclang`.",
+        "VulBERTa Clang tokenizer requires libclang. Please install it via pip install libclang.",
     ) from e
 
 
 class ClangPreTokenizer:
-    cidx = cindex.Index.create()
+    """Para el instalador cambio esto: """
+    #cidx = cindex.Index.create()
+
+    """ Por esto: """
+
+    def __init__(self):
+        self.cidx = None
+
+    def _ensure_index(self):
+        if self.cidx is None:
+            from clang import cindex
+            self.cidx = cindex.Index.create()
+
 
     def clang_split(
         self,
         i: int,
         normalized_string: NormalizedString,
-    ) -> List[NormalizedString]:
+    ):
+        self._ensure_index()
+
         tok = []
         tu = self.cidx.parse(
             "tmp.c",
@@ -27,11 +41,13 @@ class ClangPreTokenizer:
             unsaved_files=[("tmp.c", str(normalized_string.original))],
             options=0,
         )
+
         for t in tu.get_tokens(extent=tu.cursor.extent):
             spelling = t.spelling.strip()
             if spelling == "":
                 continue
             tok.append(NormalizedString(spelling))
+
         return tok
 
     def pre_tokenize(self, pretok: PreTokenizedString):

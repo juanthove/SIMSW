@@ -1,7 +1,10 @@
 from flask import Flask, render_template, jsonify
 from flask_cors import CORS
 import os
+import sys
 import logging
+from pathlib import Path
+
 
 app = Flask(__name__)
 CORS(app)
@@ -79,12 +82,36 @@ def mail_create():
 
 
 #Configurar ruta base
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+def get_base_path():
+    if getattr(sys, 'frozen', False):
+        #Cuando corre como .exe
+        return os.path.dirname(sys.executable)
+    else:
+        #Cuando corre en desarrollo
+        return os.path.abspath(os.path.dirname(__file__))
+    
+
+BASE_DIR = get_base_path()
 UPLOADS_DIR = os.path.join(BASE_DIR, "uploads")
 
 os.makedirs(UPLOADS_DIR, exist_ok=True)
 
 app.config["UPLOADS_DIR"] = UPLOADS_DIR
+
+
+#Configurar path de playwright
+def configure_playwright_path():
+    if getattr(sys, 'frozen', False):
+        #Cuando es .exe (PyInstaller)
+        base_path = Path(sys._MEIPASS)
+    else:
+        #Cuando estás en desarrollo
+        base_path = Path.cwd()
+
+    browsers_path = base_path / "playwright_browsers"
+    os.environ["PLAYWRIGHT_BROWSERS_PATH"] = str(browsers_path)
+
+configure_playwright_path()
 
 
 #Configurar loggin
@@ -99,4 +126,4 @@ scheduler.start()
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()

@@ -11,6 +11,9 @@ urlsAnalizadas
 
 .venv
 ZAP_2.17.0
+playwright_browsers
+playwright_browsers/*
+vulberta
 
 probarAnalisis.py
 
