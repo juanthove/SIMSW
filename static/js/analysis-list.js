@@ -41,7 +41,7 @@ async function cargarAnalisis() {
 }
 
 //Cargar los sitios al entrar
-cargarAnalisis()
+cargarAnalisis();
 
 
 

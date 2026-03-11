@@ -1,4 +1,4 @@
-let navBar = document.getElementById("navBarDiv");
+const navBar = document.getElementById("navBarDiv");
 
 
 if (navBar) {
@@ -33,29 +33,36 @@ if (navBar) {
 
 const botonMenu = document.getElementById("botonMenu");
 
-botonMenu.addEventListener("click", function(){
-  document.getElementById("botonEncabezado").classList.toggle('show'); //Activar o desactivar la clase show
-});
+if(botonMenu) {
+    botonMenu.addEventListener("click", () => {
+        document.getElementById("botonEncabezado").classList.toggle("show"); //Activar o desactivar la clase show
+    });
+}
 
 
 const analysisContainer = document.getElementById("analysis-container");
 const analysisMenu = document.getElementById("analysis-menu");
 
-analysisContainer.addEventListener("mouseenter", () => {
-    analysisMenu.classList.add("show");
-});
+if(analysisContainer && analysisMenu) {
+    analysisContainer.addEventListener("mouseenter", () => {
+        analysisMenu.classList.add("show");
+    });
 
-analysisContainer.addEventListener("mouseleave", () => {
-    analysisMenu.classList.remove("show");
-});
+    analysisContainer.addEventListener("mouseleave", () => {
+        analysisMenu.classList.remove("show");
+    });
+}
 
 //Al cliquear cerrar sesion se vuelve a login y se elimina el token
-document.getElementById("logoutBtn").addEventListener("click", (e) => {
-  e.preventDefault();
+const logoutBtn = document.getElementById("logoutBtn");
+if(logoutBtn) {
+    logoutBtn.addEventListener("click", (e) => {
+    e.preventDefault();
 
-  //Eliminar token
-  localStorage.removeItem("token");
+    //Eliminar token
+    localStorage.removeItem("token");
 
-  //Redirigir
-  window.location.href = "/login";
-});
+    //Redirigir
+    window.location.href = "/login";
+    });
+}

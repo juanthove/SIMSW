@@ -1,8 +1,9 @@
+import { apiFetch } from "./api.js";
+
 //Obtengo datos
 let listaSitios = [];
 let listaFiltrada = [];
 
-import { apiFetch } from "./api.js";
 
 async function cargarSitios() {
     try {
@@ -70,6 +71,42 @@ function cargarSelectorSitios() {
   });
 }
 
+function displayToast(mensaje, tipo = "info") {
+  const toast = document.getElementById("toast");
+
+  //Limpiar clases previas
+  toast.className = "toast";
+
+  //Setear mensaje y tipo
+  toast.textContent = mensaje;
+  toast.classList.add(tipo, "show");
+
+  //Ocultar luego
+  setTimeout(() => {
+    toast.classList.remove("show");
+  }, 3000);
+}
+
+
+function confirmarEliminar() {
+  return new Promise((resolve) => {
+    const modal = document.getElementById("confirmModal");
+    const btnOk = document.getElementById("btnConfirmar");
+    const btnCancel = document.getElementById("btnCancelar");
+
+    modal.classList.remove("hidden");
+
+    btnOk.onclick = () => {
+      modal.classList.add("hidden");
+      resolve(true);
+    };
+
+    btnCancel.onclick = () => {
+      modal.classList.add("hidden");
+      resolve(false);
+    };
+  });
+}
 
 //Cargar datos al seleccionar un sitio, o eliminarlos si se coloca nuevo sitio
 selector.addEventListener("change", () => {
@@ -93,8 +130,10 @@ selector.addEventListener("change", () => {
     return;
   }
 
-  const sitio = listaFiltrada.find(s => s.id == id);
-  if (!sitio) return;
+  const sitio = listaFiltrada.find(s => s.id === Number(id));
+  if (!sitio) {
+    return;
+  }
 
   sitioSeleccionadoId = sitio.id;
 
@@ -167,7 +206,7 @@ form.addEventListener("submit", async (e) => {
   const propietario = document.getElementById("propietario").value.trim();
 
   if (!nombre || !url || !propietario) {
-    mostrarToast("Todos los campos son obligatorios", "error");
+    displayToast("Todos los campos son obligatorios", "error");
     return;
   }
 
@@ -177,7 +216,7 @@ form.addEventListener("submit", async (e) => {
     frecuenciaAnalisis = parseInt(customInput.value, 10);
 
     if (!frecuenciaAnalisis || frecuenciaAnalisis < 15) {
-      mostrarToast("La frecuencia mínima es de 15 minutos", "error");
+      displayToast("La frecuencia mínima es de 15 minutos", "error");
       return;
     }
   } else {
@@ -197,24 +236,24 @@ form.addEventListener("submit", async (e) => {
   }
 
   try {
-    let res;
+    let response;
 
     if (!sitioSeleccionadoId) {
-      res = await apiFetch("/api/sitios/", {
+      response = await apiFetch("/api/sitios/", {
         method: "POST",
         body: formData
       });
     } else {
-      res = await apiFetch(`/api/sitios/${sitioSeleccionadoId}`, {
+      response = await apiFetch(`/api/sitios/${sitioSeleccionadoId}`, {
         method: "PUT",
         body: formData
       });
     }
 
-    const data = await res.json();
+    const data = await response.json();
 
-    if (!res.ok) {
-      mostrarToast(data.error || "Error al guardar el sitio", "error");
+    if (!response.ok) {
+      displayToast(data.error || "Error al guardar el sitio", "error");
       return;
     }
 
@@ -257,7 +296,7 @@ form.addEventListener("submit", async (e) => {
               `Archivo demasiado grande: ${file.name} (${file.size} bytes)`
             );
 
-            mostrarToast(
+            displayToast(
               `El archivo ${file.name} es demasiado grande`,
               "error"
             );
@@ -271,7 +310,7 @@ form.addEventListener("submit", async (e) => {
             err
           );
 
-          mostrarToast(
+          displayToast(
             `Error subiendo ${file.name}`,
             "error"
           );
@@ -281,12 +320,12 @@ form.addEventListener("submit", async (e) => {
 
     //Warning solo si hubo archivos grandes
     if (huboArchivoGrande) {
-      mostrarToast(
+      displayToast(
         "El sitio se guardó, pero uno o más archivos eran demasiado grandes",
         "warning"
       );
     } else {
-      mostrarToast(
+      displayToast(
         sitioSeleccionadoId
           ? "Sitio actualizado correctamente"
           : "Sitio registrado correctamente",
@@ -315,14 +354,12 @@ form.addEventListener("submit", async (e) => {
     customInput.value = "";
     customInput.disabled = false;
     
-    
-    
 
     await cargarSitios();
 
   } catch (err) {
     console.error(err);
-    mostrarToast("Error al conectar con el servidor", "error");
+    displayToast("Error al conectar con el servidor", "error");
   }
 });
 
@@ -358,16 +395,16 @@ btnDelete.addEventListener("click", async () => {
   if (!confirmar) return;
 
   try {
-    const res = await apiFetch(`/api/sitios/${sitioSeleccionadoId}`, {
+    const response = await apiFetch(`/api/sitios/${sitioSeleccionadoId}`, {
       method: "DELETE"
     });
 
-    if (!res.ok) {
-      const error = await res.json();
+    if (!response.ok) {
+      const error = await response.json();
       throw new Error(error.error || "Error al eliminar el sitio");
     }
 
-    mostrarToast("Sitio eliminado correctamente", "success");
+    displayToast("Sitio eliminado correctamente", "success");
 
     //Reset UI
     form.reset();
@@ -390,43 +427,3 @@ btnDelete.addEventListener("click", async () => {
     alert(err.message || "Error al eliminar el sitio");
   }
 });
-
-function mostrarToast(mensaje, tipo = "info") {
-  const toast = document.getElementById("toast");
-
-  //Limpiar clases previas
-  toast.className = "toast";
-
-  //Setear mensaje y tipo
-  toast.textContent = mensaje;
-  toast.classList.add(tipo, "show");
-
-  //Ocultar luego
-  setTimeout(() => {
-    toast.classList.remove("show");
-  }, 3000);
-}
-
-
-
-
-
-function confirmarEliminar() {
-  return new Promise((resolve) => {
-    const modal = document.getElementById("confirmModal");
-    const btnOk = document.getElementById("btnConfirmar");
-    const btnCancel = document.getElementById("btnCancelar");
-
-    modal.classList.remove("hidden");
-
-    btnOk.onclick = () => {
-      modal.classList.add("hidden");
-      resolve(true);
-    };
-
-    btnCancel.onclick = () => {
-      modal.classList.add("hidden");
-      resolve(false);
-    };
-  });
-}

@@ -1,6 +1,8 @@
 //Formatear la fecha para obtener la fecha local
 export function formatearFecha(fechaISO) {
-  if (!fechaISO) return "-";
+  if (!fechaISO) {
+    return "-";
+  }
 
   return new Date(fechaISO).toLocaleString("es-UY", {
     day: "2-digit",
@@ -8,16 +10,18 @@ export function formatearFecha(fechaISO) {
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-    hour12: false
+    hour12: false,
   }).replace(",", "");
 }
 
 export function formatearFechaDia(fechaISO) {
-  if (!fechaISO) return null;
+  if (!fechaISO) {
+    return null;
+  }
 
   return new Date(fechaISO).toLocaleDateString("es-UY", {
     day: "2-digit",
     month: "2-digit",
-    year: "numeric"
+    year: "numeric",
   });
 }
