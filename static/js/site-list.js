@@ -1,10 +1,9 @@
+import { apiFetch } from "./api.js";
+import { formatearFecha } from "./fecha.js";
+
 //Obtengo datos
 let listaSitios = [];
 let listaFiltrada = [];
-
-
-import { apiFetch } from "./api.js";
-import { formatearFecha } from "./fecha.js";
 
 async function cargarSitios() {
     try {
@@ -22,11 +21,6 @@ async function cargarSitios() {
         console.error(error);
     }
 }
-
-//Cargar los sitios al entrar
-cargarSitios()
-
-
 
 
 //Obtengo la tabla
@@ -105,3 +99,8 @@ encabezados.forEach(th => {
     mostrarSitios(listaFiltrada);
   });
 });
+
+
+
+//Cargar los sitios al entrar
+cargarSitios();

@@ -40,12 +40,19 @@ const severidadTexto = {
 };
 
 function mostrarDetalle(data) {
-    document.getElementById("titulo").textContent = data.titulo;
-    document.getElementById("nivel").textContent = severidadTexto[data.severidad] ?? "Desconocida";
-    document.getElementById("nivel").classList.add(severidadTexto[data.severidad] ?? "Desconocida");
+    const titulo = document.getElementById("titulo");
+    const nivel = document.getElementById("nivel"); 
 
-    document.getElementById("url").textContent = data.url;
-    document.getElementById("url").href = data.url;
+    titulo.textContent = data.titulo;
+
+    const severidad = severidadTexto[data.severidad] ?? "Desconocida";
+    nivel.textContent = severidad;
+    nivel.classList.add(severidad);
+
+    const url = document.getElementById("url");
+    url.textContent = data.url;
+    url.href = data.url;
+
     document.getElementById("fecha").textContent = formatearFecha(data.fechaAnalisis);
     document.getElementById("fuente").textContent = data.tipoAnalisis;
 
@@ -83,12 +90,12 @@ async function cargarDetalleOZ(informeId) {
 function mostrarDetalleOZ(oz) {
     const bloque = document.getElementById("bloqueDetalleOZ");
 
-    let hayContenido = false;
-
-    hayContenido |= setOZField("oz-endpoint", oz.endpoint);
-    hayContenido |= setOZField("oz-metodo", oz.metodo);
-    hayContenido |= setOZField("oz-parametro", oz.parametro);
-    hayContenido |= setOZField("oz-payload", oz.payload);
+    const hayContenido = [
+        setOZField("oz-endpoint", oz.endpoint),
+        setOZField("oz-metodo", oz.metodo),
+        setOZField("oz-parametro", oz.parametro),
+        setOZField("oz-payload", oz.payload),
+    ].some(Boolean);
 
     //Mostrar el bloque solo si hay al menos un dato técnico
     bloque.hidden = !hayContenido;
@@ -98,6 +105,10 @@ function mostrarDetalleOZ(oz) {
 function setOZField(id, value) {
     const el = document.getElementById(id);
     const container = el.closest(".oz-item");
+
+    if (!container) {
+        return false;
+    }
 
     if (!value || value.trim() === "") {
         container.classList.add("hidden");
@@ -114,7 +125,7 @@ function setOZField(id, value) {
 
 
 //Cargar los sitios al entrar
-cargarDetalle()
+cargarDetalle();
 
 //Volver a la lista de analisis
 document.getElementById("btnVolver").addEventListener("click", (e) => {

@@ -1,9 +1,10 @@
+//Importo funciones necesarias
+import { apiFetch } from "./api.js";
+
 //Obtengo datos
 let listaSitios = [];
 let listaFiltrada = [];
 
-
-import { apiFetch } from "./api.js";
 
 async function cargarSitios() {
     try {
@@ -23,7 +24,7 @@ async function cargarSitios() {
 }
 
 //Cargar los sitios al entrar
-cargarSitios()
+cargarSitios();
 
 //Obtengo la tabla
 const tablaSitios = document.querySelector("#tablaSitios tbody");
@@ -114,14 +115,14 @@ async function ejecutarAnalisis({ url, sitioWebId, tipo, boton }) {
   const endpoints = {
     estatico: "/analizarEstatico",
     dinamico: "/analizarDinamico",
-    alteracion: "/analizarAlteraciones"
+    alteracion: "/analizarAlteraciones",
   };
 
   const endpoint = endpoints[tipo];
 
 
   try {
-    const res = await apiFetch(endpoint, {
+    const response = await apiFetch(endpoint, {
       method: "POST",
       body: JSON.stringify({
         url,
@@ -130,10 +131,10 @@ async function ejecutarAnalisis({ url, sitioWebId, tipo, boton }) {
       })
     });
 
-    const data = await res.json();
+    const data = await response.json();
 
-    if (!res.ok) {
-      mostrarToast(data?.error || data?.mensaje || "Ocurrió un error", "error");
+    if (!response.ok) {
+      displayToast(data?.error || data?.mensaje || "Ocurrió un error", "error");
       boton.classList.add("error");
       boton.textContent = "❌ Error";
       boton.disabled = false;
@@ -142,14 +143,14 @@ async function ejecutarAnalisis({ url, sitioWebId, tipo, boton }) {
 
     boton.classList.add("completado");
     boton.textContent = "✔ Completado";
-    mostrarToast("Análisis ejecutado correctamente", "success");
+    displayToast("Análisis ejecutado correctamente", "success");
 
   } catch (err) {
     console.error(err);
     boton.classList.add("error");
     boton.textContent = "❌ Error";
     boton.disabled = false;
-    mostrarToast("Error al ejecutar el análisis", "error");
+    displayToast("Error al ejecutar el análisis", "error");
   }
 }
 
@@ -193,7 +194,7 @@ function enlazarBotonesAnalisis() {
   });
 }
 
-function mostrarToast(mensaje, tipo = "info") {
+function displayToast(mensaje, tipo = "info") {
   const toast = document.getElementById("toast");
 
   //Limpiar clases previas

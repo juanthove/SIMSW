@@ -79,25 +79,17 @@ function deduplicarAlteracionesPorDia(alteraciones) {
     .flatMap(hashes => Object.values(hashes));
 }
 
-
-
-
-//Cargar los sitios al entrar
-cargarDatos()
-
-
-
 //Colores dependiendo el nivel de severidad
 const coloresSeveridad = {
   Baja: "#27ae60",
   Media: "#d68910",
-  Alta: "#c0392b"
+  Alta: "#c0392b",
 };
 
 const severidadMap = {
   1: "Baja",
   2: "Media",
-  3: "Alta"
+  3: "Alta",
 };
 
 //Valores de cada severidad
@@ -108,8 +100,13 @@ const pesos = {Baja: 1, Media: 2, Alta: 3};
 //Obtener las fechas
 function obtenerFechasUnicas(informes) {
   return [...new Set(
-    informes.map(i => i.fechaLocal).filter(Boolean)
-  )].sort();
+    informes.map((i) => i.fechaLocal).filter(Boolean),
+  )].sort((a, b) => {
+    const [da, ma, ya] = a.split("/");
+    const [db, mb, yb] = b.split("/");
+
+    return new Date(ya, ma - 1, da) - new Date(yb, mb - 1, db);
+  });
 }
 
 
@@ -121,7 +118,7 @@ function crearTimelineSeveridad(informes) {
   const dataPorSeveridad = {
     Alta: [],
     Media: [],
-    Baja: []
+    Baja: [],
   };
 
   fechas.forEach(fecha => {
@@ -146,7 +143,7 @@ function crearTimelineSeveridad(informes) {
         backgroundColor: coloresSeveridad[sev],
         tension: 0.3,
         fill: false
-      }))
+      })),
     },
     options: {
       responsive: true,
@@ -156,11 +153,11 @@ function crearTimelineSeveridad(informes) {
           beginAtZero: true,
           ticks: {
             stepSize: 1,
-            precision: 0
-          }
-        }
-      }
-    }
+            precision: 0,
+          },
+        },
+      },
+    },
   });
 }
 
@@ -183,13 +180,13 @@ function crearRiesgoAcumulado(informes) {
       datasets: [{
         label: "Riesgo acumulado",
         data: riesgo,
-        backgroundColor: "#34495e"
-      }]
+        backgroundColor: "#34495e",
+      }],
     },
     options: {
       responsive: true,
-      maintainAspectRatio: false
-    }
+      maintainAspectRatio: false,
+    },
   });
 }
 
@@ -207,13 +204,13 @@ function crearDistribucionSeveridad(informes) {
       labels: severidades,
       datasets: [{
         data: severidades.map(s => conteo[s]),
-        backgroundColor: severidades.map(s => coloresSeveridad[s])
-      }]
+        backgroundColor: severidades.map(s => coloresSeveridad[s]),
+      }],
     },
     options: {
       responsive: true,
-      maintainAspectRatio: false
-    }
+      maintainAspectRatio: false,
+    },
   });
 }
 
@@ -229,7 +226,12 @@ function crearAlteracionesEnElTiempo(informes) {
     conteoPorFecha[i.fechaLocal]++;
   });
 
-  const fechas = Object.keys(conteoPorFecha).sort();
+  const fechas = Object.keys(conteoPorFecha).sort((a, b) => {
+    const [da, ma, ya] = a.split("/");
+    const [db, mb, yb] = b.split("/");
+
+    return new Date(ya, ma - 1, da) - new Date(yb, mb - 1, db);
+  });
   const cantidadPorFecha = fechas.map(f => conteoPorFecha[f]);
 
   new Chart(document.getElementById("changeTimelineChart"), {
@@ -239,8 +241,8 @@ function crearAlteracionesEnElTiempo(informes) {
       datasets: [{
         label: "Cantidad de alteraciones",
         data: cantidadPorFecha,
-        backgroundColor: "#8e44ad"
-      }]
+        backgroundColor: "#8e44ad",
+      }],
     },
     options: {
       responsive: true,
@@ -250,14 +252,13 @@ function crearAlteracionesEnElTiempo(informes) {
           beginAtZero: true,
           ticks: {
             stepSize: 1,
-            precision: 0
-          }
-        }
-      }
-    }
+            precision: 0,
+          },
+        },
+      },
+    },
   });
 }
-
 
 
 
@@ -269,3 +270,5 @@ document.getElementById("btnVolver").addEventListener("click", (e) => {
 
 
 
+//Cargar los sitios al entrar
+cargarDatos();

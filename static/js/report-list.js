@@ -26,7 +26,7 @@ async function cargarInformes() {
         document.getElementById("resultadoGlobal").textContent = data.analisis.resultado_global;
         document.getElementById("fechaAnalisis").textContent = formatearFecha(data.analisis.fecha);
 
-        listaInformes = await data.informes;
+        listaInformes = data.informes;
         listaFiltrada = [...listaInformes];
 
         mostrarListado(listaFiltrada);
@@ -36,14 +36,14 @@ async function cargarInformes() {
     }
 }
 
-//Cargar los sitios al entrar
-cargarInformes()
+//Cargar los informes al entrar
+cargarInformes();
 
 
 const severidadTexto = {
   1: "Baja",
   2: "Media",
-  3: "Alta"
+  3: "Alta",
 };
 
 //Obtengo la tabla
@@ -144,6 +144,3 @@ document.getElementById("btnVolver").addEventListener("click", (e) => {
     e.preventDefault();
     window.location.href = `/analysis-list?siteId=${siteId}`;
 });
-
-//Muestro la tabla al cargar la pagina
-mostrarListado(listaFiltrada);
