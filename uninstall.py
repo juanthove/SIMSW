@@ -4,8 +4,28 @@ import sys
 import shutil
 import psutil
 import getpass
+import ctypes
+from pathlib import Path
 from dotenv import load_dotenv
 import subprocess
+
+
+# =========================
+# Verificar si se ejecuta como admin
+# =========================
+def is_admin():
+    try:
+        return ctypes.windll.shell32.IsUserAnAdmin()
+    except:
+        return False
+
+if not is_admin():
+    #Relanzar como admin
+    ctypes.windll.shell32.ShellExecuteW(
+        None, "runas", sys.executable, " ".join(sys.argv), None, 1
+    )
+    sys.exit()
+
 
 print("===== Desinstalador SIMSW =====\n")
 
@@ -39,6 +59,42 @@ load_dotenv()
 
 db_user = os.getenv("DB_USER")
 db_name = os.getenv("DB_NAME")
+
+
+# =========================
+# Eliminar servicio Windows
+# =========================
+
+print("\nEliminando servicio de Windows...")
+
+try:
+    base_path = Path(sys.executable).parent
+    internal_path = base_path / "_internal"
+    nssm_path = internal_path / "nssm.exe"
+
+    if nssm_path.exists():
+        # detener servicio
+        subprocess.run([
+            str(nssm_path),
+            "stop",
+            "SIMSW"
+        ], stderr=subprocess.DEVNULL)
+
+        # eliminar servicio
+        subprocess.run([
+            str(nssm_path),
+            "remove",
+            "SIMSW",
+            "confirm"
+        ], stderr=subprocess.DEVNULL)
+
+        print("✔ Servicio eliminado correctamente")
+    else:
+        print("⚠ NSSM no encontrado, no se pudo eliminar el servicio")
+
+except Exception as e:
+    print("⚠ Error al eliminar el servicio")
+    print(e)
 
 
 # =========================

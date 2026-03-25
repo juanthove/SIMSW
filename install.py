@@ -5,10 +5,28 @@ import traceback
 import os
 import shutil
 import sys
+import ctypes
 from pathlib import Path
 import subprocess
 import socket
 import pymysql
+
+
+# =========================
+# Verificar si se ejecuta como admin
+# =========================
+def is_admin():
+    try:
+        return ctypes.windll.shell32.IsUserAnAdmin()
+    except:
+        return False
+
+if not is_admin():
+    #Relanzar como admin
+    ctypes.windll.shell32.ShellExecuteW(
+        None, "runas", sys.executable, " ".join(sys.argv), None, 1
+    )
+    sys.exit()
 
 # =========================
 # Verificar MySQL
@@ -298,6 +316,101 @@ PASS_APLICACION=bwpmkgwtplilpnts
             print("⚠ No se encontró SIMSW.exe")
 
         print("\n✔ Instalación completada correctamente")
+
+
+        # =========================
+        # Crear servicio Windows
+        # =========================
+
+        print("\nConfigurando servicio de Windows...")
+
+        try:
+            base_path = Path(sys.executable).parent
+            internal_path = base_path / "_internal"
+
+            nssm_path = internal_path / "nssm.exe"
+            simsw_exe = base_path / "SIMSW.exe"
+
+            if not nssm_path.exists():
+                print("❌ NSSM no encontrado")
+            elif not simsw_exe.exists():
+                print("❌ SIMSW.exe no encontrado")
+            else:
+                # Si ya existe, lo eliminamos (por reinstalación)
+                subprocess.run([
+                    str(nssm_path),
+                    "stop",
+                    "SIMSW"
+                ], stderr=subprocess.DEVNULL)
+
+                subprocess.run([
+                    str(nssm_path),
+                    "remove",
+                    "SIMSW",
+                    "confirm"
+                ], stderr=subprocess.DEVNULL)
+
+                # Instalar servicio
+                subprocess.run([
+                    str(nssm_path),
+                    "install",
+                    "SIMSW",
+                    str(simsw_exe)
+                ], check=True)
+
+                # Directorio de trabajo (MUY IMPORTANTE)
+                subprocess.run([
+                    str(nssm_path),
+                    "set",
+                    "SIMSW",
+                    "AppDirectory",
+                    str(base_path)
+                ], check=True)
+
+                # Inicio automático
+                subprocess.run([
+                    str(nssm_path),
+                    "set",
+                    "SIMSW",
+                    "Start",
+                    "SERVICE_AUTO_START"
+                ], check=True)
+
+                # Logs (recomendado)
+                logs_path = base_path / "logs"
+                logs_path.mkdir(exist_ok=True)
+
+                subprocess.run([
+                    str(nssm_path),
+                    "set",
+                    "SIMSW",
+                    "AppStdout",
+                    str(logs_path / "out.log")
+                ])
+
+                subprocess.run([
+                    str(nssm_path),
+                    "set",
+                    "SIMSW",
+                    "AppStderr",
+                    str(logs_path / "err.log")
+                ])
+
+                # Iniciar servicio
+                subprocess.run([
+                    str(nssm_path),
+                    "start",
+                    "SIMSW"
+                ], check=True)
+
+                print("✔ Servicio creado e iniciado correctamente")
+
+        except Exception as e:
+            print("⚠ No se pudo crear el servicio")
+            print(e)
+
+            input("\nPresione Enter para salir...")
+
 
     except Exception:
 

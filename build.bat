@@ -92,6 +92,7 @@ pyinstaller --onedir ^
 --add-data "vulberta;vulberta" ^
 --add-data "ZAP_2.17.0;ZAP_2.17.0" ^
 --add-data "playwright_browsers;playwright_browsers" ^
+--add-data "nssm.exe;." ^
 install.py
 
 

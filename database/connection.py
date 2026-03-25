@@ -23,7 +23,7 @@ if missing:
 
 
 DATABASE_URL = (
-    f"mariadb+mariadbconnector://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
+    f"mariadb+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
 )
 
 engine = create_engine(
