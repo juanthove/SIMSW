@@ -1,0 +1,68 @@
+const navBar = document.getElementById("navBarDiv");
+
+
+if (navBar) {
+
+  navBar.innerHTML = `
+    <nav id="navbar">
+        <a href="/" id="paginaPrincipal"><h2>SIMSW</h2></a>
+
+        <div id="botonEncabezado">
+            <div id="analysis">
+                <div id="analysis-container">
+                    <a href="#" id="analysisBoton">Análisis</a>
+                    <div id="analysis-menu">
+                        <a href="/analysis-create">Realizar Análisis</a>
+                        <a href="/site-list">Ver Listado Análisis</a>
+                    </div>
+                </div>
+                <a href="/sites-create">Registrar página web</a>
+            </div>
+
+            <div id="config">
+                <a href="/mail-create">Configuración Gmail</a>
+            </div>
+            <div id="sesion">
+                <a href="#" id="logoutBtn">Cerrar Sesión</a>
+            </div>
+        </div>
+
+        <button id="botonMenu">☰</button>
+    </nav>`;
+}
+
+const botonMenu = document.getElementById("botonMenu");
+
+if(botonMenu) {
+    botonMenu.addEventListener("click", () => {
+        document.getElementById("botonEncabezado").classList.toggle("show"); //Activar o desactivar la clase show
+    });
+}
+
+
+const analysisContainer = document.getElementById("analysis-container");
+const analysisMenu = document.getElementById("analysis-menu");
+
+if(analysisContainer && analysisMenu) {
+    analysisContainer.addEventListener("mouseenter", () => {
+        analysisMenu.classList.add("show");
+    });
+
+    analysisContainer.addEventListener("mouseleave", () => {
+        analysisMenu.classList.remove("show");
+    });
+}
+
+//Al cliquear cerrar sesion se vuelve a login y se elimina el token
+const logoutBtn = document.getElementById("logoutBtn");
+if(logoutBtn) {
+    logoutBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+
+    //Eliminar token
+    localStorage.removeItem("token");
+
+    //Redirigir
+    window.location.href = "/login";
+    });
+}

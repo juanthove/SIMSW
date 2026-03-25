@@ -1,0 +1,181 @@
+#resultado {
+  white-space: pre;       /*Mantiene los espacios y saltos de línea como están*/
+  overflow-x: auto;       /*Permite scroll horizontal si el contenido excede el ancho*/
+}
+
+body{
+  padding-top: 4em;
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #f7f7f7;
+}
+
+/*NavBar*/
+#navbar{
+    top:100%;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.836);
+    padding: 0em 1em;
+    position: fixed;
+    top: 0;
+    left: 0;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 1000;
+    height: auto;
+    font-size: clamp(0.8rem, 1.2vw, 1rem);
+}
+
+#paginaPrincipal{
+    text-decoration: none;
+}
+
+#paginaPrincipal h2{
+    font-size: 120%;
+    background: linear-gradient(to right, #ea580c, #fdba74);
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+#botonEncabezado{
+    display: flex;
+    gap: 4em;
+    align-items: center;
+    text-decoration: none;
+    color: white;
+    user-select: none;
+}
+
+#analysis{
+    display: flex;
+    gap: 1.9em;
+}
+
+#analysis a{
+    text-decoration: none;
+    color: white;
+}
+
+#analysis a:hover{
+    color: rgb(228, 228, 228);
+}
+
+#analysis-container {
+    position: relative;
+}
+
+#analysis-menu { /*Menu con las opciones de los analisis*/
+    position: absolute;
+    top: 100%;
+    left: 0;
+
+    background-color: #111;
+    padding: 10px;
+    border-radius: 8px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+#analysis-menu.show {
+    opacity: 1;
+    pointer-events: auto;
+    width: 5em;
+}
+
+#analysis-container:hover #analysis-menu {
+    display: flex;
+}
+
+#config, #sesion{
+    display: flex;
+    gap: 1em;
+}
+
+#config a, #sesion a{
+    text-decoration: none;
+    color: white;
+}
+
+#config a:hover, #sesion a:hover{
+    color: rgb(228, 228, 228);
+}
+
+#botonMenu{
+    display: none;
+    font-size: 2em;
+    background-color: rgba(255, 255, 255, 0);
+    border-color: rgba(255, 255, 255, 0);
+    color: white;
+    cursor: pointer;
+}
+
+/*Flecha para ir para atras*/
+.back-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #555555;
+}
+
+.back-button:hover {
+  color: #000000;
+}
+
+
+/*Notificaciones*/
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 6px;
+  font-size: 14px;
+  text-align: center;
+  min-width: 260px;
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/*Visible*/
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/*Tipos*/
+.toast.success { background-color: #2e7d32; }
+.toast.error   { background-color: #c62828; }
+.toast.info    { background-color: #1565c0; }
+
+
+/*Mantener la misma fuente en los selectores de fecha*/
+input[type="date"] {
+  font-family: inherit;
+  font-size: 14px;
+}
+
+
+/*Modificar flechas de los selectores*/
+.selector {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  background-image: url("data:image/svg+xml;utf8,<svg fill='black' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 18px;
+}

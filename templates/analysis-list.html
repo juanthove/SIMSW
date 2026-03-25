@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analisis</title>
+
+    <link href="../static/css/main.css" rel="stylesheet" type="text/css">
+    <link href="../static/css/analysis.css" rel="stylesheet" type="text/css">
+    <link href="../static/css/responsive.css" rel="stylesheet" type="text/css">
+    <script src="../static/js/init.js" defer></script>
+    <script type="module" src="../static/js/analysis-list.js"></script>
+</head>
+<body>
+    <div id="navBarDiv"></div>
+
+    <div class="pageHeader">
+        <button id="btnVolver" class="back-button">←</button>
+        <h1>Análisis realizados</h1>
+    </div>
+
+    <section class="contenedorAnalysis">
+
+        <div class="infoSitio">
+            <h2 id="nombreSitio"></h2>
+
+            <div class="infoGrid">
+                <div><strong>Propietario:</strong> <span id="propietarioSitio"></span></div>
+                <div><strong>URL:</strong> <span id="urlSitio"></span></div>
+                <div><strong>Análisis realizados:</strong> <span id="cantidadAnalisis"></span></div>
+                <a href="#" id="btnHistorico">Ver histórico</a>
+            </div>
+        </div>
+
+        <div class="toolbar">
+            <div class="filtrosIzq">
+
+                <select class="filtro selector" id="filtroTipo">
+                    <option value="">Todos</option>
+                    <option value="Estatico">Estático</option>
+                    <option value="Dinamico">Dinámico</option>
+                    <option value="Alteracion">Alteración</option>
+                </select>
+
+                <select class="filtro selector" id="filtroEstado">
+                    <option value="">Todos</option>
+                    <option value="Finalizado">Finalizado</option>
+                    <option value="Sin Datos">Sin datos</option>
+                    <option value="Error">Error</option>
+                </select>
+
+                <select class="filtro selector" id="filtroMetodo">
+                    <option value="">Todos</option>
+                    <option value="Manual">Manual</option>
+                    <option value="Automatico">Automatico</option>
+                </select>
+
+            </div>
+
+            <div class="filtrosDer">
+                <input type="date" id="filtroDesde" class="filtro">
+                <input type="date" id="filtroHasta" class="filtro">
+                <button id="btnLimpiarFiltros" class="btn-limpiar">Limpiar filtros</button>
+            </div>
+            
+        </div>
+
+        <table id="tablaAnalisis" class="tablaBase">
+            <thead>
+                <tr>
+                <th class="sortable" data-column="tipo">Tipo</th>
+                <th class="sortable" data-column="estado">Estado</th>
+                <th class="sortable" data-column="metodo">Metodo</th>
+                <th class="sortable" data-column="resultado">Resultado Global</th>
+                <th class="sortable" data-column="vulnerabilidades">Vulnerabilidades Detectadas</th>
+                <th class="sortable" data-column="fecha">Fecha</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!--Datos-->
+            </tbody>
+        </table>
+
+    </section>
+
+    
+</body>
+</html>

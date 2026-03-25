@@ -1,0 +1,344 @@
+/*Contenedor general*/
+.contenedorForm {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 2em 1em;
+}
+
+/*Título*/
+.contenedorForm h1 {
+  margin-bottom: 1.5em;
+  font-size: 1.6rem;
+  font-weight: 600;
+}
+
+/*Selector de sitios*/
+#selectorSitio {
+  padding: 8px 12px;
+  min-width: 140px;
+  font-size: 14px;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  background-color: #ffffff;
+  color: #000000;
+  cursor: pointer;
+}
+
+#selectorSitio:hover {
+  border-color: #b0b0b0;
+}
+
+/*Formulario base*/
+.formBase {
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 2em;
+}
+
+/*Campo*/
+.campoForm {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1.2em;
+}
+
+.campoForm label {
+  font-size: 14px;
+  margin-bottom: 0.4em;
+  font-weight: 500;
+}
+
+.campoForm input {
+  padding: 10px 12px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid #cfcfcf;
+}
+
+
+/*Bordes*/
+select:focus,
+button:focus {
+  outline: 2px solid #000000;
+  outline-offset: 2px;
+}
+
+/*Acciones*/
+.accionesForm {
+  margin-top: 1.5em;
+  display: flex;
+  align-items: center;
+}
+
+/*Boton delete*/
+.btn-delete {
+  background-color: #c62828;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.btn-delete:hover {
+  background-color: #b71c1c;
+}
+
+/*Botón principal*/
+.btnPrincipal {
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background-color: #43A047;
+  color: #ffffff;
+  margin-left: auto;
+}
+
+.btnPrincipal:hover {
+  background-color: #388E3C;
+}
+
+/*Confirmación*/
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9998;
+}
+
+/*Boton cancelar*/
+#btnCancelar {
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background-color: #e5e5e5;
+  color: #000000;
+  margin-left: auto;
+}
+
+.modal-overlay.hidden {
+  display: none;
+}
+
+.modal {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 320px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btn-danger {
+  background-color: #c62828;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+
+/*Subir archivos base*/
+.campoForm input[type="file"] {
+  padding: 6px;
+  font-size: 13px;
+  border: 1px solid #cfcfcf;
+  border-radius: 6px;
+  background-color: #ffffff;
+  cursor: pointer;
+}
+
+/*Texto de ayuda*/
+.formHint {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #666666;
+}
+
+/*Deshabilitado*/
+.campoForm input[type="file"]:disabled {
+  background-color: #f0f0f0;
+  color: #999999;
+  cursor: not-allowed;
+}
+
+.fileButton {
+  display: inline-block;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 6px;
+  border: 1px solid #d0d0d0;
+  background-color: #ffffff;
+  color: #000000;
+  cursor: pointer;
+  width: fit-content;
+}
+
+.fileButton:hover {
+  background-color: #f9f9f9;
+  border-color: #b0b0b0;
+}
+
+.fileButton:active {
+  background-color: #eeeeee;
+}
+
+/*Info de archivos*/
+.archivoInfo {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #555555;
+}
+
+/*Deshabilitado*/
+.fileButton.disabled {
+  background-color: #f0f0f0;
+  color: #999999;
+  border-color: #d0d0d0;
+  cursor: not-allowed;
+}
+
+
+/*Eliminar archivos base*/
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: #1f2937;
+  cursor: pointer;
+  user-select: none;
+}
+
+/*Ocultar checkbox real*/
+.checkboxLabel input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/*Caja custom */
+.checkboxLabel .checkmark {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #9ca3af;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  background-color: #fff;
+}
+
+/*Checkbox*/
+.checkboxLabel .checkmark::after {
+  content: "";
+  width: 5px;
+  height: 9px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) translateY(-1px) scale(0);
+  transform-origin: center;
+  transition: transform 0.15s ease;
+}
+
+/*Checked*/
+.checkboxLabel input:checked + .checkmark {
+  background-color: #1f2937;
+  border-color: #1f2937;
+}
+
+.checkboxLabel input:checked + .checkmark::after {
+  transform: rotate(45deg) translateY(-1px) scale(1);
+}
+
+.checkboxLabel:hover .checkmark {
+  border-color: #000000;
+}
+
+/*Focus redondo*/
+.checkboxLabel input:focus-visible + .checkmark {
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.35);
+}
+
+.checkboxLabel input[type="radio"]:focus-visible,
+.checkboxLabel input[type="checkbox"]:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(0, 0, 0);
+  border-radius: 50%;
+}
+
+
+/*Checkbox rojo*/
+.checkboxLabel.danger .checkmark {
+  border-color: #dc2626;
+}
+
+.checkboxLabel.danger input:checked + .checkmark {
+  background-color: #dc2626;
+  border-color: #dc2626;
+}
+
+.checkboxLabel.danger input:focus-visible + .checkmark {
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.4);
+}
+
+.checkboxLabel.danger input:checked + .checkmark::after {
+  transform: rotate(45deg) translateY(-2px) scale(1);
+}
+
+.checkboxText {
+  display: flex;
+  align-items: center;
+  line-height: 1.6;
+}
+
+
+/*Frecuencia analisis*/
+.campoForm select {
+  padding: 10px 12px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid #cfcfcf;
+  background-color: #ffffff;
+  cursor: pointer;
+}
+
+.campoForm select:hover {
+  border-color: #b0b0b0;
+}
+
+/*Input personalizado de minutos*/
+.inputTiempo {
+  margin-top: 6px;
+  padding: 10px 12px;
+  width: 180px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid #cfcfcf;
+}
+
+
+/*Error de validación*/
+.formError {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #c62828;
+}

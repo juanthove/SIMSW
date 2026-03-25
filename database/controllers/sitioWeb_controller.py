@@ -1,0 +1,399 @@
+from database.connection import SessionLocal
+from database.models.sitioWeb_model import SitioWeb
+from database.models.analisis_model import Analisis
+from database.models.informe_model import Informe
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy import func
+from datetime import timezone
+from pathlib import Path
+import os
+import shutil
+from werkzeug.utils import secure_filename
+from flask import current_app
+
+EXTENSIONES_PERMITIDAS = {"py", "js", "ts", "java", "php", "json", "yml", "yaml", "xml", "html", "css", "sh", "env", "md", "cs", "cshtml"}
+
+
+#Saber si un archivo tiene una extension permitida
+def archivo_permitido(filename):
+    return (
+        "." in filename and
+        filename.rsplit(".", 1)[1].lower() in EXTENSIONES_PERMITIDAS
+    )
+
+MAX_FILE_SIZE = 50 * 1024 * 1024  # 50 MB
+
+#Obtener todos los sitios
+def obtener_sitios():
+    db = SessionLocal()
+    try:
+        sitios = db.query(SitioWeb).all()
+        return [s.to_dict() for s in sitios]
+    finally:
+        db.close()
+
+
+#Obtener un sitio por ID
+def obtener_sitio_por_id(sitio_id):
+    db = SessionLocal()
+    try:
+        sitio = db.query(SitioWeb).filter(SitioWeb.id == sitio_id).first()
+        return sitio.to_dict() if sitio else None
+    finally:
+        db.close()
+
+
+#Crear sitio web
+def crear_sitio(data):
+    db = SessionLocal()
+    try:
+        sitio = SitioWeb(
+            nombre=data.get("nombre"),
+            url=data.get("url"),
+            propietario=data.get("propietario"),
+            frecuencia_monitoreo_minutos=int(data.get("frecuenciaAnalisis")),
+            archivos_base=False
+        )
+
+        db.add(sitio)
+        db.commit()
+        db.refresh(sitio)
+
+        return sitio.to_dict()
+
+    except IntegrityError:
+        db.rollback()
+        raise ValueError("URL_DUPLICADA")
+
+    except Exception as e:
+        db.rollback()
+        raise e
+
+    finally:
+        db.close()
+
+
+
+
+#Actualizar sitio web
+def actualizar_sitio(sitio_id, data):
+    db = SessionLocal()
+    try:
+        sitio = db.query(SitioWeb).filter(SitioWeb.id == sitio_id).first()
+
+        if sitio is None:
+            return None
+
+        if "nombre" in data:
+            sitio.nombre = data.get("nombre")
+
+        if "url" in data:
+            sitio.url = data.get("url")
+
+        if "propietario" in data:
+            sitio.propietario = data.get("propietario")
+
+        if "frecuenciaAnalisis" in data:
+            sitio.frecuencia_monitoreo_minutos = int(data.get("frecuenciaAnalisis"))
+
+        #Eliminar archivos base si viene el bool
+        eliminar_archivos = data.get("eliminarArchivos") == "true"
+
+        if eliminar_archivos:
+            ruta_sitio = os.path.join(
+                current_app.config["UPLOADS_DIR"],
+                "sitios",
+                str(sitio.id)
+            )
+
+            if os.path.exists(ruta_sitio):
+                shutil.rmtree(ruta_sitio)
+
+            sitio.archivos_base = False
+
+        db.commit()
+        db.refresh(sitio)
+
+        return sitio.to_dict()
+
+    except IntegrityError:
+        db.rollback()
+        raise ValueError("URL_DUPLICADA")
+
+    except Exception as e:
+        db.rollback()
+        raise e
+
+    finally:
+        db.close()
+
+
+
+#Eliminar un sitio web
+def eliminar_sitio(sitio_id):
+    db = SessionLocal()
+    try:
+        sitio = db.query(SitioWeb).filter(SitioWeb.id == sitio_id).first()
+
+        if sitio is None:
+            return False
+
+        #Ruta de archivos del sitio
+        ruta_sitio = os.path.join(current_app.config["UPLOADS_DIR"], "sitios", str(sitio.id))
+
+        #Eliminar carpeta de archivos si existe
+        if os.path.exists(ruta_sitio):
+            shutil.rmtree(ruta_sitio)
+
+        #Eliminar registro DB
+        db.delete(sitio)
+        db.commit()
+
+        return True
+
+    except Exception as e:
+        db.rollback()
+        raise e
+
+    finally:
+        db.close()
+
+
+#Obtener sitios con cantidad de analisis y fecha del ultimo
+def obtener_sitios_con_resumen():
+    db = SessionLocal()
+    try:
+        resultados = (
+            db.query(
+                SitioWeb.id,
+                SitioWeb.nombre,
+                SitioWeb.url,
+                SitioWeb.fecha_ultimo_monitoreo,
+                SitioWeb.fecha_ultimo_automatico,
+                func.count(Analisis.id).label("cantAnalisis"),
+            )
+            .outerjoin(
+                Analisis, Analisis.sitio_web_id == SitioWeb.id
+            )
+            .group_by(
+                SitioWeb.id,
+                SitioWeb.nombre,
+                SitioWeb.url,
+                SitioWeb.fecha_ultimo_monitoreo,
+                SitioWeb.fecha_ultimo_automatico
+            )
+            .all()
+        )
+        
+
+        return [
+            {
+                "id": r.id,
+                "nombre": r.nombre,
+                "url": r.url,
+                "cantAnalisis": r.cantAnalisis,
+                "ultimoAnalisisManual": (
+                    r.fecha_ultimo_monitoreo.replace(tzinfo=timezone.utc).isoformat()
+                    if r.fecha_ultimo_monitoreo else None
+                ),
+                "ultimoAnalisisAutomatico": (
+                    r.fecha_ultimo_automatico.replace(tzinfo=timezone.utc).isoformat()
+                    if r.fecha_ultimo_automatico else None
+                )
+            }
+            for r in resultados
+        ]
+    finally:
+        db.close()
+
+
+
+#Obtener informacion del sitio y de sus analisis
+def obtener_detalle_sitio(sitio_id):
+    db = SessionLocal()
+    try:
+        sitio = db.query(SitioWeb).filter(SitioWeb.id == sitio_id).first()
+
+        if not sitio:
+            return None
+
+        analisis = (
+            db.query(Analisis)
+            .filter(Analisis.sitio_web_id == sitio_id)
+            .order_by(Analisis.fecha.desc())
+            .all()
+        )
+
+        resultado = []
+
+        for a in analisis:
+            cantidad_informes = (
+                db.query(func.count(Informe.id))
+                .filter(Informe.analisis_id == a.id)
+                .scalar()
+            )
+
+            resultado.append({
+                "id": a.id,
+                "nombre": a.nombre,
+                "estado": a.estado,
+                "tipo": a.tipo,
+                "metodo": a.metodo,
+                "resultado_global": a.resultado_global,
+                "fecha": a.fecha.replace(tzinfo=timezone.utc).isoformat(),
+                "cantidad_informes": cantidad_informes
+            })
+
+        return {
+            "siteId": sitio.id,
+            "nombre": sitio.nombre,
+            "url": sitio.url,
+            "propietario": sitio.propietario,
+            "analisis": resultado
+        }
+
+    finally:
+        db.close()
+
+
+
+#Obtener todos los informes de un sitio que no sean Alteraciones
+def obtener_informes_por_sitio(site_id):
+    db = SessionLocal()
+    try:
+        resultados = (
+            db.query(
+                Informe.id,
+                Informe.titulo,
+                Informe.severidad,
+                Analisis.fecha.label("fecha_analisis")
+            )
+            .join(Analisis, Informe.analisis_id == Analisis.id)
+            .filter(
+                Analisis.sitio_web_id == site_id,
+                Analisis.tipo != "Alteracion"
+            )
+            .all()
+        )
+
+        return [
+            {
+                "id": r.id,
+                "titulo": r.titulo,
+                "severidad": r.severidad,
+                "fecha": (
+                    r.fecha_analisis.replace(tzinfo=timezone.utc).isoformat()
+                    if r.fecha_analisis else None
+                )
+            }
+            for r in resultados
+        ]
+
+    finally:
+        db.close()
+
+
+
+#Obtener todos los informes de tipo Alteracion de un sitio
+def obtener_alteraciones_por_sitio(sitio_id: int):
+    db = SessionLocal()
+    try:
+        # Verificar que el sitio exista
+        sitio = db.query(SitioWeb).filter(SitioWeb.id == sitio_id).first()
+        if not sitio:
+            return None
+
+        resultados = (
+            db.query(
+                Informe.id,
+                Informe.titulo,
+                Informe.descripcion_humana,
+                Informe.severidad,
+                Informe.alteracion_hash,
+                Analisis.fecha.label("fecha_analisis")
+            )
+            .join(Analisis, Informe.analisis_id == Analisis.id)
+            .filter(
+                Analisis.sitio_web_id == sitio_id,
+                Analisis.tipo == "Alteracion"
+            )
+            .order_by(Analisis.fecha.asc())
+            .all()
+        )
+
+        return [
+            {
+                "id": r.id,
+                "titulo": r.titulo,
+                "descripcion_humana": r.descripcion_humana,
+                "severidad": r.severidad,
+                "alteracion_hash": r.alteracion_hash,
+                "fecha": r.fecha_analisis.replace(tzinfo=timezone.utc).isoformat()
+                if r.fecha_analisis else None
+            }
+            for r in resultados
+        ]
+
+    finally:
+        db.close()
+
+
+
+
+
+def subir_un_archivo_base_sitio(sitio_id, archivo, ruta_relativa):
+    db = SessionLocal()
+
+    try:
+        sitio = db.query(SitioWeb).filter(SitioWeb.id == sitio_id).first()
+        if sitio is None:
+            raise ValueError("Sitio no encontrado")
+
+        #Sanitizar ruta relativa
+        ruta = Path(ruta_relativa)
+
+        #Evitar path traversal
+        if ".." in ruta.parts or ruta.is_absolute():
+            raise ValueError("Ruta inválida")
+
+        #Nombre real del archivo, solo el nombre, no el path
+        filename = secure_filename(ruta.name)
+
+        if not archivo_permitido(filename):
+            return {
+                "archivo": str(ruta),
+                "estado": "ignorado"
+            }
+
+        #Verificar tamaño real
+        archivo.seek(0, os.SEEK_END)
+        size = archivo.tell()
+        archivo.seek(0)
+
+        if size > MAX_FILE_SIZE:
+            raise ValueError(f"Archivo demasiado grande ({size} bytes)")
+
+        #Carpeta base del sitio
+        base_sitio = Path(
+            current_app.config["UPLOADS_DIR"]
+        ) / "sitios" / str(sitio.id)
+
+        #Destino final respetando carpetas
+        destino_final = base_sitio / ruta.parent
+        destino_final.mkdir(parents=True, exist_ok=True)
+
+        #Guardar archivo
+        archivo.save(destino_final / filename)
+
+        #Marcar sitio con archivos base
+        if not sitio.archivos_base:
+            sitio.archivos_base = True
+            db.commit()
+
+        return {
+            "archivo": str(ruta),
+            "estado": "subido"
+        }
+
+    finally:
+        db.close()
