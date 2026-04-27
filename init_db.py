@@ -10,6 +10,7 @@ def get_resource_path(filename):
 
 
 def main(root_password, db_user, db_password):
+    uso_root = False
     print("Conectando a MariaDB como root...")
 
     try:
@@ -27,17 +28,32 @@ def main(root_password, db_user, db_password):
     cursor.execute("CREATE DATABASE IF NOT EXISTS simsw;")
 
     print("Creando usuario de aplicación...")
-    cursor.execute(f"""
-        CREATE USER IF NOT EXISTS '{db_user}'@'localhost'
-        IDENTIFIED BY '{db_password}';
-    """)
 
-    print("Asignando permisos...")
-    cursor.execute(f"""
-        GRANT ALL PRIVILEGES ON simsw.* TO '{db_user}'@'localhost';
-    """)
+    try:
+        cursor.execute(f"""
+            CREATE USER IF NOT EXISTS '{db_user}'@'localhost'
+            IDENTIFIED BY '{db_password}';
+        """)
 
-    cursor.execute("FLUSH PRIVILEGES;")
+        print("Asignando permisos...")
+        cursor.execute(f"""
+            GRANT ALL PRIVILEGES ON simsw.* TO '{db_user}'@'localhost';
+        """)
+
+        cursor.execute("FLUSH PRIVILEGES;")
+
+    except pymysql.err.OperationalError as e:
+        if e.args[0] == 1227:
+            print("⚠ Root no tiene permisos para crear usuarios.")
+            print("⚠ Se usará root como conexión.")
+
+            db_user = "root"
+            db_password = root_password
+            uso_root = True
+        else:
+            raise
+
+
     cursor.execute("USE simsw;")
 
     print("Ejecutando script SQL inicial...")
@@ -55,3 +71,5 @@ def main(root_password, db_user, db_password):
     conn.close()
 
     print("✔ Base de datos y usuario creados correctamente")
+
+    return uso_root
