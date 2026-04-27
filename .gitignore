@@ -26,3 +26,9 @@ base_guardar
 baseline_sitio_41
 
 arquitectura.md
+
+dist/
+buid/
+SIMSW.spec
+uninstall.spec
+install.spec

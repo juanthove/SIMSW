@@ -157,6 +157,23 @@ function crearTimelineSeveridad(informes) {
           },
         },
       },
+      plugins: {
+        zoom: {
+          pan: {
+            enabled: true,
+            mode: 'x',
+          },
+          zoom: {
+            wheel: {
+              enabled: true // zoom con rueda del mouse
+            },
+            pinch: {
+              enabled: true // zoom táctil
+            },
+            mode: 'x',
+          },
+        },
+      },
     },
   });
 }
@@ -186,6 +203,23 @@ function crearRiesgoAcumulado(informes) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      plugins: {
+        zoom: {
+          pan: {
+            enabled: true,
+            mode: 'x',
+          },
+          zoom: {
+            wheel: {
+              enabled: true // zoom con rueda del mouse
+            },
+            pinch: {
+              enabled: true // zoom táctil
+            },
+            mode: 'x',
+          },
+        },
+      },
     },
   });
 }
@@ -253,6 +287,23 @@ function crearAlteracionesEnElTiempo(informes) {
           ticks: {
             stepSize: 1,
             precision: 0,
+          },
+        },
+      },
+      plugins: {
+        zoom: {
+          pan: {
+            enabled: true,
+            mode: 'x',
+          },
+          zoom: {
+            wheel: {
+              enabled: true // zoom con rueda del mouse
+            },
+            pinch: {
+              enabled: true // zoom táctil
+            },
+            mode: 'x',
           },
         },
       },

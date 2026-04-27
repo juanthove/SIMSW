@@ -256,7 +256,43 @@ PASS_APLICACION=bwpmkgwtplilpnts
 
         from init_db import main as init_db_main
 
-        init_db_main(db_root_password, db_user, db_password)
+        uso_root = init_db_main(db_root_password, db_user, db_password)
+
+        if uso_root:
+            print("⚠ Reescribiendo .env para usar root...")
+
+            env_content = f"""# =========================
+        # API LLM
+        # =========================
+        GOOGLE_API_KEY={google_api_key}
+
+        # =========================
+        # Base de Datos
+        # =========================
+        DB_USER=root
+        DB_PASSWORD={db_root_password}
+        DB_HOST=localhost
+        DB_NAME=simsw
+
+        # =========================
+        # Seguridad
+        # =========================
+        JWT_SECRET={jwt_secret}
+
+        # =========================
+        # Gmail
+        # =========================
+        GMAIL_REMITENTE=simsw.meerkatsys@gmail.com
+        PASS_APLICACION=bwpmkgwtplilpnts
+        """
+
+            with open(".env", "w", encoding="utf-8") as f:
+                f.write(env_content)
+
+            print("✔ .env actualizado para usar root")
+
+
+        
 
         instalacion["db"] = True
 
