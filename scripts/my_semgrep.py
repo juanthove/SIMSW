@@ -71,11 +71,20 @@ class PotentialFragment:
 
 
 def _keyword_to_regex(keyword: str) -> re.Pattern[str]:
-    """Compila una expresion regular para buscar una palabra clave con sensibilidad reducida a mayusculas y minusculas."""
+    """Compila una expresion regular para buscar una palabra clave con sensibilidad 
+    reducida a mayusculas y minusculas."""
     escaped = re.escape(keyword)
-    if re.fullmatch(r"[A-Za-z0-9_. ]+", keyword):
-        return re.compile(r"(?<!\w)" + escaped + r"(?!\w)", re.IGNORECASE)
-    return re.compile(escaped, re.IGNORECASE)
+
+    # Si el keyword empieza o termina con caracteres "de palabra" (letra, numero o _),
+    # mantenemos borde solo en ese extremo. Esto permite detectar casos como ".get" en "app.get(...)"
+    # sin perder la proteccion contra matches parciales en otros terminos.
+    starts_word = bool(keyword) and (keyword[0].isalnum() or keyword[0] == "_")
+    ends_word = bool(keyword) and (keyword[-1].isalnum() or keyword[-1] == "_")
+
+    left_boundary = r"(?<!\w)" if starts_word else ""
+    right_boundary = r"(?!\w)" if ends_word else ""
+
+    return re.compile(left_boundary + escaped + right_boundary, re.IGNORECASE)
 
 
 def _merge_keywords(*groups: Iterable[str]) -> list[str]:
@@ -159,6 +168,13 @@ COMMON_KEYWORDS: list[str] = [
     "where",
     "order by",
     "group by",
+    ".get",
+    ".post",
+    ".put",
+    ".delete",
+    ".cors",
+    "express"
+
 ]
 
 PYTHON_KEYWORDS: list[str] = [
@@ -206,6 +222,7 @@ PYTHON_KEYWORDS: list[str] = [
     "evalex=True",
     "DebuggedApplication",
     "shell=True",
+    ".get",
 ]
 
 JAVASCRIPT_KEYWORDS: list[str] = [
@@ -258,6 +275,7 @@ JAVASCRIPT_KEYWORDS: list[str] = [
     "res.write",
     "require",
     "Math.random",
+    ".get"
 ]
 
 DOTNET_KEYWORDS: list[str] = [
@@ -450,7 +468,12 @@ def _build_patterns() -> dict[str, list[tuple[str, re.Pattern[str]]]]:
 PATTERNS = _build_patterns()
 
 
-def _context_window(content: str, match_start: int, match_end: int, window_size: int = CONTEXT_SIZE) -> tuple[str, int, int]:
+def _context_window(
+        content: str, 
+        match_start: int, 
+        match_end: int, 
+        window_size: int = CONTEXT_SIZE
+    ) -> tuple[str, int, int]:
     """Extrae una ventana de contexto alrededor de una coincidencia y devuelve tambien posiciones de inicio y fin."""
     half = window_size // 2
     start = max(0, match_start - half)
@@ -458,7 +481,11 @@ def _context_window(content: str, match_start: int, match_end: int, window_size:
     return content[start:end], start, end
 
 
-def _scan_content_with_patterns(content: str, file_path: Path,patterns: list[tuple[str, re.Pattern[str]]]) -> list[PotentialFragment]:
+def _scan_content_with_patterns(
+        content: str, 
+        file_path: Path,
+        patterns: list[tuple[str, re.Pattern[str]]]
+    ) -> list[PotentialFragment]:
     """Recorre el contenido con patrones compilados, evita duplicados continuando solo con suficiente 
     señal de seguridad"""
 
@@ -556,7 +583,10 @@ def analyze_file(file_path: Path) -> list[PotentialFragment]:
     return scan_generic_file(content, file_path)
 
 
-def iter_supported_files(root: Path, extensions: set[str] | None = None) -> Iterable[Path]:
+def iter_supported_files(
+        root: Path, 
+        extensions: set[str] | None = None
+    ) -> Iterable[Path]:
     """Itera archivos con extensiones soportadas dentro de un arbol, excluyendo carpetas ignoradas."""
     selected = {ext.lower() for ext in (extensions or SUPPORTED_EXTENSIONS)}
 
@@ -568,7 +598,10 @@ def iter_supported_files(root: Path, extensions: set[str] | None = None) -> Iter
                 yield path
 
 
-def scan_directory(directory_path: str, extensions: set[str] | None = None) -> list[PotentialFragment]:
+def scan_directory(
+        directory_path: str, 
+        extensions: set[str] | None = None
+    ) -> list[PotentialFragment]:
     """Analiza un directorio completo y acumula los hallazgos de cada archivo compatible."""
     root = Path(directory_path)
     if not root.exists():
@@ -582,7 +615,10 @@ def scan_directory(directory_path: str, extensions: set[str] | None = None) -> l
     return results
 
 
-def scan_multiple_directories(directory_paths: Iterable[str], extensions: set[str] | None = None) -> list[PotentialFragment]:
+def scan_multiple_directories(
+        directory_paths: Iterable[str], 
+        extensions: set[str] | None = None
+    ) -> list[PotentialFragment]:
     """Analiza multiples directorios y combina todos los resultados en una sola lista."""
     all_results: list[PotentialFragment] = []
     for directory_path in directory_paths:
@@ -592,5 +628,4 @@ def scan_multiple_directories(directory_paths: Iterable[str], extensions: set[st
 
 def findings_to_dicts(findings: Iterable[PotentialFragment]) -> list[dict]:
     """Convierte una coleccion de hallazgos a diccionarios listos para serializacion."""
-    print("[DEBUG] Entro Findings to dicts print")
     return [finding.to_dict() for finding in findings]
