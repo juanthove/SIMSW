@@ -1,58 +1,169 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analisis Historico</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analisis Historico</title>
 
-    <link href="../static/css/main.css" rel="stylesheet" type="text/css">
-    <link href="../static/css/site-history.css" rel="stylesheet" type="text/css">
-    <link href="../static/css/responsive.css" rel="stylesheet" type="text/css">
-    <script src="../static/js/init.js" defer></script>
-    <script src="../static/js/chart.umd.js"></script> <!--Script para hacer las graficas-->
-    <script src="../static/js/hammerjs.js"></script> <!--Script para mover las graficas de costado-->
-    <script src="../static/js/chartjs-plugin-zoom.min.js"></script> <!--Script para hacer zoom a las graficas-->
-    <script type="module" src="../static/js/site-history.js"></script>
+  <link href="../static/css/main.css" rel="stylesheet" type="text/css">
+  <link href="../static/css/site-history.css" rel="stylesheet" type="text/css">
+  <link href="../static/css/responsive.css" rel="stylesheet" type="text/css">
+  <script src="../static/js/init.js" defer></script>
+  <script src="../static/js/chart.umd.js"></script> <!--Script para hacer las graficas-->
+  <script src="../static/js/hammerjs.js"></script> <!--Script para mover las graficas de costado-->
+  <script src="../static/js/chartjs-plugin-zoom.min.js"></script> <!--Script para hacer zoom a las graficas-->
+  <script type="module" src="../static/js/site-history.js"></script>
 </head>
+
 <body>
-    <div id="navBarDiv"></div>
+  <div id="navBarDiv"></div>
 
-    <main class="history-container">
+  <main class="history-container">
 
-        <section class="history-header">
-            <button id="btnVolver" class="back-button">←</button>
-            <h1>Histórico de Seguridad</h1>
-            <p class="history-subtitle">
-                Evolución de vulnerabilidades detectadas a lo largo del tiempo
-            </p>
-        </section>
+    <section class="history-header">
+      <button id="btnVolver" class="back-button">←</button>
+      <h1>Histórico de Seguridad</h1>
+      <p class="history-subtitle">
+        Evolución de vulnerabilidades detectadas a lo largo del tiempo
+      </p>
+    </section>
 
-        <section class="history-summary">
-            <h2>Análisis General</h2>
-            <p id="llmSummary"><!--Texto de llm--></p>
-        </section>
+    <section class="history-summary">
+      <h2>Análisis General</h2>
+      <p id="llmSummary"><!--Texto de llm--></p>
+    </section>
 
-        <section class="history-chart">
-            <h2>Evolución de Vulnerabilidades por Severidad</h2>
-            <canvas id="severityTimelineChart"></canvas>
-        </section>
+    <section class="history-chart">
+      <h2>Evolución de Vulnerabilidades por Severidad</h2>
+      <canvas id="severityTimelineChart"></canvas>
 
-        <section class="history-chart">
-            <h2>Riesgo Acumulado por Análisis</h2>
-            <canvas id="riskStackedChart"></canvas>
-        </section>
-        
-        <section class="history-chart">
-            <h2>Cantidad de Alteraciones en el Tiempo</h2>
-            <canvas id="changeTimelineChart"></canvas>
-        </section>
+      <div class="chart-insight">
+        <div class="insight-block">
+          <span>📊</span>
+          <div>
+            <h4>¿Qué estás viendo?</h4>
+            <p>Evolución de vulnerabilidades a lo largo del tiempo separadas por severidad.</p>
+          </div>
+        </div>
 
-        <section class="history-chart small">
-            <h2>Distribución Histórica de Severidades</h2>
-            <canvas id="severityDistributionChart"></canvas>
-        </section>
+        <div class="insight-block">
+          <span>⚠️</span>
+          <div>
+            <h4>Interpretación</h4>
+            <p>Incrementos en severidad alta indican riesgos críticos inmediatos; medias y bajas reflejan problemas
+              acumulativos.</p>
+          </div>
+        </div>
 
-    </main>
+        <div class="insight-block">
+          <span>✅</span>
+          <div>
+            <h4>Recomendación</h4>
+            <p>Priorizar vulnerabilidades críticas y reducir progresivamente las de nivel medio.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <section class="history-chart">
+      <h2>Riesgo Acumulado por Análisis</h2>
+      <canvas id="riskStackedChart"></canvas>
+
+      <div class="chart-insight">
+        <div class="insight-block">
+          <span>📊</span>
+          <div>
+            <h4>¿Qué estás viendo?</h4>
+            <p>Riesgo total por fecha basado en la suma ponderada de vulnerabilidades.</p>
+          </div>
+        </div>
+
+        <div class="insight-block">
+          <span>⚠️</span>
+          <div>
+            <h4>Interpretación</h4>
+            <p>Picos elevados indican múltiples vulnerabilidades o fallas críticas simultáneas.</p>
+          </div>
+        </div>
+
+        <div class="insight-block">
+          <span>✅</span>
+          <div>
+            <h4>Recomendación</h4>
+            <p>Evitar acumulaciones de riesgo y actuar rápidamente ante incrementos abruptos.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <section class="history-chart">
+      <h2>Cantidad de Alteraciones en el Tiempo</h2>
+      <canvas id="changeTimelineChart"></canvas>
+
+      <div class="chart-insight">
+        <div class="insight-block">
+          <span>📊</span>
+          <div>
+            <h4>¿Qué estás viendo?</h4>
+            <p>Cantidad de cambios detectados en el sitio a lo largo del tiempo.</p>
+          </div>
+        </div>
+
+        <div class="insight-block">
+          <span>⚠️</span>
+          <div>
+            <h4>Interpretación</h4>
+            <p>Aumentos bruscos pueden indicar ataques, defacement o inyecciones maliciosas.</p>
+          </div>
+        </div>
+
+        <div class="insight-block">
+          <span>✅</span>
+          <div>
+            <h4>Recomendación</h4>
+            <p>Investigar inmediatamente picos de actividad para detectar compromisos activos.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <section class="history-chart small">
+      <h2>Distribución Histórica de Severidades</h2>
+      <canvas id="severityDistributionChart"></canvas>
+
+      <div class="chart-insight">
+        <div class="insight-block">
+          <span>📊</span>
+          <div>
+            <h4>¿Qué estás viendo?</h4>
+            <p>Proporción total de vulnerabilidades según severidad.</p>
+          </div>
+        </div>
+
+        <div class="insight-block">
+          <span>⚠️</span>
+          <div>
+            <h4>Interpretación</h4>
+            <p>Una alta proporción de severidad crítica indica un perfil de riesgo elevado.</p>
+          </div>
+        </div>
+
+        <div class="insight-block">
+          <span>✅</span>
+          <div>
+            <h4>Recomendación</h4>
+            <p>Reducir vulnerabilidades críticas y gestionar las medias para evitar escalamiento.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
 
 </body>
+
 </html>

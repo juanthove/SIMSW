@@ -1,3 +1,5 @@
+from email import encoders
+from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
@@ -14,7 +16,7 @@ class EnviarAlerta():
         self.__remitente= os.getenv("GMAIL_REMITENTE") 
         self.__contrasena= os.getenv("PASS_APLICACION")
 
-    def enviar_alerta(self, destinatario, asunto, contenido):
+    def enviar_alerta(self, destinatario, asunto, contenido, adjunto_bytes=None, nombre_archivo=None):
         #Creo el mensaje
         mensaje = MIMEMultipart()
         mensaje["From"] = self.__remitente
@@ -23,6 +25,18 @@ class EnviarAlerta():
 
         #Agrego el contenido
         mensaje.attach(MIMEText(contenido, 'html'))
+
+        if adjunto_bytes is not None:
+          part = MIMEBase("application", "octet-stream")
+          part.set_payload(adjunto_bytes)
+          encoders.encode_base64(part)
+
+          part.add_header(
+              "Content-Disposition",
+              f'attachment; filename="{nombre_archivo}.pdf"'
+          )
+
+          mensaje.attach(part)
 
         try:
             #Se conecta con el servidor en el puerto 587

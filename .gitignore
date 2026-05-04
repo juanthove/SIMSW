@@ -28,7 +28,7 @@ baseline_sitio_41
 arquitectura.md
 
 dist/
-buid/
+build/
 SIMSW.spec
 uninstall.spec
 install.spec

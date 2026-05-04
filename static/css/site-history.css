@@ -11,3 +11,39 @@
 .history-chart canvas {
   max-height: 320px;    /*Altura controlada*/
 }
+
+.chart-insight {
+  margin-top: 15px;
+  padding: 14px;
+  border-radius: 10px;
+  background: #ffffff; /* blanco limpio */
+  border: 1px solid #e0e0e0; /* gris suave */
+  border-left: 4px solid #505050;
+}
+
+.insight-block {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.insight-block:last-child {
+  margin-bottom: 0;
+}
+
+.insight-block span {
+  font-size: 18px;
+  margin-top: 2px;
+}
+
+.insight-block h4 {
+  margin: 0;
+  font-size: 13px;
+  color: #2c3e50; /* texto principal */
+}
+
+.insight-block p {
+  margin: 2px 0 0 0;
+  font-size: 13px;
+  color: #6c757d; /* gris más suave */
+}

@@ -72,6 +72,7 @@ orjson
 outcome
 packaging
 passlib
+pdfkit
 peewee
 pefile
 pillow
@@ -138,6 +139,7 @@ uuid_utils
 uvicorn
 waitress
 wcmatch
+weasyprint
 webdriver-manager
 websocket-client
 websockets

@@ -1,9 +1,12 @@
 from database.connection import SessionLocal
 from database.models.analisis_model import Analisis
 from database.models.informe_model import Informe
+from database.models.sitioWeb_model import SitioWeb
+from database.models.detalleOZ_model import DetalleOZ
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import func
 from datetime import timezone
+from scripts.Reporte import generar_pdf_reporte
 
 #Obtener todos los análisis
 def obtener_analisis():
@@ -172,3 +175,98 @@ def obtener_detalle_analisis_con_informes(analisis_id):
 
     finally:
         db.close()
+
+#Obtener el reporte completo de todos los informes del analisis
+def obtener_reporte_completo(analisis_id):
+    db = SessionLocal()
+    try:
+        analisis = (
+            db.query(Analisis)
+            .filter(Analisis.id == analisis_id)
+            .first()
+        )
+
+        if not analisis:
+            return None
+
+        #Traer sitio
+        sitio = db.query(SitioWeb).filter(SitioWeb.id == analisis.sitio_web_id).first()
+
+        #Traer informes
+        informes = (
+            db.query(Informe)
+            .filter(Informe.analisis_id == analisis_id)
+            .all()
+        )
+
+        resultado_informes = []
+
+        for i in informes:
+            #Detalle OZ si existe
+            detalle = db.query(DetalleOZ).filter(DetalleOZ.informe_id == i.id).first()
+
+            detalle_oz = None
+
+            if detalle:
+                detalle_oz = {
+                    "endpoint": detalle.endpoint,
+                    "metodo": detalle.metodo,
+                    "parametro": detalle.parametro,
+                    "payload": detalle.payload
+                }
+
+            resultado_informes.append({
+                "id": i.id,
+                "titulo": i.titulo,
+                "severidad": i.severidad,
+                "descripcion": i.descripcion,
+                "impacto": i.impacto,
+                "recomendacion": i.recomendacion,
+                "evidencia": i.evidencia,
+                "codigo": i.codigo,
+
+                "detalleOZ": detalle_oz
+            })
+
+        return {
+            "analisis": {
+                "id": analisis.id,
+                "tipo": analisis.tipo,
+                "estado": analisis.estado,
+                "resultado_global": analisis.resultado_global,
+                "fecha": analisis.fecha.replace(tzinfo=timezone.utc).isoformat()
+                if analisis.fecha else None
+            },
+            "sitio": {
+                "id": sitio.id if sitio else None,
+                "nombre": sitio.nombre if sitio else "Sitio",
+                "url": sitio.url if sitio else ""
+            },
+            "informes": resultado_informes
+        }
+
+    finally:
+        db.close()
+
+#Genera el PDF del analisis
+def generar_pdf_analisis(analisis_id):
+    """
+    1. Obtiene los datos del análisis
+    2. Genera el PDF
+    3. Devuelve el buffer listo para enviar
+    """
+
+    data = obtener_reporte_completo(analisis_id)
+
+    if not data:
+        return None, None
+
+    pdf_buffer = generar_pdf_reporte(data)
+
+    nombre_archivo = (
+        f"{data['sitio']['nombre']}_"
+        f"{data['analisis']['tipo']}_"
+        f"{data['analisis']['fecha']}"
+    ).replace("/", "-")
+
+    return pdf_buffer, nombre_archivo

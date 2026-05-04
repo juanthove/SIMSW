@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, send_file
 from auth.auth_middleware import jwt_required
 from database.controllers.analisis_controller import (
     obtener_analisis,
@@ -8,7 +8,9 @@ from database.controllers.analisis_controller import (
     actualizar_analisis,
     eliminar_analisis,
     obtener_resumen_analisis_por_sitio,
-    obtener_detalle_analisis_con_informes
+    obtener_detalle_analisis_con_informes,
+    obtener_reporte_completo,
+    generar_pdf_analisis
 )
 
 analisis_bp_db = Blueprint("analisis", __name__, url_prefix="/api/analisis")
@@ -104,3 +106,33 @@ def get_detalle_analisis_con_informes_route(analisis_id):
         return jsonify({"error": "Análisis no encontrado"}), 404
 
     return jsonify(resultado), 200
+
+#Obtener el reporte completo de todos los informes del analisis
+@analisis_bp_db.route("/<int:analisis_id>/reporte-completo", methods=["GET"])
+@jwt_required()
+def get_reporte_completo(analisis_id):
+    resultado = obtener_reporte_completo(analisis_id)
+
+    if not resultado:
+        return jsonify({"error": "Análisis no encontrado"}), 404
+
+    return jsonify(resultado), 200
+
+#Obtener pdf del reporte completo
+@analisis_bp_db.route("/<int:analisis_id>/reporte-pdf", methods=["GET"])
+@jwt_required()
+def generar_pdf_endpoint(analisis_id):
+
+    pdf_buffer, nombre_archivo = generar_pdf_analisis(analisis_id)
+
+    if not pdf_buffer:
+        return jsonify({"error": "Análisis no encontrado"}), 404
+    
+    pdf_buffer.seek(0)
+
+    return send_file(
+        pdf_buffer,
+        as_attachment=True,
+        download_name=f"{nombre_archivo}.pdf",
+        mimetype="application/pdf"
+    )
