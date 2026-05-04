@@ -58,10 +58,11 @@
   color: #000000;
   cursor: pointer;
   text-decoration: none;
-  width: fit-content; 
-  display: inline-block; 
-  grid-column: -1 / -1; 
-  justify-self: end; /*Para que quede a la derecha del todo*/
+  width: fit-content;
+  display: inline-block;
+  grid-column: -1 / -1;
+  justify-self: end;
+  /*Para que quede a la derecha del todo*/
   align-self: center;
 }
 
@@ -175,22 +176,22 @@ td[data-vuln="1"] {
 
 
 
-.btn-limpiar {
+.btn-blanco {
   padding: 8px 12px;
   font-size: 14px;
   border: 1px solid #d0d0d0;
   border-radius: 6px;
   background-color: #ffffff;
-  color: #555555;
+  color: #000000;
   cursor: pointer;
 }
 
-.btn-limpiar:hover {
+.btn-blanco:hover {
   background-color: #f9f9f9;
   border-color: #b0b0b0;
 }
 
-.btn-limpiar:focus {
+.btn-blanco:focus {
   outline: none;
   border-color: #999999;
 }
@@ -199,7 +200,7 @@ td[data-vuln="1"] {
 
 
 /*analysis-list*/
-.infoGrid{
+.infoGrid {
   margin-bottom: 1.3em;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -217,8 +218,14 @@ td[data-vuln="1"] {
 
 /*Deshabilitar sitios sin analisis*/
 .site-disabled {
-    color: #999;
-    cursor: not-allowed;
+  color: #999;
+  cursor: not-allowed;
+}
+
+
+/*report-list*/
+.accionesDer {
+  display: flex;
 }
 
 
@@ -292,7 +299,7 @@ td[data-vuln="1"] {
   background-color: #ffffff;
   color: #000000;
   cursor: pointer;
-  transition: 
+  transition:
     background-color 0.2s ease,
     border-color 0.2s ease,
     color 0.2s ease,
@@ -313,7 +320,7 @@ td[data-vuln="1"] {
 .btn-alteracion:focus {
   outline: none;
   border-color: #999999;
-  box-shadow: 0 0 0 2px rgba(0,0,0,0.05);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
 }
 
 /*Estático azul*/

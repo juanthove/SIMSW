@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 from scripts.EnviarAlerta import EnviarAlerta
 from datetime import datetime
 import logging
+from database.controllers.analisis_controller import generar_pdf_analisis
 
 logger = logging.getLogger(__name__)
 
@@ -116,7 +117,7 @@ def analizar_estatico(url, sitio_web_id):
         db.commit()
 
         #Enviar alertas de las vulnerabilidades criticas
-        enviar_alertas_criticas(sitio_web_id, vulnerabilidades, url, "estatico")
+        enviar_alertas_criticas(sitio_web_id, vulnerabilidades, url, "estatico", analisis.id)
 
         return {
             "analisis_id": analisis.id,
@@ -240,7 +241,7 @@ def analizar_dinamico(url, sitio_web_id):
         db.commit()
 
         #Enviar alertas de las vulnerabilidades criticas
-        enviar_alertas_criticas(sitio_web_id, vulnerabilidades_validas, url, "dinamico")
+        enviar_alertas_criticas(sitio_web_id, vulnerabilidades_validas, url, "dinamico", analisis.id)
 
         return {
             "analisis_id": analisis.id,
@@ -369,7 +370,7 @@ def analizar_alteraciones(url, sitio_web_id, metodo):
 
         #Enviar alertas
         if hubo_datos:
-            enviar_alertas_criticas(sitio_web_id, vulnerabilidades_validas, url, "alteracion")
+            enviar_alertas_criticas(sitio_web_id, vulnerabilidades_validas, url, "alteracion", analisis.id)
 
         return {
             "analisis_id": analisis.id,
@@ -401,7 +402,7 @@ def analizar_alteraciones(url, sitio_web_id, metodo):
 
 
 #Funcion para enviar las alertas
-def enviar_alertas_criticas(sitio_web_id, vulnerabilidades, url, tipo_analisis):
+def enviar_alertas_criticas(sitio_web_id, vulnerabilidades, url, tipo_analisis, analisis_id):
     """
     Envía un mail por cada correo relacionado al sitio
     si existen vulnerabilidades de severidad 3
@@ -429,6 +430,9 @@ def enviar_alertas_criticas(sitio_web_id, vulnerabilidades, url, tipo_analisis):
         #Obtener nombre del sitio
         sitio = db.query(SitioWeb).filter(SitioWeb.id == sitio_web_id).first()
         nombre_sitio = sitio.nombre if sitio else "Sitio desconocido"
+
+        #Obtener PDF
+        pdf_buffer, nombre_archivo = generar_pdf_analisis(analisis_id)
 
         #Obtener mails relacionados al sitio
         mails = (
@@ -458,7 +462,11 @@ def enviar_alertas_criticas(sitio_web_id, vulnerabilidades, url, tipo_analisis):
                     <b>Cantidad:</b> {len(vulnerabilidades_criticas)}<br><br>
 
                     Se recomienda tomar acciones inmediatas.
-                    """
+                    <br>
+                    Puede ver el reporte completo en el pdf adjunto.
+                    """,
+                    adjunto_bytes = pdf_buffer.getvalue(),
+                    nombre_archivo = nombre_archivo
                 )
 
                 enviados += 1

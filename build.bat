@@ -58,6 +58,7 @@ pyinstaller --onedir ^
 --add-data "templates;templates" ^
 --add-data "uploads;uploads" ^
 --add-data "vulberta;vulberta" ^
+--add-data "wkhtmltox;wkhtmltox" ^
 --add-data "ZAP_2.17.0;ZAP_2.17.0" ^
 --add-data "playwright_browsers;playwright_browsers" ^
 run.py
@@ -90,6 +91,7 @@ pyinstaller --onedir ^
 --add-data "templates;templates" ^
 --add-data "uploads;uploads" ^
 --add-data "vulberta;vulberta" ^
+--add-data "wkhtmltox;wkhtmltox" ^
 --add-data "ZAP_2.17.0;ZAP_2.17.0" ^
 --add-data "playwright_browsers;playwright_browsers" ^
 --add-data "nssm.exe;." ^

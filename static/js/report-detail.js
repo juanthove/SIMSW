@@ -6,31 +6,31 @@ const params = new URLSearchParams(window.location.search);
 const id = params.get("id");
 
 if (!id) {
-    console.error("ID de informe no proporcionado");
-    throw new Error("Falta ID de informe");
+  console.error("ID de informe no proporcionado");
+  throw new Error("Falta ID de informe");
 }
 
 let informe = null;
 
 async function cargarDetalle() {
-    try {
-        const response = await apiFetch(`/api/informes/${id}`);
+  try {
+    const response = await apiFetch(`/api/informes/${id}`);
 
-        if (!response.ok) {
-            throw new Error("Error al obtener informes del analisis");
-        }
-
-        informe = await response.json();
-
-        mostrarDetalle(informe);
-
-        if (informe.tipoAnalisis === "Dinamico") {
-            await cargarDetalleOZ(informe.id);
-        }
-
-    } catch (error) {
-        console.error(error);
+    if (!response.ok) {
+      throw new Error("Error al obtener informes del analisis");
     }
+
+    informe = await response.json();
+
+    mostrarDetalle(informe);
+
+    if (informe.tipoAnalisis === "Dinamico") {
+      await cargarDetalleOZ(informe.id);
+    }
+
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 const severidadTexto = {
@@ -40,84 +40,84 @@ const severidadTexto = {
 };
 
 function mostrarDetalle(data) {
-    const titulo = document.getElementById("titulo");
-    const nivel = document.getElementById("nivel"); 
+  const titulo = document.getElementById("titulo");
+  const nivel = document.getElementById("nivel");
 
-    titulo.textContent = data.titulo;
+  titulo.textContent = data.titulo;
 
-    const severidad = severidadTexto[data.severidad] ?? "Desconocida";
-    nivel.textContent = severidad;
-    nivel.classList.add(severidad);
+  const severidad = severidadTexto[data.severidad] ?? "Desconocida";
+  nivel.textContent = severidad;
+  nivel.classList.add(severidad);
 
-    const url = document.getElementById("url");
-    url.textContent = data.url;
-    url.href = data.url;
+  const url = document.getElementById("url");
+  url.textContent = data.url;
+  url.href = data.url;
 
-    document.getElementById("fecha").textContent = formatearFecha(data.fechaAnalisis);
-    document.getElementById("fuente").textContent = data.tipoAnalisis;
+  document.getElementById("fecha").textContent = formatearFecha(data.fechaAnalisis);
+  document.getElementById("fuente").textContent = data.tipoAnalisis;
 
-    document.getElementById("descripcion").textContent = data.descripcion;
-    document.getElementById("impacto").textContent = data.impacto;
-    document.getElementById("recomendacion").textContent = data.recomendacion;
-    document.getElementById("evidencia").textContent = data.evidencia;
+  document.getElementById("descripcion").textContent = data.descripcion;
+  document.getElementById("impacto").textContent = data.impacto;
+  document.getElementById("recomendacion").textContent = data.recomendacion;
+  document.getElementById("evidencia").textContent = data.evidencia;
 
-    if (data.codigo) {
-        document.getElementById("codigo").textContent = data.codigo;
-        document.getElementById("bloqueCodigo").hidden = false;
-    }
+  if (data.codigo) {
+    document.getElementById("codigo").textContent = data.codigo;
+    document.getElementById("bloqueCodigo").hidden = false;
+  }
 
 }
 
 
 async function cargarDetalleOZ(informeId) {
-    try {
-        const response = await apiFetch(`/api/detalle-oz/informe/${informeId}`);
+  try {
+    const response = await apiFetch(`/api/detalle-oz/informe/${informeId}`);
 
-        if (!response.ok) {
-            return; //Si no hay detalle oz no se muestra nada
-        }
-
-        const oz = await response.json();
-
-        mostrarDetalleOZ(oz);
-
-    } catch (error) {
-        console.error("Error al cargar detalle OZ", error);
+    if (!response.ok) {
+      return; //Si no hay detalle oz no se muestra nada
     }
+
+    const oz = await response.json();
+
+    mostrarDetalleOZ(oz);
+
+  } catch (error) {
+    console.error("Error al cargar detalle OZ", error);
+  }
 }
 
 
 function mostrarDetalleOZ(oz) {
-    const bloque = document.getElementById("bloqueDetalleOZ");
+  const bloque = document.getElementById("bloqueDetalleOZ");
 
-    const hayContenido = [
-        setOZField("oz-endpoint", oz.endpoint),
-        setOZField("oz-metodo", oz.metodo),
-        setOZField("oz-parametro", oz.parametro),
-        setOZField("oz-payload", oz.payload),
-    ].some(Boolean);
+  const hayContenido = [
+    setOZField("oz-endpoint", oz.endpoint),
+    setOZField("oz-metodo", oz.metodo),
+    setOZField("oz-parametro", oz.parametro),
+    setOZField("oz-payload", oz.payload),
+  ].some(Boolean);
 
-    //Mostrar el bloque solo si hay al menos un dato técnico
-    bloque.hidden = !hayContenido;
+  //Mostrar el bloque solo si hay al menos un dato técnico
+  bloque.hidden = !hayContenido;
 }
 
 
 function setOZField(id, value) {
-    const el = document.getElementById(id);
-    const container = el.closest(".oz-item");
+  const el = document.getElementById(id);
+  const container = el.closest(".oz-item");
 
-    if (!container) {
-        return false;
-    }
+  if (!container) {
+    return false;
+  }
 
-    if (!value || value.trim() === "") {
-        container.classList.add("hidden");
-        return false;
-    }
+  if (!value || value.trim() === "") {
+    container.classList.add("hidden");
+    return false;
+  }
 
-    el.textContent = value;
-    container.classList.remove("hidden");
-    return true;
+  el.textContent = value;
+  container.classList.remove("hidden");
+  return true;
 }
 
 
@@ -129,6 +129,6 @@ cargarDetalle();
 
 //Volver a la lista de analisis
 document.getElementById("btnVolver").addEventListener("click", (e) => {
-    e.preventDefault();
-    window.location.href = `/report-list?siteId=${informe.siteId}&analysisId=${informe.analisisId}`;
+  e.preventDefault();
+  window.location.href = `/report-list?siteId=${informe.siteId}&analysisId=${informe.analisisId}`;
 });

@@ -12,28 +12,28 @@ let listaFiltrada = [];
 
 
 async function cargarInformes() {
-    try {
-        const response = await apiFetch(`/api/analisis/${analysisId}/detalle`);
+  try {
+    const response = await apiFetch(`/api/analisis/${analysisId}/detalle`);
 
-        if (!response.ok) {
-            throw new Error("Error al obtener informes del analisis");
-        }
-
-        const data = await response.json();
-
-        document.getElementById("analisis").textContent = data.analisis.tipo;
-        document.getElementById("estadoAnalisis").textContent = data.analisis.estado;
-        document.getElementById("resultadoGlobal").textContent = data.analisis.resultado_global;
-        document.getElementById("fechaAnalisis").textContent = formatearFecha(data.analisis.fecha);
-
-        listaInformes = data.informes;
-        listaFiltrada = [...listaInformes];
-
-        mostrarListado(listaFiltrada);
-
-    } catch (error) {
-        console.error(error);
+    if (!response.ok) {
+      throw new Error("Error al obtener informes del analisis");
     }
+
+    const data = await response.json();
+
+    document.getElementById("analisis").textContent = data.analisis.tipo;
+    document.getElementById("estadoAnalisis").textContent = data.analisis.estado;
+    document.getElementById("resultadoGlobal").textContent = data.analisis.resultado_global;
+    document.getElementById("fechaAnalisis").textContent = formatearFecha(data.analisis.fecha);
+
+    listaInformes = data.informes;
+    listaFiltrada = [...listaInformes];
+
+    mostrarListado(listaFiltrada);
+
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 //Cargar los informes al entrar
@@ -50,24 +50,24 @@ const severidadTexto = {
 const tablaInforme = document.querySelector("#tablaInforme tbody");
 
 function mostrarListado(lista) {
-    tablaInforme.innerHTML = ""; //Elimino los datos antiguos
-    lista.forEach(item => {
-        const tr = document.createElement("tr");
+  tablaInforme.innerHTML = ""; //Elimino los datos antiguos
+  lista.forEach(item => {
+    const tr = document.createElement("tr");
 
-        tr.innerHTML = `
+    tr.innerHTML = `
         <td>${item.titulo}</td>
         <td>${item.descripcion_humana}</td>
         <td data-vuln="${item.severidad}">${severidadTexto[item.severidad] ?? "Desconocida"}</td>
         `;
 
-        tr.style.cursor = "pointer";
+    tr.style.cursor = "pointer";
 
-        tr.addEventListener("click", () => {
-            window.location.href = `/report-detail?id=${item.id}`;
-        });
-
-        tablaInforme.appendChild(tr);
+    tr.addEventListener("click", () => {
+      window.location.href = `/report-detail?id=${item.id}`;
     });
+
+    tablaInforme.appendChild(tr);
+  });
 }
 
 
@@ -85,27 +85,27 @@ encabezados.forEach(th => {
     th.classList.add(asc ? "asc" : "desc");
 
     listaFiltrada.sort((a, b) => {
-        let A = a[columna];
-        let B = b[columna];
+      let A = a[columna];
+      let B = b[columna];
 
-        if (columna === "fecha") {
-            A = new Date(A);
-            B = new Date(B);
-        }
+      if (columna === "fecha") {
+        A = new Date(A);
+        B = new Date(B);
+      }
 
-        if (columna === "severidad") {
-            A = Number(a.severidad);
-            B = Number(b.severidad);
-        }
+      if (columna === "severidad") {
+        A = Number(a.severidad);
+        B = Number(b.severidad);
+      }
 
-        if (columna === "titulo") {
-          A = A.toLowerCase();
-          B = B.toLowerCase();
-        }
+      if (columna === "titulo") {
+        A = A.toLowerCase();
+        B = B.toLowerCase();
+      }
 
-        if (A < B) return asc ? -1 : 1; //El primer elemento va antes que el segundo
-        if (A > B) return asc ? 1 : -1; //El segundo elemento va antes que el primero
-        return 0;
+      if (A < B) return asc ? -1 : 1; //El primer elemento va antes que el segundo
+      if (A > B) return asc ? 1 : -1; //El segundo elemento va antes que el primero
+      return 0;
     });
 
     mostrarListado(listaFiltrada);
@@ -134,13 +134,35 @@ function aplicarFiltros() {
 }
 
 
-
-
 buscador.addEventListener("input", aplicarFiltros);
 filtroNivel.addEventListener("change", aplicarFiltros);
 
+document.getElementById("btnDescargar").addEventListener("click", async () => {
+  const response = await fetch(`/api/analisis/${analysisId}/reporte-pdf`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`
+    }
+  });
+
+  const blob = await response.blob();
+  const url = window.URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+
+  // opcional: nombre desde backend (header)
+  const disposition = response.headers.get("Content-Disposition");
+  const nombre = disposition?.split("filename=")[1]?.replace(/"/g, "") || "reporte.pdf";
+
+  a.download = nombre;
+  a.click();
+
+  window.URL.revokeObjectURL(url);
+});
+
+
 //Volver a la lista de sitios
 document.getElementById("btnVolver").addEventListener("click", (e) => {
-    e.preventDefault();
-    window.location.href = `/analysis-list?siteId=${siteId}`;
+  e.preventDefault();
+  window.location.href = `/analysis-list?siteId=${siteId}`;
 });

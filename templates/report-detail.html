@@ -1,90 +1,93 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detalle</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detalle</title>
 
-    <link href="../static/css/main.css" rel="stylesheet" type="text/css">
-    <link href="../static/css/report-detail.css" rel="stylesheet" type="text/css">
-    <link href="../static/css/responsive.css" rel="stylesheet" type="text/css">
-    <script src="../static/js/init.js" defer></script>
-    <script type="module" src="../static/js/report-detail.js"></script>
+  <link href="../static/css/main.css" rel="stylesheet" type="text/css">
+  <link href="../static/css/report-detail.css" rel="stylesheet" type="text/css">
+  <link href="../static/css/responsive.css" rel="stylesheet" type="text/css">
+  <script src="../static/js/init.js" defer></script>
+  <script type="module" src="../static/js/report-detail.js"></script>
 </head>
+
 <body>
-    <div id="navBarDiv"></div>
+  <div id="navBarDiv"></div>
 
-    <main class="contenedor">
+  <main class="contenedor">
 
-        <header class="encabezado">
-            <button id="btnVolver" class="back-button">←</button>
-            <h1 id="titulo"></h1>
-            <span id="nivel" class="badge"></span>
-        </header>
+    <header class="encabezado">
+      <button id="btnVolver" class="back-button">←</button>
+      <h1 id="titulo"></h1>
+      <span id="nivel" class="badge"></span>
+    </header>
 
-        <section class="info-general">
-            <div><strong>URL:</strong> <a id="url" target="_blank"></a></div>
-            <div><strong>Fecha:</strong> <span id="fecha"></span></div>
-            <div><strong>Fuente:</strong> <span id="fuente"></span></div>
-        </section>
+    <section class="info-general">
+      <div><strong>URL:</strong> <a id="url" target="_blank"></a></div>
+      <div><strong>Fecha:</strong> <span id="fecha"></span></div>
+      <div><strong>Fuente:</strong> <span id="fuente"></span></div>
+    </section>
 
-        <section class="bloque">
-            <h2>Descripción</h2>
-            <p id="descripcion"></p>
-        </section>
+    <section class="bloque">
+      <h2>Descripción</h2>
+      <p id="descripcion"></p>
+    </section>
 
-        <section class="bloque">
-            <h2>Impacto</h2>
-            <p id="impacto"></p>
-        </section>
+    <section class="bloque">
+      <h2>Impacto</h2>
+      <p id="impacto"></p>
+    </section>
 
-        <section class="bloque">
-            <h2>Recomendación</h2>
-            <p id="recomendacion"></p>
-        </section>
+    <section class="bloque">
+      <h2>Recomendación</h2>
+      <p id="recomendacion"></p>
+    </section>
 
-        <section class="bloque">
-            <h2>Evidencia</h2>
-            <p id="evidencia"></p>
-        </section>
-
-
-
-        <!--Código-->
-        <section class="bloque" id="bloqueCodigo" hidden>
-            <h2>Código Analizado</h2>
-            <pre><code id="codigo"></code></pre>
-        </section>
+    <section class="bloque">
+      <h2>Evidencia</h2>
+      <p id="evidencia"></p>
+    </section>
 
 
-        
-        <!--Detalle OWASP ZAP solo analisis dinamico-->
-        <section class="bloque" id="bloqueDetalleOZ" hidden>
-            <h2>Detalle Técnico</h2>
 
-            <div class="oz-item">
-                <strong>Endpoint:</strong>
-                <span id="oz-endpoint"></span>
-            </div>
-
-            <div class="oz-item">
-                <strong>Método:</strong>
-                <span id="oz-metodo"></span>
-            </div>
-
-            <div class="oz-item">
-                <strong>Parámetro:</strong>
-                <span id="oz-parametro"></span>
-            </div>
-
-            <div class="oz-item">
-                <strong>Payload:</strong>
-                <pre><code id="oz-payload"></code></pre>
-            </div>
-        </section>
+    <!--Código-->
+    <section class="bloque" id="bloqueCodigo" hidden>
+      <h2>Código Analizado</h2>
+      <pre><code id="codigo"></code></pre>
+    </section>
 
 
-    </main>
+
+    <!--Detalle OWASP ZAP solo analisis dinamico-->
+    <section class="bloque" id="bloqueDetalleOZ" hidden>
+      <h2>Detalle Técnico</h2>
+
+      <div class="oz-item">
+        <strong>Endpoint:</strong>
+        <span id="oz-endpoint"></span>
+      </div>
+
+      <div class="oz-item">
+        <strong>Método:</strong>
+        <span id="oz-metodo"></span>
+      </div>
+
+      <div class="oz-item">
+        <strong>Parámetro:</strong>
+        <span id="oz-parametro"></span>
+      </div>
+
+      <div class="oz-item">
+        <strong>Payload:</strong>
+        <pre><code id="oz-payload"></code></pre>
+      </div>
+    </section>
+
+
+  </main>
 
 </body>
+
 </html>
