@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS `analisis` (
   PRIMARY KEY (`id`),
   KEY `sitio_web_id` (`sitio_web_id`),
   CONSTRAINT `sitio_web_id` FOREIGN KEY (`sitio_web_id`) REFERENCES `sitio_web` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=423 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=542 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 -- La exportación de datos fue deseleccionada.
 
@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS `detalle_oz` (
   UNIQUE KEY `informe_id_unique` (`informe_id`),
   KEY `informe_id` (`informe_id`),
   CONSTRAINT `informe_id` FOREIGN KEY (`informe_id`) REFERENCES `informe` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=90 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=94 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 -- La exportación de datos fue deseleccionada.
 
@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS `informe` (
   PRIMARY KEY (`id`),
   KEY `analisis_id` (`analisis_id`),
   CONSTRAINT `analisis_id` FOREIGN KEY (`analisis_id`) REFERENCES `analisis` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=409 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=502 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 -- La exportación de datos fue deseleccionada.
 
@@ -77,8 +77,9 @@ CREATE TABLE IF NOT EXISTS `mail` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `nombre` varchar(100) NOT NULL,
   `correo` varchar(255) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `correo` (`correo`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 -- La exportación de datos fue deseleccionada.
 
@@ -93,7 +94,7 @@ CREATE TABLE IF NOT EXISTS `sitio_mail` (
   KEY `mail_id` (`mail_id`),
   CONSTRAINT `mail_sitio_id` FOREIGN KEY (`mail_id`) REFERENCES `mail` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION,
   CONSTRAINT `sitio_web_mail_id` FOREIGN KEY (`sitio_web_id`) REFERENCES `sitio_web` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=56 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=77 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 -- La exportación de datos fue deseleccionada.
 
@@ -110,7 +111,7 @@ CREATE TABLE IF NOT EXISTS `sitio_web` (
   `fecha_ultimo_automatico` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `url` (`url`) USING HASH
-) ENGINE=InnoDB AUTO_INCREMENT=47 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=49 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 -- La exportación de datos fue deseleccionada.
 
