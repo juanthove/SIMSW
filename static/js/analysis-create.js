@@ -14,7 +14,7 @@ async function cargarSitios() {
     }
 
     listaSitios = await response.json();
-    listaFiltrada = [...listaSitios]; // ✅ ACÁ
+    listaFiltrada = [...listaSitios];
     mostrarListado(listaFiltrada);
   } catch (error) {
     console.error(error);

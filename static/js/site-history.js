@@ -2,22 +2,20 @@
 import { apiFetch } from "./api.js";
 import { formatearFechaDia } from "./fecha.js";
 
-
 //Obtener la id del sitio
 const params = new URLSearchParams(window.location.search);
 const siteId = params.get("id");
 
 if (!siteId) {
-    console.error("No se recibió el ID del sitio");
+  console.error("No se recibió el ID del sitio");
 }
 
 async function cargarDatos() {
   try {
-
     //Buscar datos
     const [respInformes, respAlteraciones] = await Promise.all([
       apiFetch(`/api/sitios/${siteId}/informes`),
-      apiFetch(`/api/sitios/${siteId}/alteraciones`)
+      apiFetch(`/api/sitios/${siteId}/alteraciones`),
     ]);
 
     if (!respInformes.ok) {
@@ -32,9 +30,9 @@ async function cargarDatos() {
     const alteraciones = await respAlteraciones.json();
 
     //Formatear fechas sacando la hora
-    const informesNormalizados = informes.map(i => ({...i, fechaLocal: formatearFechaDia(i.fecha)}));
+    const informesNormalizados = informes.map((i) => ({ ...i, fechaLocal: formatearFechaDia(i.fecha) }));
 
-    const alteracionesNormalizadas = alteraciones.map(a => ({...a, fechaLocal: formatearFechaDia(a.fecha)}));
+    const alteracionesNormalizadas = alteraciones.map((a) => ({ ...a, fechaLocal: formatearFechaDia(a.fecha) }));
 
     const alteracionesDeduplicadas = deduplicarAlteracionesPorDia(alteracionesNormalizadas);
 
@@ -48,18 +46,15 @@ async function cargarDatos() {
 
     //Gráfica exclusiva de alteraciones
     crearAlteracionesEnElTiempo(alteracionesDeduplicadas);
-
   } catch (error) {
     console.error(error);
   }
 }
 
-
 function deduplicarAlteracionesPorDia(alteraciones) {
-
   const agrupadas = {};
 
-  alteraciones.forEach(a => {
+  alteraciones.forEach((a) => {
     if (!a.fechaLocal || !a.alteracion_hash) return;
 
     const fecha = a.fechaLocal;
@@ -75,8 +70,7 @@ function deduplicarAlteracionesPorDia(alteraciones) {
   });
 
   //Convertimos nuevamente a array plano
-  return Object.values(agrupadas)
-    .flatMap(hashes => Object.values(hashes));
+  return Object.values(agrupadas).flatMap((hashes) => Object.values(hashes));
 }
 
 //Colores dependiendo el nivel de severidad
@@ -94,22 +88,17 @@ const severidadMap = {
 
 //Valores de cada severidad
 const severidades = ["Baja", "Media", "Alta"];
-const pesos = {Baja: 1, Media: 2, Alta: 3};
-
+const pesos = { Baja: 1, Media: 2, Alta: 3 };
 
 //Obtener las fechas
 function obtenerFechasUnicas(informes) {
-  return [...new Set(
-    informes.map((i) => i.fechaLocal).filter(Boolean),
-  )].sort((a, b) => {
+  return [...new Set(informes.map((i) => i.fechaLocal).filter(Boolean))].sort((a, b) => {
     const [da, ma, ya] = a.split("/");
     const [db, mb, yb] = b.split("/");
 
     return new Date(ya, ma - 1, da) - new Date(yb, mb - 1, db);
   });
 }
-
-
 
 function crearTimelineSeveridad(informes) {
   //Fechas únicas
@@ -121,12 +110,9 @@ function crearTimelineSeveridad(informes) {
     Baja: [],
   };
 
-  fechas.forEach(fecha => {
-    severidades.forEach(sev => {
-      const cantidad = informes.filter(i =>
-        i.fechaLocal === fecha &&
-        severidadMap[i.severidad] === sev
-      ).length;
+  fechas.forEach((fecha) => {
+    severidades.forEach((sev) => {
+      const cantidad = informes.filter((i) => i.fechaLocal === fecha && severidadMap[i.severidad] === sev).length;
 
       dataPorSeveridad[sev].push(cantidad);
     });
@@ -136,13 +122,13 @@ function crearTimelineSeveridad(informes) {
     type: "line",
     data: {
       labels: fechas,
-      datasets: severidades.map(sev => ({
+      datasets: severidades.map((sev) => ({
         label: sev,
         data: dataPorSeveridad[sev],
         borderColor: coloresSeveridad[sev],
         backgroundColor: coloresSeveridad[sev],
         tension: 0.3,
-        fill: false
+        fill: false,
       })),
     },
     options: {
@@ -161,16 +147,16 @@ function crearTimelineSeveridad(informes) {
         zoom: {
           pan: {
             enabled: true,
-            mode: 'x',
+            mode: "x",
           },
           zoom: {
             wheel: {
-              enabled: true // zoom con rueda del mouse
+              enabled: true, //Zoom con rueda del mouse
             },
             pinch: {
-              enabled: true // zoom táctil
+              enabled: true, //Zoom táctil
             },
-            mode: 'x',
+            mode: "x",
           },
         },
       },
@@ -181,9 +167,9 @@ function crearTimelineSeveridad(informes) {
 function crearRiesgoAcumulado(informes) {
   const fechas = obtenerFechasUnicas(informes);
 
-  const riesgo = fechas.map(fecha => {
+  const riesgo = fechas.map((fecha) => {
     return informes
-      .filter(i => i.fechaLocal === fecha)
+      .filter((i) => i.fechaLocal === fecha)
       .reduce((acc, i) => {
         const sevTexto = severidadMap[i.severidad];
         return acc + pesos[sevTexto];
@@ -194,11 +180,13 @@ function crearRiesgoAcumulado(informes) {
     type: "bar",
     data: {
       labels: fechas,
-      datasets: [{
-        label: "Riesgo acumulado",
-        data: riesgo,
-        backgroundColor: "#34495e",
-      }],
+      datasets: [
+        {
+          label: "Riesgo acumulado",
+          data: riesgo,
+          backgroundColor: "#34495e",
+        },
+      ],
     },
     options: {
       responsive: true,
@@ -207,16 +195,16 @@ function crearRiesgoAcumulado(informes) {
         zoom: {
           pan: {
             enabled: true,
-            mode: 'x',
+            mode: "x",
           },
           zoom: {
             wheel: {
-              enabled: true // zoom con rueda del mouse
+              enabled: true, //Zoom con rueda del mouse
             },
             pinch: {
-              enabled: true // zoom táctil
+              enabled: true, //Zoom táctil
             },
-            mode: 'x',
+            mode: "x",
           },
         },
       },
@@ -227,7 +215,7 @@ function crearRiesgoAcumulado(informes) {
 function crearDistribucionSeveridad(informes) {
   const conteo = { Alta: 0, Media: 0, Baja: 0 };
 
-  informes.forEach(i => {
+  informes.forEach((i) => {
     const sev = severidadMap[i.severidad];
     if (sev) conteo[sev]++;
   });
@@ -236,10 +224,12 @@ function crearDistribucionSeveridad(informes) {
     type: "pie",
     data: {
       labels: severidades,
-      datasets: [{
-        data: severidades.map(s => conteo[s]),
-        backgroundColor: severidades.map(s => coloresSeveridad[s]),
-      }],
+      datasets: [
+        {
+          data: severidades.map((s) => conteo[s]),
+          backgroundColor: severidades.map((s) => coloresSeveridad[s]),
+        },
+      ],
     },
     options: {
       responsive: true,
@@ -248,12 +238,10 @@ function crearDistribucionSeveridad(informes) {
   });
 }
 
-
 function crearAlteracionesEnElTiempo(informes) {
-
   const conteoPorFecha = {};
 
-  informes.forEach(i => {
+  informes.forEach((i) => {
     if (!conteoPorFecha[i.fechaLocal]) {
       conteoPorFecha[i.fechaLocal] = 0;
     }
@@ -266,17 +254,19 @@ function crearAlteracionesEnElTiempo(informes) {
 
     return new Date(ya, ma - 1, da) - new Date(yb, mb - 1, db);
   });
-  const cantidadPorFecha = fechas.map(f => conteoPorFecha[f]);
+  const cantidadPorFecha = fechas.map((f) => conteoPorFecha[f]);
 
   new Chart(document.getElementById("changeTimelineChart"), {
     type: "bar",
     data: {
       labels: fechas,
-      datasets: [{
-        label: "Cantidad de alteraciones",
-        data: cantidadPorFecha,
-        backgroundColor: "#8e44ad",
-      }],
+      datasets: [
+        {
+          label: "Cantidad de alteraciones",
+          data: cantidadPorFecha,
+          backgroundColor: "#8e44ad",
+        },
+      ],
     },
     options: {
       responsive: true,
@@ -294,16 +284,16 @@ function crearAlteracionesEnElTiempo(informes) {
         zoom: {
           pan: {
             enabled: true,
-            mode: 'x',
+            mode: "x",
           },
           zoom: {
             wheel: {
-              enabled: true // zoom con rueda del mouse
+              enabled: true, //Zoom con rueda del mouse
             },
             pinch: {
-              enabled: true // zoom táctil
+              enabled: true, //Zoom táctil
             },
-            mode: 'x',
+            mode: "x",
           },
         },
       },
@@ -311,15 +301,11 @@ function crearAlteracionesEnElTiempo(informes) {
   });
 }
 
-
-
 //Volver a analysis-list
 document.getElementById("btnVolver").addEventListener("click", (e) => {
-    e.preventDefault();
-    window.location.href = `/analysis-list?siteId=${siteId}`;
+  e.preventDefault();
+  window.location.href = `/analysis-list?siteId=${siteId}`;
 });
-
-
 
 //Cargar los sitios al entrar
 cargarDatos();
