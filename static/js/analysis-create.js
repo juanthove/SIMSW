@@ -5,22 +5,20 @@ import { apiFetch } from "./api.js";
 let listaSitios = [];
 let listaFiltrada = [];
 
-
 async function cargarSitios() {
-    try {
-        const response = await apiFetch("/api/sitios/");
+  try {
+    const response = await apiFetch("/api/sitios/");
 
-        if (!response.ok) {
-            throw new Error("Error al obtener los sitios");
-        }
-
-        listaSitios = await response.json();
-        listaFiltrada = [...listaSitios];   // ✅ ACÁ
-        mostrarListado(listaFiltrada);
-
-    } catch (error) {
-        console.error(error);
+    if (!response.ok) {
+      throw new Error("Error al obtener los sitios");
     }
+
+    listaSitios = await response.json();
+    listaFiltrada = [...listaSitios]; // ✅ ACÁ
+    mostrarListado(listaFiltrada);
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 //Cargar los sitios al entrar
@@ -32,7 +30,7 @@ const tablaSitios = document.querySelector("#tablaSitios tbody");
 function mostrarListado(lista) {
   tablaSitios.innerHTML = "";
 
-  lista.forEach(item => {
+  lista.forEach((item) => {
     const tr = document.createElement("tr");
 
     const botonDeshabilitado = !item.archivos_base;
@@ -74,11 +72,10 @@ function mostrarListado(lista) {
   enlazarBotonesAnalisis();
 }
 
-
 //Filtro ascendente y descendente
 const encabezados = document.querySelectorAll("#tablaSitios th.sortable");
 
-encabezados.forEach(th => {
+encabezados.forEach((th) => {
   th.addEventListener("click", () => {
     const columna = th.dataset.column;
 
@@ -88,7 +85,7 @@ encabezados.forEach(th => {
     const asc = !th.classList.contains("asc");
 
     //Resetear flechas
-    encabezados.forEach(h => h.classList.remove("asc", "desc"));
+    encabezados.forEach((h) => h.classList.remove("asc", "desc"));
 
     //Setear la flecha actual
     th.classList.add(asc ? "asc" : "desc");
@@ -120,21 +117,20 @@ async function ejecutarAnalisis({ url, sitioWebId, tipo, boton }) {
 
   const endpoint = endpoints[tipo];
 
-
   try {
     const response = await apiFetch(endpoint, {
       method: "POST",
       body: JSON.stringify({
         url,
         sitio_web_id: sitioWebId,
-        metodo: "Manual"
-      })
+        metodo: "Manual",
+      }),
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      displayToast(data?.error || data?.mensaje || "Ocurrió un error", "error");
+      displayToast(data?.error || data?.detalle || "Ocurrió un error", "error");
       boton.classList.add("error");
       boton.textContent = "❌ Error";
       boton.disabled = false;
@@ -144,7 +140,6 @@ async function ejecutarAnalisis({ url, sitioWebId, tipo, boton }) {
     boton.classList.add("completado");
     boton.textContent = "✔ Completado";
     displayToast("Análisis ejecutado correctamente", "success");
-
   } catch (err) {
     console.error(err);
     boton.classList.add("error");
@@ -154,41 +149,37 @@ async function ejecutarAnalisis({ url, sitioWebId, tipo, boton }) {
   }
 }
 
-
-
-
-
 //Crear los eventListener para cada boton de estatico y dinamico
 function enlazarBotonesAnalisis() {
-  document.querySelectorAll(".btn-estatico").forEach(btn => {
+  document.querySelectorAll(".btn-estatico").forEach((btn) => {
     btn.addEventListener("click", () => {
       ejecutarAnalisis({
         url: btn.dataset.url,
         sitioWebId: btn.dataset.id,
         tipo: "estatico",
-        boton: btn
+        boton: btn,
       });
     });
   });
 
-  document.querySelectorAll(".btn-dinamico").forEach(btn => {
+  document.querySelectorAll(".btn-dinamico").forEach((btn) => {
     btn.addEventListener("click", () => {
       ejecutarAnalisis({
         url: btn.dataset.url,
         sitioWebId: btn.dataset.id,
         tipo: "dinamico",
-        boton: btn
+        boton: btn,
       });
     });
   });
 
-  document.querySelectorAll(".btn-alteracion").forEach(btn => {
+  document.querySelectorAll(".btn-alteracion").forEach((btn) => {
     btn.addEventListener("click", () => {
       ejecutarAnalisis({
         url: btn.dataset.url,
         sitioWebId: btn.dataset.id,
         tipo: "alteracion",
-        boton: btn
+        boton: btn,
       });
     });
   });

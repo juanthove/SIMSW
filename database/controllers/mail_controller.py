@@ -65,7 +65,7 @@ def crear_mail(data):
 
     except IntegrityError:
         db.rollback()
-        return None
+        raise ValueError("Ya hay un mail registrado con ese correo")
     finally:
         db.close()
 

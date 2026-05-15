@@ -388,6 +388,9 @@ def analizar_alteraciones(url, sitio_web_id, metodo):
             analisis.resultado_global = 0
             db.commit()
 
+        #Relanzar la excepcion
+        raise
+
         return {
             "analisis_id": analisis.id if analisis else None,
             "estado": "Error",
