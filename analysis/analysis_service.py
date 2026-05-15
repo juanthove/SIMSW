@@ -109,7 +109,7 @@ def ejecutar_analisis_estatico(sitio_web_id):
     ruta_base = os.path.join(current_app.config["UPLOADS_DIR"], "sitios", str(sitio_web_id))
 
     if not os.path.exists(ruta_base):
-        raise FileNotFoundError(f"No existe la carpeta del sitio con id {sitio_web_id}")
+        raise FileNotFoundError(f"No existe la carpeta con los archivos base del sitio")
 
     try:
         findings = scan_directory(str(ruta_base))
@@ -372,6 +372,9 @@ def ejecutar_analisis_alteraciones(sitio_web_id, url):
     BASE_UPLOADS = current_app.config["UPLOADS_DIR"]
 
     base_dir = Path(BASE_UPLOADS) / "sitios" / str(sitio_web_id)
+    if not os.path.exists(base_dir):
+        raise FileNotFoundError(f"No existe la carpeta con los archivos base del sitio")
+
     tmp_dir = Path(BASE_UPLOADS) / "alteraciones_tmp" / f"{sitio_web_id}_{int(time.time())}"
 
     os.makedirs(tmp_dir, exist_ok=True)

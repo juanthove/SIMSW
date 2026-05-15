@@ -63,7 +63,7 @@ def crear_sitio(data):
 
     except IntegrityError:
         db.rollback()
-        raise ValueError("URL_DUPLICADA")
+        raise ValueError("Ya hay un sitio web registrado con esa URL")
 
     except Exception as e:
         db.rollback()
