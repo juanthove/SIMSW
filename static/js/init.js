@@ -1,8 +1,6 @@
 const navBar = document.getElementById("navBarDiv");
 
-
 if (navBar) {
-
   navBar.innerHTML = `
     <nav id="navbar">
         <a href="/" id="paginaPrincipal"><h2>SIMSW</h2></a>
@@ -21,6 +19,7 @@ if (navBar) {
 
             <div id="config">
                 <a href="/mail-create">Configuración Gmail</a>
+                <a href="/model-select">Configuración Modelo IA</a>
             </div>
             <div id="sesion">
                 <a href="#" id="logoutBtn">Cerrar Sesión</a>
@@ -33,30 +32,29 @@ if (navBar) {
 
 const botonMenu = document.getElementById("botonMenu");
 
-if(botonMenu) {
-    botonMenu.addEventListener("click", () => {
-        document.getElementById("botonEncabezado").classList.toggle("show"); //Activar o desactivar la clase show
-    });
+if (botonMenu) {
+  botonMenu.addEventListener("click", () => {
+    document.getElementById("botonEncabezado").classList.toggle("show"); //Activar o desactivar la clase show
+  });
 }
-
 
 const analysisContainer = document.getElementById("analysis-container");
 const analysisMenu = document.getElementById("analysis-menu");
 
-if(analysisContainer && analysisMenu) {
-    analysisContainer.addEventListener("mouseenter", () => {
-        analysisMenu.classList.add("show");
-    });
+if (analysisContainer && analysisMenu) {
+  analysisContainer.addEventListener("mouseenter", () => {
+    analysisMenu.classList.add("show");
+  });
 
-    analysisContainer.addEventListener("mouseleave", () => {
-        analysisMenu.classList.remove("show");
-    });
+  analysisContainer.addEventListener("mouseleave", () => {
+    analysisMenu.classList.remove("show");
+  });
 }
 
 //Al cliquear cerrar sesion se vuelve a login y se elimina el token
 const logoutBtn = document.getElementById("logoutBtn");
-if(logoutBtn) {
-    logoutBtn.addEventListener("click", (e) => {
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", (e) => {
     e.preventDefault();
 
     //Eliminar token
@@ -64,5 +62,5 @@ if(logoutBtn) {
 
     //Redirigir
     window.location.href = "/login";
-    });
+  });
 }

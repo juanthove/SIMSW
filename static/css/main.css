@@ -95,7 +95,7 @@ body{
 
 #config, #sesion{
     display: flex;
-    gap: 1em;
+    gap: 1.9em;
 }
 
 #config a, #sesion a{

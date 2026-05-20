@@ -32,3 +32,6 @@ build/
 SIMSW.spec
 uninstall.spec
 install.spec
+
+models/*
+!models/.gitkeep

@@ -208,6 +208,7 @@ def main():
         password_admin = getpass.getpass("Password del usuario: ")
 
         google_api_key = input("Google API Key: ")
+        groq_api_key = input("Groq API Key: ")
 
         jwt_secret = secrets.token_hex(32)
 
@@ -219,7 +220,9 @@ def main():
         env_content = f"""# =========================
 # API LLM
 # =========================
+MODEL=gemini-2.5-flash
 GOOGLE_API_KEY={google_api_key}
+GROQ_API_KEY={groq_api_key}
 
 # =========================
 # Base de Datos
@@ -440,6 +443,8 @@ PASS_APLICACION=bwpmkgwtplilpnts
                 ], check=True)
 
                 print("✔ Servicio creado e iniciado correctamente")
+
+                input("\nPresione Enter para salir...")
 
         except Exception as e:
             print("⚠ No se pudo crear el servicio")

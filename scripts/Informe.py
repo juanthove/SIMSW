@@ -6,11 +6,12 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 import ollama #pip install ollama
 from pathlib import Path
 from llama_cpp import Llama #pip install llama-cpp-python
+from flask import current_app
 
 
 class Informe():
     def __init__(self):
-        load_dotenv()
+        load_dotenv(override=True)
         self.__llm = None
         self.__model = os.getenv("MODEL")
         if not self.__model:
@@ -28,12 +29,10 @@ class Informe():
             if not self.__password:
                     raise ValueError("No se encontró la clave para el modelo llama-3.3-70b-versatile en el entorno.")
         
-        elif(self.__model == "tinyllamaQ4-local"):
-            print("Voy a buscarlo")
+        elif(self.__model == "ollama-local"):
             model_path = (
-                Path(__file__).resolve().parent.parent
-                / "models"
-                / "tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf"
+                Path(current_app.config["MODELS_DIR"])
+                / "Dolphin3.0-Llama3.1-8B-Q8_0.gguf"
             )
 
             if not model_path.exists():
@@ -44,7 +43,7 @@ class Informe():
             try:
                 self.__llm = Llama(
                     model_path=str(model_path),
-                    n_ctx=2048,
+                    n_ctx=16384,
                     verbose=False
                 )
 
@@ -89,7 +88,7 @@ class Informe():
                 )
                 return response.choices[0].message.content or ""
             
-            elif(self.__model == "tinyllamaQ4-local"):
+            elif(self.__model == "ollama-local"):
                 print("Entrando en preguntar")
                 response = self.__llm.create_chat_completion(
                     messages=[

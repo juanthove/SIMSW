@@ -44,6 +44,9 @@ pyinstaller --onedir ^
 --name SIMSW ^
 --collect-all transformers ^
 --collect-all tokenizers ^
+--collect-all llama_cpp ^
+--collect-binaries llama_cpp ^
+--hidden-import=llama_cpp ^
 --hidden-import=clang ^
 --hidden-import=clang.cindex ^
 --hidden-import=vulberta.models.tokenization_vulberta ^
@@ -61,6 +64,7 @@ pyinstaller --onedir ^
 --add-data "wkhtmltox;wkhtmltox" ^
 --add-data "ZAP_2.17.0;ZAP_2.17.0" ^
 --add-data "playwright_browsers;playwright_browsers" ^
+--add-data "models;models" ^
 run.py
 
 
@@ -75,6 +79,9 @@ pyinstaller --onedir ^
 --name install ^
 --collect-all transformers ^
 --collect-all tokenizers ^
+--collect-all llama_cpp ^
+--collect-binaries llama_cpp ^
+--hidden-import=llama_cpp ^
 --hidden-import=clang ^
 --hidden-import=clang.cindex ^
 --hidden-import=vulberta.models.tokenization_vulberta ^
@@ -94,6 +101,7 @@ pyinstaller --onedir ^
 --add-data "wkhtmltox;wkhtmltox" ^
 --add-data "ZAP_2.17.0;ZAP_2.17.0" ^
 --add-data "playwright_browsers;playwright_browsers" ^
+--add-data "models;models" ^
 --add-data "nssm.exe;." ^
 install.py
 

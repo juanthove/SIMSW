@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configurar IA</title>
+
+  <link href="../static/css/main.css" rel="stylesheet" type="text/css">
+  <link href="../static/css/site-create.css" rel="stylesheet" type="text/css">
+  <link href="../static/css/responsive.css" rel="stylesheet" type="text/css">
+
+  <script src="../static/js/init.js" defer></script>
+  <script type="module" src="../static/js/ia-config.js"></script>
+</head>
+
+<body>
+  <div id="navBarDiv"></div>
+
+  <main class="contenedorForm">
+    <h1 id="tituloForm">Configurar IA</h1>
+
+    <form id="formIA" class="formBase">
+
+      <!--Selector IA-->
+      <div class="campoForm">
+        <label>Proveedor de IA</label>
+
+        <div class="opcionesRelacion">
+
+          <label class="checkboxLabel">
+            <input type="radio" name="proveedorIA" value="gemini" checked>
+            ✨ Gemini
+          </label>
+
+          <label class="checkboxLabel">
+            <input type="radio" name="proveedorIA" value="groq">
+            ⚡ Groq
+          </label>
+
+          <label class="checkboxLabel">
+            <input type="radio" name="proveedorIA" value="ollama">
+            🖥️ Ollama (Local)
+          </label>
+
+        </div>
+      </div>
+
+      <!--API Keys-->
+      <div class="campoForm">
+        <label for="geminiKey">Gemini Key</label>
+
+        <input type="text" id="geminiKey" name="geminiKey" placeholder="Ingresar API Key de Gemini">
+      </div>
+      </div>
+
+      <div class="campoForm">
+        <label for="groqKey">Groq Key</label>
+
+        <input type="text" id="groqKey" name="groqKey" placeholder="Ingresar API Key de Groq">
+      </div>
+
+      <!--Acciones-->
+      <div class="accionesForm">
+        <button type="submit" class="btnPrincipal">
+          Guardar Configuración
+        </button>
+      </div>
+
+    </form>
+  </main>
+
+  <!--Toast-->
+  <div id="toast" class="toast" aria-live="polite"></div>
+
+</body>
+
+</html>
