@@ -31,6 +31,7 @@ google-auth
 google-genai
 googleapis-common-protos
 greenlet
+groq
 h11
 httpcore
 httpx
@@ -49,6 +50,7 @@ langchain-core
 langchain-google-genai
 langsmith
 libclang
+llama-cpp-python
 mariadb
 markdown-it-py
 MarkupSafe
@@ -58,6 +60,7 @@ mpmath
 mysql-connector-python
 networkx
 numpy
+ollama
 opentelemetry-api
 opentelemetry-exporter-otlp-proto-common
 opentelemetry-exporter-otlp-proto-http

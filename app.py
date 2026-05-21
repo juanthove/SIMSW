@@ -19,6 +19,7 @@ from datetime import datetime, timezone
 
 from analysis.analysis_routes import analysis_bp
 from auth.auth_routes import auth_bp
+from ia.ia_routes import ia_bp
 
 #Importar endpoints
 from database.routes.sitioWeb_routes import sitioWeb_bp 
@@ -31,6 +32,7 @@ from database.routes.mail_routes import mail_bp
 #Registrar blueprints
 app.register_blueprint(analysis_bp)
 app.register_blueprint(auth_bp)
+app.register_blueprint(ia_bp)
 
 #Blueprint de cada route con endpoints a la base de datos
 app.register_blueprint(sitioWeb_bp)
@@ -80,6 +82,10 @@ def site_history():
 def mail_create():
     return render_template("mail-create.html")
 
+@app.route("/model-select")
+def model_select():
+    return render_template("model-select.html")
+
 
 #Configurar ruta base
 def get_base_path():
@@ -93,10 +99,13 @@ def get_base_path():
 
 BASE_DIR = get_base_path()
 UPLOADS_DIR = os.path.join(BASE_DIR, "uploads")
+MODELS_DIR = os.path.join(BASE_DIR, "_internal", "models")
 
 os.makedirs(UPLOADS_DIR, exist_ok=True)
+os.makedirs(MODELS_DIR, exist_ok=True)
 
 app.config["UPLOADS_DIR"] = UPLOADS_DIR
+app.config["MODELS_DIR"] = MODELS_DIR
 
 
 #Configurar path de playwright
